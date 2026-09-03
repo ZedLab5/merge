@@ -1734,76 +1734,113 @@ fun HomeFavoritesCard(
     isArabic: Boolean = false
 ) {
     val subtitleText = if (isArabic) {
-        if (count == 1) "1 مفضلة" else "$count مفضلة"
+        if (count == 1) "١ محفوظ" else "$count محفوظ"
     } else {
-        if (count == 1) "1 Favorite" else "$count Favorites"
+        "$count bookmarked"
     }
 
     Surface(
         modifier = modifier
-            .size(150.dp)
+            .width(140.dp)
+            .shadow(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color(0x18000000),
+                ambientColor = accentColor.copy(alpha = 0.14f)
+            )
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         color = Color.White,
         border = BorderStroke(1.dp, NoorCardBorder)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White,
+                            Color(0xFFFAFCFA)
+                        )
+                    )
+                )
         ) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(accentColor.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(12.dp)
             ) {
-                icon()
-            }
+                // Soft 3D layered icon container
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(11.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    accentColor.copy(alpha = 0.16f),
+                                    accentColor.copy(alpha = 0.08f)
+                                )
+                            )
+                        )
+                        .border(1.dp, accentColor.copy(alpha = 0.2f), RoundedCornerShape(11.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    icon()
+                }
 
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Spacer(modifier = Modifier.height(10.dp))
+
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = NoorDarkPine,
-                        fontSize = 13.sp
+                        fontSize = 13.5.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
                     text = subtitleText,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = NoorSageSlate,
-                        fontSize = 11.sp
+                        fontSize = 11.5.sp
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = if (isArabic) "عرض" else "View",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = accentColor,
-                        fontSize = 11.5.sp
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // View link stacked under the subtext
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(accentColor.copy(alpha = 0.08f))
+                        .padding(horizontal = 7.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = if (isArabic) "عرض" else "View",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = accentColor,
+                            fontSize = 11.sp
+                        )
                     )
-                )
-                Icon(
-                    imageVector = if (isArabic) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(12.dp)
-                )
+                    Icon(
+                        imageVector = if (isArabic) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(10.dp)
+                    )
+                }
             }
         }
     }
@@ -1938,10 +1975,10 @@ fun HomeFavoritesCarousel(
             contentPadding = PaddingValues(horizontal = 2.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // 1. Du'as
+            // 1. Duas
             item(key = "fav_duas") {
                 HomeFavoritesCard(
-                    title = if (isArabic) "الأدعية المفضلة" else "Favorite Du'as",
+                    title = if (isArabic) "الأدعية المفضلة" else "Favorite Duas",
                     count = duasCount,
                     accentColor = Color(0xFFE06D53),
                     icon = {
@@ -1955,10 +1992,10 @@ fun HomeFavoritesCarousel(
                 )
             }
 
-            // 2. Surahs & Ayahs
+            // 2. Surahs
             item(key = "fav_quran") {
                 HomeFavoritesCard(
-                    title = if (isArabic) "السور والآيات" else "Surahs & Verses",
+                    title = if (isArabic) "السور المفضلة" else "Favorite Surahs",
                     count = quranCount,
                     accentColor = DeepVibrantTeal,
                     icon = {
@@ -1972,10 +2009,10 @@ fun HomeFavoritesCarousel(
                 )
             }
 
-            // 3. Azkar & Dhikr
+            // 3. Azkar
             item(key = "fav_azkar") {
                 HomeFavoritesCard(
-                    title = if (isArabic) "الأذكار والتسابيح" else "Azkar & Dhikr",
+                    title = if (isArabic) "الأذكار المفضلة" else "Favorite Azkar",
                     count = azkarCount,
                     accentColor = Color(0xFF16A34A),
                     icon = {
@@ -1992,7 +2029,7 @@ fun HomeFavoritesCarousel(
             // 4. Audio & Recitations (MP3)
             item(key = "fav_audio") {
                 HomeFavoritesCard(
-                    title = if (isArabic) "التلاوات و MP3" else "Audio & MP3",
+                    title = if (isArabic) "التلاوات المفضلة" else "Favorite Audio",
                     count = audioCount,
                     accentColor = Color(0xFF7C3AED),
                     icon = {
@@ -2011,7 +2048,7 @@ fun HomeFavoritesCarousel(
             // 5. Hadith & Wisdom Quotes
             item(key = "fav_hadith") {
                 HomeFavoritesCard(
-                    title = if (isArabic) "الحكم والأحاديث" else "Hadith & Wisdom",
+                    title = if (isArabic) "الأحاديث المفضلة" else "Favorite Hadith",
                     count = hadithCount,
                     accentColor = Color(0xFFD97706),
                     icon = {
@@ -2266,876 +2303,9 @@ fun QuranContinuationWidget(
 }
 
 // ============================================================
-// 4B. QURAN KHATMA PROGRESS WIDGET (PROMINENT ENGAGING DESIGN)
+// 4B. QURAN KHATMA & READING PROGRESS WIDGET
+// (Modularized into dedicated QuranKhatmaHomeWidget.kt)
 // ============================================================
-
-@Composable
-fun QuranKhatmaHomeWidget(
-    viewModel: MainViewModel,
-    modifier: Modifier = Modifier
-) {
-    val khatmaState by viewModel.khatmaDashboardState.collectAsStateWithLifecycle()
-    val readingProgress by viewModel.readingProgress.collectAsStateWithLifecycle()
-    val isArabic by viewModel.appLanguage.collectAsStateWithLifecycle()
-    val isLangArabic = isArabic.equals("Arabic", ignoreCase = true) || isArabic == "العربية"
-
-    val state = khatmaState
-    val isPlanActive = state != null && !state.plan.isCompleted
-
-    val hasBookmark = readingProgress != null
-    val surahName = readingProgress?.surahName ?: stringResource(R.string.home_fatihah_name)
-    val ayahNum = readingProgress?.ayahNumber ?: 1
-    val totalAyahs = readingProgress?.totalAyahs ?: 7
-
-    val onResumeReading = {
-        if (readingProgress != null) {
-            viewModel.resumeReading(readingProgress!!)
-        } else {
-            viewModel.selectSurahForReading(QuranData.surahs.first(), 0)
-        }
-    }
-
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(26.dp))
-            .testTag("quran_khatma_home_widget"),
-        shape = RoundedCornerShape(26.dp),
-        color = Color.White,
-        shadowElevation = 0.dp,
-        border = BorderStroke(1.dp, BorderTealGray)
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            // Subtle ambient light aura
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .align(Alignment.TopEnd)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                (if (isPlanActive) DeepVibrantTeal else MetallicGold).copy(alpha = 0.07f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
-                if (isPlanActive && state != null) {
-                    // =====================================================
-                    // STATE 1: ACTIVE KHATMA PLAN (Sanctuary Calligraphy & Goal Stage)
-                    // =====================================================
-
-                    // Header Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { viewModel.navigateTo(NoorDestination.QURAN_KHATMA) },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(SoftTealTint)
-                                    .border(1.dp, BorderTealLight, RoundedCornerShape(14.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AutoStories,
-                                    contentDescription = "Quran Khatma",
-                                    tint = DeepVibrantTeal,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-
-                            Column {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text(
-                                        text = if (isLangArabic) "ختمة القرآن الكريم" else "Quran Khatma",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 17.sp,
-                                            color = DarkPine
-                                        )
-                                    )
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = SoftTealTint,
-                                        border = BorderStroke(0.5.dp, DeepVibrantTeal.copy(alpha = 0.4f))
-                                    ) {
-                                        Text(
-                                            text = if (isLangArabic) "اليوم ${state.currentDayNumber}/${state.totalDays}" else "Day ${state.currentDayNumber}/${state.totalDays}",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                color = DeepVibrantTeal,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 10.5.sp
-                                            ),
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (isLangArabic) {
-                                        "متبقي ${state.daysRemaining} يوم • الورد: ${state.todayTargetAyahs} آية/يوم"
-                                    } else {
-                                        "${state.daysRemaining} days left • Target: ${state.todayTargetAyahs} Ayahs/day"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        fontSize = 12.sp,
-                                        color = SlateTealMuted
-                                    )
-                                )
-                            }
-                        }
-
-                        // Pace Badge
-                        val paceText = when (state.paceStatus) {
-                            KhatmaPaceStatus.AHEAD -> if (isLangArabic) "متقدم" else "Ahead"
-                            KhatmaPaceStatus.ON_TRACK -> if (isLangArabic) "في الموعد" else "On Track"
-                            KhatmaPaceStatus.BEHIND -> if (isLangArabic) "يحتاج متابعة" else "Catch Up"
-                            KhatmaPaceStatus.COMPLETED -> if (isLangArabic) "مكتملة" else "Completed"
-                        }
-                        val isAheadOrOnTrack = state.paceStatus == KhatmaPaceStatus.ON_TRACK || state.paceStatus == KhatmaPaceStatus.AHEAD
-
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (isAheadOrOnTrack) Color(0xFFF0F7F4) else Color(0xFFFBF8EE),
-                            border = BorderStroke(1.dp, if (isAheadOrOnTrack) Color(0xFFCFE5DA) else Color(0xFFEADBBE))
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isAheadOrOnTrack) DeepVibrantTeal else MetallicGold)
-                                )
-                                Text(
-                                    text = paceText,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = if (isAheadOrOnTrack) DeepVibrantTeal else MetallicGold,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Hero Recitation Stage Card with Authentic Arabic Calligraphy
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color(0xFFF7FAF9),
-                        border = BorderStroke(1.dp, Color(0xFFDFEBE5)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            // Top target line
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = if (isLangArabic) "موضع التلاوة القادم" else "NEXT RECITATION MILESTONE",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = SlateTealMuted,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                )
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color.White,
-                                    border = BorderStroke(1.dp, Color(0xFFDFEBE5))
-                                ) {
-                                    Text(
-                                        text = if (isLangArabic) "آية ${state.nextReadingPosition.ayahNumber} • جزء ${state.nextReadingPosition.juzNumber}" else "Ayah ${state.nextReadingPosition.ayahNumber} • Juz ${state.nextReadingPosition.juzNumber}",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = DarkPine,
-                                            fontSize = 11.5.sp
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Arabic Calligraphy Spotlight
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = state.nextReadingPosition.surahNameArabic,
-                                        style = MaterialTheme.typography.headlineSmall.copy(
-                                            fontFamily = AmiriQuranFontFamily,
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = 24.sp,
-                                            color = DarkPine,
-                                            lineHeight = 32.sp
-                                        )
-                                    )
-                                    Text(
-                                        text = "${state.nextReadingPosition.surahNumber}. ${state.nextReadingPosition.surahNameEnglish}",
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 13.sp,
-                                            color = DeepVibrantTeal
-                                        )
-                                    )
-                                }
-
-                                // Radial / Percentage Progress Capsule
-                                Surface(
-                                    shape = RoundedCornerShape(14.dp),
-                                    color = Color.White,
-                                    border = BorderStroke(1.dp, Color(0xFFDFEBE5))
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = "${state.progressPercentage}%",
-                                            style = MaterialTheme.typography.titleMedium.copy(
-                                                fontWeight = FontWeight.Black,
-                                                color = DeepVibrantTeal,
-                                                fontSize = 18.sp
-                                            )
-                                        )
-                                        Text(
-                                            text = if (isLangArabic) "منجز" else "DONE",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                color = SlateTealMuted,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 9.sp,
-                                                letterSpacing = 0.5.sp
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            // Daily Progress Status
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Bottom
-                            ) {
-                                Text(
-                                    text = if (isLangArabic) {
-                                        "ورد اليوم: قرأت ${state.todayReadAyahs} من ${state.todayTargetAyahs} آية"
-                                    } else {
-                                        "Today: ${state.todayReadAyahs} of ${state.todayTargetAyahs} Ayahs read"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = if (state.isTodayTargetAchieved) DeepVibrantTeal else DarkPine,
-                                        fontSize = 12.5.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                )
-
-                                Text(
-                                    text = if (state.todayRemainingAyahs > 0) {
-                                        if (isLangArabic) "متبقي ${state.todayRemainingAyahs}" else "${state.todayRemainingAyahs} left"
-                                    } else {
-                                        if (isLangArabic) "اكتمل الورد ✓" else "Target met ✓"
-                                    },
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (state.todayRemainingAyahs > 0) MetallicGold else DeepVibrantTeal,
-                                        fontSize = 11.5.sp
-                                    )
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Glowing Progress Bar
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(7.dp)
-                                    .clip(RoundedCornerShape(3.5.dp))
-                                    .background(Color(0xFFE2EBE6))
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth(
-                                            if (state.todayTargetAyahs > 0) {
-                                                (state.todayReadAyahs.toFloat() / state.todayTargetAyahs.toFloat()).coerceIn(0.04f, 1f)
-                                            } else state.progressFraction.coerceIn(0.04f, 1f)
-                                        )
-                                        .fillMaxHeight()
-                                        .clip(RoundedCornerShape(3.5.dp))
-                                        .background(PrimaryTealGradient)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Tactile Primary CTA Button (Resume Recitation)
-                            Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = DeepVibrantTeal,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable {
-                                        val surah = QuranData.surahs.find { it.number == state.nextReadingPosition.surahNumber }
-                                            ?: QuranData.surahs.first()
-                                        viewModel.selectSurahForReading(
-                                            surah,
-                                            (state.nextReadingPosition.ayahNumber - 1).coerceAtLeast(0)
-                                        )
-                                    }
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = if (isLangArabic) "متابعة تلاوة الختمة (آية ${state.nextReadingPosition.ayahNumber})" else "Resume Khatma at Ayah ${state.nextReadingPosition.ayahNumber}",
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp
-                                        )
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Milestone Celebration or encouragement
-                    if (state.isTodayTargetAchieved) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFFBF8EE),
-                            border = BorderStroke(1.dp, Color(0xFFEADBBE)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AutoAwesome,
-                                    contentDescription = null,
-                                    tint = MetallicGold,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = if (isLangArabic) "ما شاء الله! حققت ورد اليوم بنجاح (+${state.todayReadAyahs} آية)" else "Masha'Allah! Today's reading goal achieved (+${state.todayReadAyahs} Ayahs)",
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = DarkPine,
-                                        fontSize = 11.5.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Secondary Action Ribbon (Plan Timeline + Audio Listen)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = SoftTealTint,
-                            border = BorderStroke(1.dp, BorderTealLight),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable {
-                                    val surah = QuranData.surahs.find { it.number == state.nextReadingPosition.surahNumber }
-                                        ?: QuranData.surahs.first()
-                                    viewModel.playSurahAudio(surah)
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Headphones,
-                                    contentDescription = null,
-                                    tint = DeepVibrantTeal,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = if (isLangArabic) "استماع للسورة" else "Listen Audio",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = DeepVibrantTeal,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp
-                                    )
-                                )
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { viewModel.navigateTo(NoorDestination.QURAN_KHATMA) }
-                                .padding(horizontal = 6.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = if (isLangArabic) "عرض جدول الختمة والتفاصيل" else "View Khatma Plan & Schedule",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = DeepVibrantTeal,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.5.sp
-                                )
-                            )
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null,
-                                tint = DeepVibrantTeal,
-                                modifier = Modifier.size(12.dp)
-                            )
-                        }
-                    }
-                } else {
-                    // =====================================================
-                    // STATE 2: NO KHATMA PLAN (Free Reading Sanctuary + 1-Tap Goals)
-                    // =====================================================
-
-                    // Header Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(SoftTealTint)
-                                    .border(1.dp, BorderTealGray, RoundedCornerShape(14.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                                    contentDescription = null,
-                                    tint = DeepVibrantTeal,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-
-                            Column {
-                                Text(
-                                    text = if (hasBookmark) stringResource(R.string.home_continue_reading) else stringResource(R.string.home_start_reading),
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = DarkPine,
-                                        fontSize = 17.sp
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (hasBookmark) {
-                                        if (isLangArabic) "تابع من موضعك المحفوظ في المصحف" else "Pick up from your saved bookmark"
-                                    } else {
-                                        if (isLangArabic) "ابدأ وردك القرآني اليومي" else "Begin your daily recitation"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = SlateTealMuted,
-                                        fontSize = 12.sp
-                                    )
-                                )
-                            }
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = SoftTealTint,
-                            border = BorderStroke(1.dp, BorderTealGray),
-                            modifier = Modifier.clickable(onClick = onResumeReading)
-                        ) {
-                            Text(
-                                text = if (hasBookmark) stringResource(R.string.action_continue) else stringResource(R.string.home_open_mushaf),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    color = DeepVibrantTeal,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.5.sp
-                                ),
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Hero Reading Stage Card with Amiri Font
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color(0xFFF7FAF9),
-                        border = BorderStroke(1.dp, Color(0xFFDFEBE5)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onResumeReading)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = if (hasBookmark) (if (isLangArabic) "الموضع المحفوظ" else "SAVED BOOKMARK") else (if (isLangArabic) "فاتحة الكتاب" else "OPENING OF QURAN"),
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = SlateTealMuted,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                )
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = GoldBadgeBg,
-                                    border = BorderStroke(1.dp, MetallicGold.copy(alpha = 0.35f))
-                                ) {
-                                    Text(
-                                        text = if (hasBookmark) stringResource(R.string.home_ayah_counter, ayahNum, totalAyahs) else stringResource(R.string.home_surah_1),
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = MetallicGold,
-                                            fontSize = 11.5.sp
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Surah in Authentic Arabic Typography
-                            Text(
-                                text = surahName,
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontFamily = AmiriQuranFontFamily,
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 24.sp,
-                                    color = DarkPine,
-                                    lineHeight = 32.sp
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = if (hasBookmark) {
-                                    "Juz ${readingProgress?.let { KhatmaEngine.getAyahCoordinate(KhatmaEngine.getAbsoluteAyahIndex(it.surahNumber, it.ayahNumber)).juzNumber } ?: 1} • ${stringResource(R.string.home_saved_bookmark_desc)}"
-                                } else {
-                                    if (isLangArabic) "سورة الفاتحة • ٧ آيات • مكية" else "Surah Al-Fatihah • 7 Ayahs • Meccan"
-                                },
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontSize = 12.sp,
-                                    color = SlateTealMuted
-                                )
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            // Progress Track
-                            val progress = if (hasBookmark) (ayahNum.toFloat() / totalAyahs.toFloat()).coerceIn(0.05f, 1f) else 0.05f
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(Color(0xFFE2EBE6))
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth(progress)
-                                        .fillMaxHeight()
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(PrimaryTealGradient)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Primary CTA Button
-                            Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = DeepVibrantTeal,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable(onClick = onResumeReading)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = if (hasBookmark) {
-                                            if (isLangArabic) "متابعة التلاوة من آية $ayahNum" else "Resume Recitation from Ayah $ayahNum"
-                                        } else {
-                                            if (isLangArabic) "ابدأ تلاوة المصحف" else "Begin Quran Recitation"
-                                        },
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp
-                                        )
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Interactive "Start a Khatma Goal" 3-Preset Launch Strip
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = Color(0xFFFBF8EE),
-                        border = BorderStroke(1.dp, Color(0xFFEADBBE)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AutoAwesome,
-                                        contentDescription = null,
-                                        tint = MetallicGold,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Text(
-                                        text = if (isLangArabic) "ابدأ مسيرة الختمة القرآنية" else "Embark on a Quran Khatma",
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = DarkPine,
-                                            fontSize = 13.5.sp
-                                        )
-                                    )
-                                }
-
-                                Text(
-                                    text = if (isLangArabic) "تخصيص الخطة" else "Custom Plan",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = DeepVibrantTeal,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.5.sp
-                                    ),
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .clickable { viewModel.navigateTo(NoorDestination.QURAN_KHATMA) }
-                                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = if (isLangArabic) "اختر خطة ميسرة لتلاوة المصحف الكريم بانتظام:" else "Choose a guided pace to finish the Noble Qur'an:",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = SlateTealMuted,
-                                    fontSize = 11.5.sp
-                                )
-                            )
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // 3 Interactive Preset Goal Cards
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                KhatmaQuickPresetCard(
-                                    title = if (isLangArabic) "٣٠ يوماً" else "30 Days",
-                                    subtitle = if (isLangArabic) "جزء يومياً" else "1 Juz/day",
-                                    isHighlighted = true,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        viewModel.createOrResetKhatma(
-                                            days = 30,
-                                            sessionsCount = 1,
-                                            title = if (isLangArabic) "ختمة الشهر (٣٠ يوم)" else "30-Day Ramadan Pace"
-                                        )
-                                    }
-                                )
-
-                                KhatmaQuickPresetCard(
-                                    title = if (isLangArabic) "٦٠ يوماً" else "60 Days",
-                                    subtitle = if (isLangArabic) "نصف جزء" else "10 pgs/day",
-                                    isHighlighted = false,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        viewModel.createOrResetKhatma(
-                                            days = 60,
-                                            sessionsCount = 1,
-                                            title = if (isLangArabic) "ختمة الستين يوماً" else "60-Day Gentle Pace"
-                                        )
-                                    }
-                                )
-
-                                KhatmaQuickPresetCard(
-                                    title = if (isLangArabic) "٩٠ يوماً" else "90 Days",
-                                    subtitle = if (isLangArabic) "ثلث جزء" else "1/3 Juz/day",
-                                    isHighlighted = false,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        viewModel.createOrResetKhatma(
-                                            days = 90,
-                                            sessionsCount = 1,
-                                            title = if (isLangArabic) "ختمة التسعين يوماً" else "90-Day Steady Pace"
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun KhatmaQuickPresetCard(
-    title: String,
-    subtitle: String,
-    isHighlighted: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = if (isHighlighted) DeepVibrantTeal else Color.White,
-        border = BorderStroke(1.dp, if (isHighlighted) DeepVibrantTeal else Color(0xFFDFE8E3))
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = 9.dp, horizontal = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = if (isHighlighted) Color.White else DarkPine,
-                    fontSize = 12.sp
-                )
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    color = if (isHighlighted) Color.White.copy(alpha = 0.85f) else SlateTealMuted,
-                    fontSize = 10.sp
-                )
-            )
-        }
-    }
-}
 
 // ============================================================
 // 5. DAILY REVELATION (AYAH OF THE DAY & AUTHENTIC SUPPLICATION)
