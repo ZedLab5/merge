@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.example.ui.theme.ReadingThemeColors
+
 val NoorTopBarGradient = Brush.linearGradient(
     colors = listOf(
         Color(0xFF133E32), // Softened rich forest green
@@ -123,17 +125,24 @@ fun NoorTopBar(
     backIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
     backContentDescription: String = "Back",
     isLargeTitle: Boolean = false,
+    isDark: Boolean = false,
+    themeColors: ReadingThemeColors? = null,
     titleContent: (@Composable () -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit) = {}
 ) {
+    val bgBrush = if (isDark && themeColors != null) Brush.linearGradient(listOf(themeColors.surface, themeColors.surface)) else NoorTopBarGradient
+    val borderCol = if (isDark && themeColors != null) themeColors.border else NoorTopBarHairlineBorder
+    val titleCol = if (isDark && themeColors != null) themeColors.arabicText else Color.White
+    val subCol = if (isDark && themeColors != null) themeColors.translationText else Color.White.copy(alpha = 0.82f)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(NoorTopBarGradient)
+            .background(bgBrush)
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
                 drawLine(
-                    color = NoorTopBarHairlineBorder,
+                    color = borderCol,
                     start = Offset(0f, size.height - strokeWidth / 2),
                     end = Offset(size.width, size.height - strokeWidth / 2),
                     strokeWidth = strokeWidth
@@ -192,7 +201,7 @@ fun NoorTopBar(
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = if (isLargeTitle) 22.sp else 20.sp,
-                                color = Color.White
+                                color = titleCol
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -204,7 +213,7 @@ fun NoorTopBar(
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Normal,
-                                    color = Color.White.copy(alpha = 0.82f)
+                                    color = subCol
                                 ),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis

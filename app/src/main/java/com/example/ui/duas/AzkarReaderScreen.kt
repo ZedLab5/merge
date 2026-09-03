@@ -105,6 +105,9 @@ import com.example.ui.theme.PrimaryTealGradient
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeSection
+import com.example.ui.theme.ReadingThemeColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -117,6 +120,9 @@ fun AzkarReaderScreen(
     val selectedCategory by viewModel.selectedDuaCategory.collectAsStateWithLifecycle()
     val azkarCountsMap by viewModel.azkarRemainingCounts.collectAsStateWithLifecycle()
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
+
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
 
     // Settings preferences from ViewModel
     val showArabicInCards by viewModel.showArabicInAzkarCards.collectAsStateWithLifecycle()
@@ -162,6 +168,8 @@ fun AzkarReaderScreen(
                 subtitle = "$completedCount of $totalCount Completed • Daily Protection",
                 onBackClick = { viewModel.navigateBack() },
                 backContentDescription = "Back",
+                isDark = themeColors.isDark,
+                themeColors = themeColors,
                 actions = {
                     // Reset counts button
                     NoorGlassIconButton(
@@ -179,7 +187,7 @@ fun AzkarReaderScreen(
                 }
             )
         },
-        containerColor = CanvasMint,
+        containerColor = themeColors.background,
         modifier = modifier
     ) { paddingValues ->
         LazyColumn(
@@ -197,7 +205,8 @@ fun AzkarReaderScreen(
                     description = currentCategoryModel.description,
                     completed = completedCount,
                     total = totalCount,
-                    progress = categoryProgress
+                    progress = categoryProgress,
+                    themeColors = themeColors
                 )
             }
 
@@ -220,6 +229,7 @@ fun AzkarReaderScreen(
                     showTransliteration = showTransliteration,
                     showBenefits = showBenefits,
                     isArabicPrimary = isArabicPrimary,
+                    themeColors = themeColors,
                     onTapCount = {
                         viewModel.decrementDuaCount(dua) {
                             // On completed callback -> Auto-scroll to next Zikr card if enabled
@@ -265,8 +275,8 @@ fun AzkarReaderScreen(
                         .fillMaxWidth()
                         .clickable { viewModel.navigateTo(NoorDestination.DUAS_LIBRARY) },
                     shape = RoundedCornerShape(16.dp),
-                    color = SurfaceWhite,
-                    border = BorderStroke(1.dp, BorderTealGray)
+                    color = themeColors.surface,
+                    border = BorderStroke(1.dp, themeColors.border)
                 ) {
                     Row(
                         modifier = Modifier
@@ -283,13 +293,13 @@ fun AzkarReaderScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(SoftTealTint),
+                                    .background(if (themeColors.isDark) themeColors.border else SoftTealTint),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = null,
-                                    tint = DeepVibrantTeal,
+                                    tint = themeColors.accent,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -298,13 +308,13 @@ fun AzkarReaderScreen(
                                     text = "All Du'a Categories",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = DarkPine
+                                        color = themeColors.arabicText
                                     )
                                 )
                                 Text(
                                     text = "Browse Hisn al-Muslim library",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = SlateTealMuted,
+                                        color = themeColors.translationText,
                                         fontSize = 12.sp
                                     )
                                 )
@@ -314,7 +324,7 @@ fun AzkarReaderScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -326,6 +336,9 @@ fun AzkarReaderScreen(
     // Azkar Settings Modal Bottom Sheet
     if (showSettingsSheet) {
         AzkarSettingsBottomSheet(
+            selectedThemeName = readingThemeName,
+            onThemeSelect = { viewModel.setSharedReadingTheme(it) },
+            themeColors = themeColors,
             showArabic = showArabicInCards,
             textSize = azkarTextSize,
             isAutoScroll = isAutoScrollEnabled,
@@ -359,6 +372,7 @@ fun AzkarDailyCompletionCard(
     completed: Int,
     total: Int,
     progress: Float,
+    themeColors: ReadingThemeColors,
     modifier: Modifier = Modifier
 ) {
     val animatedProgress by animateFloatAsState(
@@ -370,14 +384,15 @@ fun AzkarDailyCompletionCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = SurfaceWhite,
-        border = BorderStroke(1.2.dp, BorderTealGray)
+        color = themeColors.surface,
+        border = BorderStroke(1.2.dp, themeColors.border)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Brush.linearGradient(
+                    if (themeColors.isDark) Brush.linearGradient(listOf(themeColors.surface, themeColors.surface))
+                    else Brush.linearGradient(
                         colors = listOf(
                             Color(0xFFFCFDFD),
                             Color(0xFFF2FAF8),
@@ -401,14 +416,14 @@ fun AzkarDailyCompletionCard(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = GoldBadgeBg,
+                        color = if (themeColors.isDark) themeColors.border else GoldBadgeBg,
                         border = BorderStroke(1.dp, MetallicGold.copy(alpha = 0.35f))
                     ) {
                         Text(
                             text = "DAILY COMPLETION",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF8A5F0C),
+                                color = if (themeColors.isDark) MetallicGold else Color(0xFF8A5F0C),
                                 fontSize = 10.5.sp,
                                 letterSpacing = 0.8.sp
                             ),
@@ -420,7 +435,7 @@ fun AzkarDailyCompletionCard(
                         text = categoryName,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 17.5.sp
                         )
                     )
@@ -428,7 +443,7 @@ fun AzkarDailyCompletionCard(
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontSize = 12.5.sp,
                             lineHeight = 16.5.sp
                         ),
@@ -452,7 +467,7 @@ fun AzkarDailyCompletionCard(
                             text = if (completed == total && total > 0) "All Finished ✓" else "$completed of $total Completed",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (completed == total && total > 0) Color(0xFF15803D) else DarkPine,
+                                color = if (completed == total && total > 0) Color(0xFF22C55E) else themeColors.arabicText,
                                 fontSize = 12.sp
                             )
                         )
@@ -468,7 +483,7 @@ fun AzkarDailyCompletionCard(
                     CircularProgressIndicator(
                         progress = { 1f },
                         modifier = Modifier.size(76.dp),
-                        color = Color(0xFFFBEBC8),
+                        color = if (themeColors.isDark) themeColors.border else Color(0xFFFBEBC8),
                         strokeWidth = 6.5.dp,
                         strokeCap = StrokeCap.Round
                     )
@@ -477,7 +492,7 @@ fun AzkarDailyCompletionCard(
                     CircularProgressIndicator(
                         progress = { animatedProgress },
                         modifier = Modifier.size(76.dp),
-                        color = MetallicGold,
+                        color = themeColors.accent,
                         strokeWidth = 6.5.dp,
                         strokeCap = StrokeCap.Round
                     )
@@ -490,7 +505,7 @@ fun AzkarDailyCompletionCard(
                             text = "${(progress * 100).toInt()}%",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
-                                color = Color(0xFF8A5F0C),
+                                color = if (themeColors.isDark) MetallicGold else Color(0xFF8A5F0C),
                                 fontSize = 15.sp
                             )
                         )
@@ -498,7 +513,7 @@ fun AzkarDailyCompletionCard(
                             text = "$completed/$total",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = SlateTealMuted,
+                                color = themeColors.translationText,
                                 fontSize = 10.sp
                             )
                         )
@@ -524,6 +539,7 @@ fun InteractiveAzkarCard(
     showTransliteration: Boolean,
     showBenefits: Boolean,
     isArabicPrimary: Boolean = false,
+    themeColors: ReadingThemeColors,
     onTapCount: () -> Unit,
     onResetCount: () -> Unit,
     onToggleBookmark: () -> Unit,
@@ -575,10 +591,10 @@ fun InteractiveAzkarCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        color = if (isCompleted) Color(0xFFF6FDFB) else SurfaceWhite,
+        color = if (isCompleted) (if (themeColors.isDark) Color(0xFF0F2E23) else Color(0xFFF6FDFB)) else themeColors.surface,
         border = BorderStroke(
             if (isCompleted) 1.5.dp else 1.dp,
-            if (isCompleted) Color(0xFF22C55E).copy(alpha = 0.55f) else BorderTealGray
+            if (isCompleted) Color(0xFF22C55E).copy(alpha = 0.55f) else themeColors.border
         )
     ) {
         Column(
@@ -598,14 +614,14 @@ fun InteractiveAzkarCard(
                         text = dua.title,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 16.sp
                         )
                     )
                     Text(
                         text = "${dua.occasion} • ${dua.reference}",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontSize = 12.sp
                         )
                     )
@@ -622,7 +638,7 @@ fun InteractiveAzkarCard(
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy Zikr",
-                            tint = SlateTealMuted,
+                            tint = themeColors.translationText,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -634,7 +650,7 @@ fun InteractiveAzkarCard(
                         Icon(
                             imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (isBookmarked) MetallicGold else SlateTealMuted,
+                            tint = if (isBookmarked) MetallicGold else themeColors.translationText,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -644,19 +660,19 @@ fun InteractiveAzkarCard(
             if (!isArabicPrimary) {
                 // ============================================================
                 // PRIMARY LANGUAGE = ENGLISH (Default / Selected)
-                // 1. Primary Container: English Translation (Prominent Box with distinct background & bold typography)
+                // 1. Primary Container: English Translation
                 // ============================================================
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = CanvasMint,
-                    border = BorderStroke(1.dp, BorderTealGray),
+                    color = if (themeColors.isDark) themeColors.background else CanvasMint,
+                    border = BorderStroke(1.dp, themeColors.border),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = dua.translation,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = translationSize,
                             lineHeight = translationLineHeight
                         ),
@@ -664,13 +680,13 @@ fun InteractiveAzkarCard(
                     )
                 }
 
-                // 2. Secondary Layer: Phonetic Transliteration (sits beneath/outside container)
+                // 2. Secondary Layer: Phonetic Transliteration
                 if (showTransliteration && dua.transliteration.isNotBlank()) {
                     Text(
                         text = dua.transliteration,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                            color = DeepVibrantTeal,
+                            color = themeColors.transliterationText,
                             fontSize = transliterationSize,
                             lineHeight = (transliterationSize.value * 1.45f).sp,
                             fontWeight = FontWeight.Medium
@@ -679,14 +695,14 @@ fun InteractiveAzkarCard(
                     )
                 }
 
-                // 3. Tertiary Layer: Arabic Script (sits beneath/outside container with regular weight)
+                // 3. Tertiary Layer: Arabic Script
                 if (showArabic && dua.arabicText.isNotBlank()) {
                     Text(
                         text = dua.arabicText,
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Normal,
                             fontFamily = FontFamily.Serif,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = arabicSize,
                             lineHeight = arabicLineHeight
                         ),
@@ -699,12 +715,12 @@ fun InteractiveAzkarCard(
             } else {
                 // ============================================================
                 // PRIMARY LANGUAGE = ARABIC
-                // 1. Primary Container: Arabic Script (Prominent Box with distinct background & bold typography)
+                // 1. Primary Container: Arabic Script
                 // ============================================================
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = CanvasMint,
-                    border = BorderStroke(1.dp, BorderTealGray),
+                    color = if (themeColors.isDark) themeColors.background else CanvasMint,
+                    border = BorderStroke(1.dp, themeColors.border),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -712,7 +728,7 @@ fun InteractiveAzkarCard(
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Serif,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = arabicSize,
                             lineHeight = arabicLineHeight
                         ),
@@ -727,7 +743,7 @@ fun InteractiveAzkarCard(
                         text = dua.transliteration,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                            color = DeepVibrantTeal,
+                            color = themeColors.transliterationText,
                             fontSize = transliterationSize,
                             lineHeight = (transliterationSize.value * 1.45f).sp,
                             fontWeight = FontWeight.Medium
@@ -736,13 +752,13 @@ fun InteractiveAzkarCard(
                     )
                 }
 
-                // 3. Tertiary Layer: English Translation (sits beneath/outside container)
+                // 3. Tertiary Layer: English Translation
                 if (dua.translation.isNotBlank()) {
                     Text(
                         text = dua.translation,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Normal,
-                            color = Color(0xFF2D4B46),
+                            color = themeColors.translationText,
                             fontSize = translationSize,
                             lineHeight = translationLineHeight
                         ),
@@ -755,8 +771,8 @@ fun InteractiveAzkarCard(
             if (showBenefits && dua.benefit.isNotBlank()) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = GoldBadgeBg,
-                    border = BorderStroke(0.6.dp, MetallicGold.copy(alpha = 0.35f)),
+                    color = if (themeColors.isDark) themeColors.background else GoldBadgeBg,
+                    border = BorderStroke(0.6.dp, if (themeColors.isDark) MetallicGold.copy(alpha = 0.4f) else MetallicGold.copy(alpha = 0.35f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -773,7 +789,7 @@ fun InteractiveAzkarCard(
                         Text(
                             text = dua.benefit,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color(0xFF8A5F0C),
+                                color = if (themeColors.isDark) themeColors.translationText else Color(0xFF8A5F0C),
                                 fontSize = 12.sp,
                                 lineHeight = 16.5.sp
                             )
@@ -784,15 +800,12 @@ fun InteractiveAzkarCard(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // ============================================================
-            // PROMINENT COMPLETION ACTION BUTTON (Positioned at Bottom of Card)
-            // ============================================================
+            // PROMINENT COMPLETION ACTION BUTTON
             if (isCompleted) {
-                // Completed State: Prominent Success Button with Tap to Reset
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = Color(0xFFDCFCE7),
-                    border = BorderStroke(1.2.dp, Color(0xFF86EFAC)),
+                    color = if (themeColors.isDark) Color(0xFF064E3B) else Color(0xFFDCFCE7),
+                    border = BorderStroke(1.2.dp, if (themeColors.isDark) Color(0xFF059669) else Color(0xFF86EFAC)),
                     modifier = Modifier
                         .fillMaxWidth()
                         .scale(buttonScale)
@@ -812,7 +825,7 @@ fun InteractiveAzkarCard(
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "Completed",
-                            tint = Color(0xFF15803D),
+                            tint = if (themeColors.isDark) Color(0xFFA7F3D0) else Color(0xFF15803D),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -820,14 +833,13 @@ fun InteractiveAzkarCard(
                             text = "Completed (${dua.repeatCount}x) • Tap to Reset",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF15803D),
+                                color = if (themeColors.isDark) Color(0xFFA7F3D0) else Color(0xFF15803D),
                                 fontSize = 13.5.sp
                             )
                         )
                     }
                 }
             } else {
-                // Incomplete State: Prominent Action Button with remaining repetition count
                 val actionLabel = if (dua.repeatCount > 1) {
                     "Tap to Count  •  $remainingCount Remaining of ${dua.repeatCount}x"
                 } else {
@@ -836,7 +848,7 @@ fun InteractiveAzkarCard(
 
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = DeepVibrantTeal,
+                    color = if (themeColors.isDark) themeColors.accent else DeepVibrantTeal,
                     border = BorderStroke(1.dp, MetallicGold.copy(alpha = 0.4f)),
                     shadowElevation = 2.dp,
                     modifier = Modifier
@@ -886,6 +898,9 @@ fun InteractiveAzkarCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AzkarSettingsBottomSheet(
+    selectedThemeName: String,
+    onThemeSelect: (String) -> Unit,
+    themeColors: ReadingThemeColors,
     showArabic: Boolean,
     textSize: String,
     isAutoScroll: Boolean,
@@ -907,7 +922,7 @@ fun AzkarSettingsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = SurfaceWhite,
+        containerColor = themeColors.surface,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -915,7 +930,7 @@ fun AzkarSettingsBottomSheet(
                     .width(36.dp)
                     .height(4.dp)
                     .clip(CircleShape)
-                    .background(BorderTealGray)
+                    .background(themeColors.border)
             )
         }
     ) {
@@ -940,13 +955,13 @@ fun AzkarSettingsBottomSheet(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(SoftTealTint),
+                            .background(if (themeColors.isDark) themeColors.border else SoftTealTint),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Tune,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -954,7 +969,7 @@ fun AzkarSettingsBottomSheet(
                         text = "Azkar & Du'a Preferences",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 18.sp
                         )
                     )
@@ -964,12 +979,20 @@ fun AzkarSettingsBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = SlateTealMuted
+                        tint = themeColors.translationText
                     )
                 }
             }
 
-            HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+            HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
+
+            ReadingThemeSection(
+                selectedThemeName = selectedThemeName,
+                onThemeSelect = onThemeSelect,
+                activeTheme = themeColors
+            )
+
+            HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
 
             // ============================================================
             // 1. TEXT SIZE SELECTOR
@@ -982,14 +1005,14 @@ fun AzkarSettingsBottomSheet(
                     Icon(
                         imageVector = Icons.Default.FormatSize,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = themeColors.accent,
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
                         text = "Text & Typography Size",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine
+                            color = themeColors.arabicText
                         )
                     )
                 }
@@ -1003,10 +1026,10 @@ fun AzkarSettingsBottomSheet(
                         val isSelected = textSize == sizeOption
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = if (isSelected) DeepVibrantTeal else SoftTealTint,
+                            color = if (isSelected) themeColors.accent else (if (themeColors.isDark) themeColors.border else SoftTealTint),
                             border = BorderStroke(
                                 1.dp,
-                                if (isSelected) DeepVibrantTeal else BorderTealGray
+                                if (isSelected) themeColors.accent else themeColors.border
                             ),
                             modifier = Modifier
                                 .weight(1f)
@@ -1016,7 +1039,7 @@ fun AzkarSettingsBottomSheet(
                                 text = if (sizeOption == "Extra Large") "XL" else sizeOption,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else DarkPine,
+                                    color = if (isSelected) Color.White else themeColors.arabicText,
                                     fontSize = 11.5.sp
                                 ),
                                 textAlign = TextAlign.Center,
@@ -1027,7 +1050,7 @@ fun AzkarSettingsBottomSheet(
                 }
             }
 
-            HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+            HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
 
             // ============================================================
             // 2. CONTENT & LANGUAGE PREFERENCES
@@ -1037,7 +1060,7 @@ fun AzkarSettingsBottomSheet(
                     text = "Content Display",
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = SlateTealMuted,
+                        color = themeColors.translationText,
                         fontSize = 12.sp
                     )
                 )
@@ -1047,6 +1070,7 @@ fun AzkarSettingsBottomSheet(
                     title = "Show Arabic Text in Cards",
                     subtitle = "Display original Arabic script inside Zikr cards",
                     checked = showArabic,
+                    themeColors = themeColors,
                     onCheckedChange = onToggleArabic
                 )
 
@@ -1055,6 +1079,7 @@ fun AzkarSettingsBottomSheet(
                     title = "Phonetic Transliteration",
                     subtitle = "Assist with accurate English pronunciation",
                     checked = showTransliteration,
+                    themeColors = themeColors,
                     onCheckedChange = onToggleTransliteration
                 )
 
@@ -1063,11 +1088,12 @@ fun AzkarSettingsBottomSheet(
                     title = "Spiritual Virtues & Hadith",
                     subtitle = "Display authentic references and rewards",
                     checked = showBenefits,
+                    themeColors = themeColors,
                     onCheckedChange = onToggleBenefits
                 )
             }
 
-            HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+            HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
 
             // ============================================================
             // 3. BEHAVIOR & INTERACTION PREFERENCES
@@ -1077,7 +1103,7 @@ fun AzkarSettingsBottomSheet(
                     text = "Behavior & Feedback",
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = SlateTealMuted,
+                        color = themeColors.translationText,
                         fontSize = 12.sp
                     )
                 )
@@ -1087,6 +1113,7 @@ fun AzkarSettingsBottomSheet(
                     title = "Auto-Scroll on Completion",
                     subtitle = "Smoothly advance to the next card when count is complete",
                     checked = isAutoScroll,
+                    themeColors = themeColors,
                     onCheckedChange = onToggleAutoScroll
                 )
 
@@ -1095,11 +1122,12 @@ fun AzkarSettingsBottomSheet(
                     title = "Vibration & Haptic Feedback",
                     subtitle = "Gentle vibration on each tap and completion",
                     checked = isHaptic,
+                    themeColors = themeColors,
                     onCheckedChange = onToggleHaptic
                 )
             }
 
-            HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+            HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
 
             // ============================================================
             // 4. RESET ACTIONS
@@ -1108,15 +1136,15 @@ fun AzkarSettingsBottomSheet(
                 onClick = onResetCategory,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = DarkPine
+                    contentColor = themeColors.arabicText
                 ),
-                border = BorderStroke(1.dp, BorderTealGray),
+                border = BorderStroke(1.dp, themeColors.border),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = null,
-                    tint = DarkPine,
+                    tint = themeColors.arabicText,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -1137,6 +1165,7 @@ private fun SettingsSwitchRow(
     title: String,
     subtitle: String,
     checked: Boolean,
+    themeColors: ReadingThemeColors,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -1150,14 +1179,14 @@ private fun SettingsSwitchRow(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
-                    color = DarkPine,
+                    color = themeColors.arabicText,
                     fontSize = 14.5.sp
                 )
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = SlateTealMuted,
+                    color = themeColors.translationText,
                     fontSize = 12.sp
                 )
             )
@@ -1168,9 +1197,9 @@ private fun SettingsSwitchRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = DeepVibrantTeal,
-                uncheckedThumbColor = SlateTealMuted,
-                uncheckedTrackColor = SoftTealTint
+                checkedTrackColor = themeColors.accent,
+                uncheckedThumbColor = themeColors.translationText,
+                uncheckedTrackColor = if (themeColors.isDark) themeColors.border else SoftTealTint
             )
         )
     }

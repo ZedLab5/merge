@@ -83,6 +83,8 @@ import com.example.ui.theme.DarkPine
 import com.example.ui.theme.DeepVibrantTeal
 import com.example.ui.theme.GoldBadgeBg
 import com.example.ui.theme.MetallicGold
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
@@ -98,6 +100,8 @@ fun QuranSurahSelectionScreen(
     val currentPlayingSurah by viewModel.currentPlayingSurah.collectAsStateWithLifecycle()
     val khatmaState by viewModel.khatmaDashboardState.collectAsStateWithLifecycle()
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
 
     var selectedTab by remember { mutableStateOf("All") } // "All", "Juz", "Favorites"
     var selectedJuzNumber by remember { mutableIntStateOf(1) } // 1..30
@@ -131,6 +135,8 @@ fun QuranSurahSelectionScreen(
                 subtitle = "114 Surahs • Divine Revelation",
                 onBackClick = { viewModel.navigateBack() },
                 backContentDescription = "Back",
+                isDark = themeColors.isDark,
+                themeColors = themeColors,
                 actions = {
                     NoorGlassIconButton(
                         onClick = { viewModel.navigateTo(NoorDestination.QURAN_KHATMA) },
@@ -146,7 +152,7 @@ fun QuranSurahSelectionScreen(
                 }
             )
         },
-        containerColor = CanvasMint,
+        containerColor = themeColors.background,
         modifier = modifier
     ) { paddingValues ->
         LazyColumn(
@@ -503,6 +509,7 @@ fun QuranSurahSelectionScreen(
                     surah = surah,
                     isAudioPlaying = isPlayingThis,
                     isFavorite = isFav,
+                    themeColors = themeColors,
                     onClick = {
                         viewModel.selectSurahForReading(surah)
                     },
@@ -524,6 +531,7 @@ fun SurahListItemCard(
     surah: Surah,
     isAudioPlaying: Boolean,
     isFavorite: Boolean,
+    themeColors: ReadingThemeColors,
     onClick: () -> Unit,
     onPlayAudio: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -537,8 +545,9 @@ fun SurahListItemCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        color = SurfaceWhite,
-        shadowElevation = 0.8.dp
+        color = themeColors.surface,
+        border = BorderStroke(1.dp, themeColors.border),
+        shadowElevation = if (themeColors.isDark) 0.dp else 0.8.dp
     ) {
         Row(
             modifier = Modifier
@@ -554,7 +563,7 @@ fun SurahListItemCard(
                 Icon(
                     imageVector = if (isAudioPlaying) Icons.Default.GraphicEq else Icons.Default.PlayArrow,
                     contentDescription = "Play Surah Audio",
-                    tint = if (isAudioPlaying) MetallicGold else DeepVibrantTeal,
+                    tint = if (isAudioPlaying) MetallicGold else themeColors.accent,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -570,7 +579,7 @@ fun SurahListItemCard(
                     text = "${surah.number} - $simplifiedEnglishName",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = themeColors.arabicText,
                         fontSize = 16.sp
                     ),
                     maxLines = 1,
@@ -582,7 +591,7 @@ fun SurahListItemCard(
                 Text(
                     text = "${surah.revelationType} • ${surah.totalVerses} verses",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = SlateTealMuted,
+                        color = themeColors.translationText,
                         fontSize = 12.sp
                     ),
                     maxLines = 1,
@@ -598,7 +607,7 @@ fun SurahListItemCard(
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                    tint = if (isFavorite) MetallicGold else SlateTealMuted.copy(alpha = 0.6f),
+                    tint = if (isFavorite) MetallicGold else themeColors.translationText.copy(alpha = 0.6f),
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -614,7 +623,7 @@ fun SurahListItemCard(
                     text = surah.nameArabic,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = themeColors.arabicText,
                         fontSize = 20.sp
                     ),
                     textAlign = TextAlign.End,

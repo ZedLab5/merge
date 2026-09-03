@@ -100,6 +100,9 @@ import com.example.ui.MainViewModel
 import com.example.ui.components.NoorGlassIconButton
 import com.example.ui.components.NoorTopBar
 
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeColors
+
 private val NoorTealDark = Color(0xFF099382)
 private val NoorTealVibrant = Color(0xFF13A795)
 private val NoorDarkPine = Color(0xFF10261F)
@@ -128,6 +131,10 @@ fun UserProfileScreen(
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isArabic = appLanguage == "ar"
 
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     var showEditProfileSheet by remember { mutableStateOf(false) }
     var showChangePasswordSheet by remember { mutableStateOf(false) }
     var showConnectSheet by remember { mutableStateOf(false) }
@@ -145,6 +152,8 @@ fun UserProfileScreen(
                 subtitle = if (isUserLoggedIn) userName else (if (isArabic) "الحساب والمزامنة السحابية" else "Account & Cloud Sync"),
                 onBackClick = onNavigateBack,
                 backContentDescription = stringResource(R.string.action_back),
+                isDark = isDark,
+                themeColors = themeColors,
                 actions = {
                     NoorGlassIconButton(
                         onClick = { viewModel.openSettingsModal() },
@@ -154,7 +163,7 @@ fun UserProfileScreen(
                 }
             )
         },
-        containerColor = Color.White,
+        containerColor = themeColors.background,
         modifier = modifier
     ) { paddingValues ->
         LazyColumn(
@@ -164,7 +173,7 @@ fun UserProfileScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. User Profile Header Card (Guest mode & avatar WITHOUT border, completely white)
+            // 1. User Profile Header Card
             item(key = "user_header_section") {
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     UserProfileHeader(
@@ -173,7 +182,8 @@ fun UserProfileScreen(
                         userName = userName,
                         userEmail = userEmail,
                         onEditClick = { if (isUserLoggedIn) showEditProfileSheet = true else showConnectSheet = true },
-                        onAvatarClick = { if (isUserLoggedIn) showEditProfileSheet = true else showConnectSheet = true }
+                        onAvatarClick = { if (isUserLoggedIn) showEditProfileSheet = true else showConnectSheet = true },
+                        themeColors = themeColors
                     )
                 }
             }
@@ -186,7 +196,8 @@ fun UserProfileScreen(
                         isCloudSync = isCloudSync,
                         onBackupRestoreClick = { showBackupRestoreSheet = true },
                         onCloudSyncToggle = { viewModel.toggleCloudSync() },
-                        onConnectClick = { showConnectSheet = true }
+                        onConnectClick = { showConnectSheet = true },
+                        themeColors = themeColors
                     )
                 }
             }
@@ -198,7 +209,8 @@ fun UserProfileScreen(
                         isUserLoggedIn = isUserLoggedIn,
                         onEditProfileClick = { if (isUserLoggedIn) showEditProfileSheet = true else showConnectSheet = true },
                         onChangePasswordClick = { if (isUserLoggedIn) showChangePasswordSheet = true else showConnectSheet = true },
-                        onAppSettingsClick = { viewModel.openSettingsModal() }
+                        onAppSettingsClick = { viewModel.openSettingsModal() },
+                        themeColors = themeColors
                     )
                 }
             }
@@ -208,7 +220,8 @@ fun UserProfileScreen(
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     SupportLegalSection(
                         onPrivacyPolicyClick = { showPrivacyPolicySheet = true },
-                        onContactSupportClick = { showContactSupportDialog = true }
+                        onContactSupportClick = { showContactSupportDialog = true },
+                        themeColors = themeColors
                     )
                 }
             }
@@ -221,7 +234,8 @@ fun UserProfileScreen(
                         isUserLoggedIn = isUserLoggedIn,
                         onConnectClick = { showConnectSheet = true },
                         onLogOutClick = { showSignOutDialog = true },
-                        onDeleteAccountClick = { showDeleteAccountDialog = true }
+                        onDeleteAccountClick = { showDeleteAccountDialog = true },
+                        themeColors = themeColors
                     )
                 }
             }
@@ -238,7 +252,8 @@ fun UserProfileScreen(
         // Privacy Policy Bottom Sheet
         if (showPrivacyPolicySheet) {
             PrivacyPolicyBottomSheet(
-                onDismiss = { showPrivacyPolicySheet = false }
+                onDismiss = { showPrivacyPolicySheet = false },
+                themeColors = themeColors
             )
         }
 
@@ -246,7 +261,8 @@ fun UserProfileScreen(
         if (showContactSupportDialog) {
             ContactSupportDialog(
                 viewModel = viewModel,
-                onDismiss = { showContactSupportDialog = false }
+                onDismiss = { showContactSupportDialog = false },
+                themeColors = themeColors
             )
         }
 
@@ -258,7 +274,8 @@ fun UserProfileScreen(
                 onConnectSuccess = { name, email, bio ->
                     viewModel.connectUser(name, email, bio)
                     showConnectSheet = false
-                }
+                },
+                themeColors = themeColors
             )
         }
 
@@ -273,7 +290,8 @@ fun UserProfileScreen(
                 onSave = { name, email, bio ->
                     viewModel.updateUserProfile(name, email, bio, "")
                     showEditProfileSheet = false
-                }
+                },
+                themeColors = themeColors
             )
         }
 
@@ -285,7 +303,8 @@ fun UserProfileScreen(
                 onSave = { newPass ->
                     viewModel.updatePassword(newPass)
                     showChangePasswordSheet = false
-                }
+                },
+                themeColors = themeColors
             )
         }
 
@@ -293,8 +312,8 @@ fun UserProfileScreen(
         if (showSignOutDialog) {
             AlertDialog(
                 onDismissRequest = { showSignOutDialog = false },
-                title = { Text(tr("profile_confirm_signout", viewModel), fontWeight = FontWeight.Bold, color = NoorDarkPine) },
-                text = { Text(tr("profile_confirm_signout_sub", viewModel), color = NoorSageSlate) },
+                title = { Text(tr("profile_confirm_signout", viewModel), fontWeight = FontWeight.Bold, color = themeColors.arabicText) },
+                text = { Text(tr("profile_confirm_signout_sub", viewModel), color = themeColors.translationText) },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -309,10 +328,10 @@ fun UserProfileScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showSignOutDialog = false }) {
-                        Text(stringResource(R.string.action_cancel), color = NoorSageSlate)
+                        Text(stringResource(R.string.action_cancel), color = themeColors.translationText)
                     }
                 },
-                containerColor = Color.White,
+                containerColor = themeColors.surface,
                 shape = RoundedCornerShape(20.dp)
             )
         }
@@ -322,7 +341,7 @@ fun UserProfileScreen(
             AlertDialog(
                 onDismissRequest = { showDeleteAccountDialog = false },
                 title = { Text("Delete Account?", fontWeight = FontWeight.Bold, color = Color(0xFFC0392B)) },
-                text = { Text("This will permanently remove your account data and spiritual profile from this device. This action cannot be undone.", color = NoorSageSlate) },
+                text = { Text("This will permanently remove your account data and spiritual profile from this device. This action cannot be undone.", color = themeColors.translationText) },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -337,10 +356,10 @@ fun UserProfileScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDeleteAccountDialog = false }) {
-                        Text(stringResource(R.string.action_cancel), color = NoorSageSlate)
+                        Text(stringResource(R.string.action_cancel), color = themeColors.translationText)
                     }
                 },
-                containerColor = Color.White,
+                containerColor = themeColors.surface,
                 shape = RoundedCornerShape(20.dp)
             )
         }
@@ -358,19 +377,20 @@ private fun UserProfileHeader(
     userEmail: String,
     onEditClick: () -> Unit,
     onAvatarClick: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = Color.White,
+        color = themeColors.surface,
         shape = RoundedCornerShape(20.dp),
-        border = null,
+        border = BorderStroke(1.dp, themeColors.border),
         shadowElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 4.dp),
+                .padding(vertical = 14.dp, horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -379,7 +399,7 @@ private fun UserProfileHeader(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(CircleShape)
-                    .background(NoorSoftGreenBg)
+                    .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg)
                     .clickable { onAvatarClick() }
             ) {
                 Image(
@@ -395,7 +415,7 @@ private fun UserProfileHeader(
                         .align(Alignment.BottomEnd)
                         .size(22.dp)
                         .clip(CircleShape)
-                        .background(NoorTealDark),
+                        .background(themeColors.accent),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -412,7 +432,7 @@ private fun UserProfileHeader(
                     text = if (isUserLoggedIn) userName else "Guest Mode",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = NoorDarkPine,
+                        color = themeColors.arabicText,
                         fontSize = 19.sp
                     )
                 )
@@ -422,7 +442,7 @@ private fun UserProfileHeader(
                 Text(
                     text = if (isUserLoggedIn && userEmail.isNotBlank()) userEmail else "Tap to connect account & sync data",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = NoorSageSlate,
+                        color = themeColors.translationText,
                         fontSize = 12.5.sp
                     ),
                     modifier = Modifier.clickable { onEditClick() }
@@ -433,8 +453,8 @@ private fun UserProfileHeader(
                 // Status Pill
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = if (isUserLoggedIn) NoorSoftGreenBg else Color(0xFFF6FAF8),
-                    border = BorderStroke(0.8.dp, if (isUserLoggedIn) NoorSoftGreenBorder else NoorCardBorder)
+                    color = if (isUserLoggedIn) (if (themeColors.isDark) themeColors.border else NoorSoftGreenBg) else themeColors.background,
+                    border = BorderStroke(0.8.dp, if (isUserLoggedIn) (if (themeColors.isDark) themeColors.accent.copy(alpha = 0.4f) else NoorSoftGreenBorder) else themeColors.border)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -444,14 +464,14 @@ private fun UserProfileHeader(
                         Icon(
                             imageVector = if (isUserLoggedIn) Icons.Default.CloudDone else Icons.Default.CloudOff,
                             contentDescription = null,
-                            tint = if (isUserLoggedIn) NoorTealDark else NoorSageSlate,
+                            tint = if (isUserLoggedIn) themeColors.accent else themeColors.translationText,
                             modifier = Modifier.size(13.dp)
                         )
                         Text(
                             text = if (isUserLoggedIn) "Connected (Cloud Sync Active)" else "Guest Mode (Local Only)",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (isUserLoggedIn) NoorTealDark else NoorSageSlate,
+                                color = if (isUserLoggedIn) themeColors.accent else themeColors.translationText,
                                 fontSize = 11.sp
                             )
                         )
@@ -472,6 +492,7 @@ private fun DataSyncSection(
     onBackupRestoreClick: () -> Unit,
     onCloudSyncToggle: () -> Unit,
     onConnectClick: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -482,7 +503,7 @@ private fun DataSyncSection(
             text = "DATA & SYNCHRONIZATION",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = NoorSageSlate,
+                color = themeColors.translationText,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -492,8 +513,8 @@ private fun DataSyncSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = Color.White,
-            border = BorderStroke(1.dp, NoorCardBorder)
+            color = themeColors.surface,
+            border = BorderStroke(1.dp, themeColors.border)
         ) {
             Column(
                 modifier = Modifier
@@ -506,10 +527,11 @@ private fun DataSyncSection(
                     title = "Backup & Restore",
                     subtitle = "Export to Drive/Email or import Khatma & bookmarks",
                     badge = "New",
-                    onClick = onBackupRestoreClick
+                    onClick = onBackupRestoreClick,
+                    themeColors = themeColors
                 )
 
-                HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Cloud Sync Toggle
                 Row(
@@ -531,13 +553,13 @@ private fun DataSyncSection(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(NoorSoftGreenBg),
+                                .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CloudSync,
                                 contentDescription = null,
-                                tint = NoorTealDark,
+                                tint = themeColors.accent,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -547,14 +569,14 @@ private fun DataSyncSection(
                                 text = "Cloud Synchronization",
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = NoorDarkPine,
+                                    color = themeColors.arabicText,
                                     fontSize = 14.sp
                                 )
                             )
                             Text(
                                 text = if (isUserLoggedIn && isCloudSync) "Active (Automatic cloud backup)" else "Off (Local device only)",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = NoorSageSlate,
+                                    color = themeColors.translationText,
                                     fontSize = 11.5.sp
                                 )
                             )
@@ -568,7 +590,9 @@ private fun DataSyncSection(
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = NoorTealDark
+                            checkedTrackColor = themeColors.accent,
+                            uncheckedThumbColor = themeColors.translationText,
+                            uncheckedTrackColor = themeColors.border
                         )
                     )
                 }
@@ -586,6 +610,7 @@ private fun PreferencesSecuritySection(
     onEditProfileClick: () -> Unit,
     onChangePasswordClick: () -> Unit,
     onAppSettingsClick: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -596,7 +621,7 @@ private fun PreferencesSecuritySection(
             text = "ACCOUNT & SETTINGS",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = NoorSageSlate,
+                color = themeColors.translationText,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -606,8 +631,8 @@ private fun PreferencesSecuritySection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = Color.White,
-            border = BorderStroke(1.dp, NoorCardBorder)
+            color = themeColors.surface,
+            border = BorderStroke(1.dp, themeColors.border)
         ) {
             Column(
                 modifier = Modifier
@@ -619,27 +644,30 @@ private fun PreferencesSecuritySection(
                     icon = Icons.Default.Settings,
                     title = "App Settings",
                     subtitle = "Language, theme, notifications & prayer sound",
-                    onClick = onAppSettingsClick
+                    onClick = onAppSettingsClick,
+                    themeColors = themeColors
                 )
 
-                HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Edit Profile
                 SettingsRowItem(
                     icon = Icons.Default.Person,
                     title = "Edit Profile",
                     subtitle = "Update display name, avatar or bio",
-                    onClick = onEditProfileClick
+                    onClick = onEditProfileClick,
+                    themeColors = themeColors
                 )
 
-                HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Change Password
                 SettingsRowItem(
                     icon = Icons.Default.Lock,
                     title = "Security & Password",
                     subtitle = "Quick password & security update",
-                    onClick = onChangePasswordClick
+                    onClick = onChangePasswordClick,
+                    themeColors = themeColors
                 )
             }
         }
@@ -653,6 +681,7 @@ private fun PreferencesSecuritySection(
 private fun SupportLegalSection(
     onPrivacyPolicyClick: () -> Unit,
     onContactSupportClick: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -663,7 +692,7 @@ private fun SupportLegalSection(
             text = "SUPPORT & LEGAL",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = NoorSageSlate,
+                color = themeColors.translationText,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -673,8 +702,8 @@ private fun SupportLegalSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = Color.White,
-            border = BorderStroke(1.dp, NoorCardBorder)
+            color = themeColors.surface,
+            border = BorderStroke(1.dp, themeColors.border)
         ) {
             Column(
                 modifier = Modifier
@@ -686,17 +715,19 @@ private fun SupportLegalSection(
                     icon = Icons.Default.Security,
                     title = "Privacy Policy & Data Security",
                     subtitle = "100% offline, zero tracking, your data belongs to you",
-                    onClick = onPrivacyPolicyClick
+                    onClick = onPrivacyPolicyClick,
+                    themeColors = themeColors
                 )
 
-                HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Contact Us
                 SettingsRowItem(
                     icon = Icons.Default.Email,
                     title = "Contact Us & Feedback",
                     subtitle = "Reach our support team or request new features",
-                    onClick = onContactSupportClick
+                    onClick = onContactSupportClick,
+                    themeColors = themeColors
                 )
             }
         }
@@ -713,6 +744,7 @@ private fun AccountActionsSection(
     onConnectClick: () -> Unit,
     onLogOutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -723,7 +755,7 @@ private fun AccountActionsSection(
             text = "ACCOUNT ACTIONS",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = NoorSageSlate,
+                color = themeColors.translationText,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -733,8 +765,8 @@ private fun AccountActionsSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = Color.White,
-            border = BorderStroke(1.dp, NoorCardBorder)
+            color = themeColors.surface,
+            border = BorderStroke(1.dp, themeColors.border)
         ) {
             Column(
                 modifier = Modifier
@@ -746,7 +778,8 @@ private fun AccountActionsSection(
                         icon = Icons.Default.CloudSync,
                         title = "Connect Account",
                         subtitle = "Sign in with Google, Apple or Email",
-                        onClick = onConnectClick
+                        onClick = onConnectClick,
+                        themeColors = themeColors
                     )
                 } else {
                     SettingsRowItem(
@@ -754,17 +787,19 @@ private fun AccountActionsSection(
                         title = "Log Out",
                         subtitle = "Sign out of your Noor account",
                         titleColor = Color(0xFFC0392B),
-                        onClick = onLogOutClick
+                        onClick = onLogOutClick,
+                        themeColors = themeColors
                     )
 
-                    HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                     SettingsRowItem(
                         icon = Icons.Default.Warning,
                         title = "Delete Account",
                         subtitle = "Permanently remove account and data",
                         titleColor = Color(0xFFC0392B),
-                        onClick = onDeleteAccountClick
+                        onClick = onDeleteAccountClick,
+                        themeColors = themeColors
                     )
                 }
             }
@@ -779,8 +814,11 @@ private fun SettingsRowItem(
     subtitle: String,
     badge: String? = null,
     titleColor: Color = NoorDarkPine,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
+    val actualTitleColor = if (titleColor == NoorDarkPine) themeColors.arabicText else titleColor
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -798,13 +836,13 @@ private fun SettingsRowItem(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(if (titleColor == NoorDarkPine) NoorSoftGreenBg else Color(0xFFFDEDEC)),
+                    .background(if (titleColor == NoorDarkPine) (if (themeColors.isDark) themeColors.border else NoorSoftGreenBg) else Color(0xFFFDEDEC)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (titleColor == NoorDarkPine) NoorTealDark else titleColor,
+                    tint = if (titleColor == NoorDarkPine) themeColors.accent else titleColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -818,15 +856,15 @@ private fun SettingsRowItem(
                         text = title,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = titleColor,
+                            color = actualTitleColor,
                             fontSize = 14.sp
                         )
                     )
                     if (badge != null) {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = NoorSoftGreenBg,
-                            border = BorderStroke(0.8.dp, NoorSoftGreenBorder)
+                            color = if (themeColors.isDark) themeColors.border else NoorSoftGreenBg,
+                            border = BorderStroke(0.8.dp, if (themeColors.isDark) themeColors.accent.copy(alpha = 0.3f) else NoorSoftGreenBorder)
                         ) {
                             Text(
                                 text = badge,
@@ -834,7 +872,7 @@ private fun SettingsRowItem(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = NoorTealDark
+                                    color = themeColors.accent
                                 )
                             )
                         }
@@ -843,7 +881,7 @@ private fun SettingsRowItem(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = NoorSageSlate,
+                        color = themeColors.translationText,
                         fontSize = 11.5.sp
                     )
                 )
@@ -853,7 +891,7 @@ private fun SettingsRowItem(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
-            tint = NoorSageSlate.copy(alpha = 0.5f),
+            tint = themeColors.translationText,
             modifier = Modifier.size(16.dp)
         )
     }
@@ -862,14 +900,15 @@ private fun SettingsRowItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PrivacyPolicyBottomSheet(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = themeColors.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
@@ -886,13 +925,13 @@ private fun PrivacyPolicyBottomSheet(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(NoorSoftGreenBg),
+                        .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Security,
                         contentDescription = null,
-                        tint = NoorTealDark,
+                        tint = themeColors.accent,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -901,14 +940,14 @@ private fun PrivacyPolicyBottomSheet(
                         text = "Privacy Policy & Security",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            color = NoorDarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 18.sp
                         )
                     )
                     Text(
                         text = "Your spiritual journey is private and protected",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = NoorSageSlate,
+                            color = themeColors.translationText,
                             fontSize = 12.sp
                         )
                     )
@@ -918,7 +957,7 @@ private fun PrivacyPolicyBottomSheet(
             Text(
                 text = "Al-Noor is engineered from the ground up to guarantee total data sovereignty and privacy. We do not sell, track, or share your personal spiritual habits.",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = NoorDarkPine.copy(alpha = 0.85f),
+                    color = themeColors.arabicText.copy(alpha = 0.85f),
                     fontSize = 12.5.sp,
                     lineHeight = 17.sp
                 )
@@ -928,22 +967,25 @@ private fun PrivacyPolicyBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(NoorSoftGreenBg)
-                    .border(1.dp, NoorSoftGreenBorder, RoundedCornerShape(14.dp))
+                    .background(if (themeColors.isDark) themeColors.background else NoorSoftGreenBg)
+                    .border(1.dp, themeColors.border, RoundedCornerShape(14.dp))
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 PrivacyHighlightItem(
                     title = "100% Offline by Default",
-                    description = "Quran text, translations, prayer times, and tasbih counts are stored directly on your local device."
+                    description = "Quran text, translations, prayer times, and tasbih counts are stored directly on your local device.",
+                    themeColors = themeColors
                 )
                 PrivacyHighlightItem(
                     title = "Zero Ad Tracking",
-                    description = "No third-party trackers, advertisements, or data brokers are embedded in the app."
+                    description = "No third-party trackers, advertisements, or data brokers are embedded in the app.",
+                    themeColors = themeColors
                 )
                 PrivacyHighlightItem(
                     title = "Transparent Backups",
-                    description = "You can export and import your entire database at any time using open, readable JSON format."
+                    description = "You can export and import your entire database at any time using open, readable JSON format.",
+                    themeColors = themeColors
                 )
             }
 
@@ -953,7 +995,7 @@ private fun PrivacyPolicyBottomSheet(
                     .fillMaxWidth()
                     .height(46.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NoorTealDark)
+                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent)
             ) {
                 Text("Got It", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
@@ -964,7 +1006,11 @@ private fun PrivacyPolicyBottomSheet(
 }
 
 @Composable
-private fun PrivacyHighlightItem(title: String, description: String) {
+private fun PrivacyHighlightItem(
+    title: String,
+    description: String,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top
@@ -972,7 +1018,7 @@ private fun PrivacyHighlightItem(title: String, description: String) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
-            tint = NoorTealDark,
+            tint = themeColors.accent,
             modifier = Modifier.size(16.dp).padding(top = 2.dp)
         )
         Column {
@@ -980,14 +1026,14 @@ private fun PrivacyHighlightItem(title: String, description: String) {
                 text = title,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = NoorDarkPine,
+                    color = themeColors.arabicText,
                     fontSize = 13.sp
                 )
             )
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = NoorSageSlate,
+                    color = themeColors.translationText,
                     fontSize = 11.5.sp,
                     lineHeight = 15.sp
                 )
@@ -999,14 +1045,15 @@ private fun PrivacyHighlightItem(title: String, description: String) {
 @Composable
 private fun ContactSupportDialog(
     viewModel: MainViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     val context = LocalContext.current
     val emailAddress = "support@alnoorapp.com"
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color.White,
+        containerColor = themeColors.surface,
         shape = RoundedCornerShape(20.dp),
         title = {
             Row(
@@ -1017,13 +1064,13 @@ private fun ContactSupportDialog(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(NoorSoftGreenBg),
+                        .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Email,
                         contentDescription = null,
-                        tint = NoorTealDark,
+                        tint = themeColors.accent,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -1031,7 +1078,7 @@ private fun ContactSupportDialog(
                     text = "Contact Al-Noor Team",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = NoorDarkPine,
+                        color = themeColors.arabicText,
                         fontSize = 16.sp
                     )
                 )
@@ -1042,7 +1089,7 @@ private fun ContactSupportDialog(
                 Text(
                     text = "Have questions, feedback, or need help with your Quran Khatma and app settings? Reach out to our dedicated team anytime.",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = NoorSageSlate,
+                        color = themeColors.translationText,
                         fontSize = 12.5.sp,
                         lineHeight = 17.sp
                     )
@@ -1050,8 +1097,8 @@ private fun ContactSupportDialog(
 
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = NoorSoftGreenBg,
-                    border = BorderStroke(1.dp, NoorSoftGreenBorder),
+                    color = if (themeColors.isDark) themeColors.background else NoorSoftGreenBg,
+                    border = BorderStroke(1.dp, themeColors.border),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
@@ -1069,14 +1116,14 @@ private fun ContactSupportDialog(
                             text = emailAddress,
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = NoorTealDark,
+                                color = themeColors.accent,
                                 fontSize = 13.sp
                             )
                         )
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy Email",
-                            tint = NoorTealDark,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -1097,7 +1144,7 @@ private fun ContactSupportDialog(
                     }
                     onDismiss()
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = NoorTealDark),
+                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Open Email", color = Color.White, fontWeight = FontWeight.Bold)
@@ -1105,7 +1152,7 @@ private fun ContactSupportDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = NoorSageSlate)
+                Text("Close", color = themeColors.translationText)
             }
         }
     )
@@ -1116,7 +1163,8 @@ private fun ContactSupportDialog(
 private fun ConnectAccountBottomSheet(
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
-    onConnectSuccess: (String, String, String) -> Unit
+    onConnectSuccess: (String, String, String) -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var inputName by remember { mutableStateOf("Zaid Ibrahim") }
@@ -1125,7 +1173,7 @@ private fun ConnectAccountBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = themeColors.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
@@ -1137,7 +1185,7 @@ private fun ConnectAccountBottomSheet(
                 text = "Connect Noor Account",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = NoorDarkPine,
+                    color = themeColors.arabicText,
                     fontSize = 20.sp
                 )
             )
@@ -1145,7 +1193,7 @@ private fun ConnectAccountBottomSheet(
             Text(
                 text = "Sign in via Google, Apple or Email for secure cloud sync",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = NoorSageSlate,
+                    color = themeColors.translationText,
                     fontSize = 13.sp
                 )
             )
@@ -1155,13 +1203,15 @@ private fun ConnectAccountBottomSheet(
             OutlinedTextField(
                 value = inputName,
                 onValueChange = { inputName = it },
-                label = { Text("Display Name") },
+                label = { Text("Display Name", color = themeColors.translationText) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = NoorTealDark,
-                    unfocusedBorderColor = NoorCardBorder
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
                 )
             )
 
@@ -1170,13 +1220,15 @@ private fun ConnectAccountBottomSheet(
             OutlinedTextField(
                 value = inputEmail,
                 onValueChange = { inputEmail = it },
-                label = { Text("Email / Phone") },
+                label = { Text("Email / Phone", color = themeColors.translationText) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = NoorTealDark,
-                    unfocusedBorderColor = NoorCardBorder
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
                 )
             )
 
@@ -1188,7 +1240,7 @@ private fun ConnectAccountBottomSheet(
                     .fillMaxWidth()
                     .height(48.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NoorTealDark)
+                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent)
             ) {
                 Text(
                     text = "Connect & Sync",
@@ -1211,7 +1263,8 @@ private fun EditProfileBottomSheet(
     initialEmail: String,
     initialBio: String,
     onDismiss: () -> Unit,
-    onSave: (String, String, String) -> Unit
+    onSave: (String, String, String) -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var name by remember { mutableStateOf(initialName) }
@@ -1221,7 +1274,7 @@ private fun EditProfileBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = themeColors.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
@@ -1233,7 +1286,7 @@ private fun EditProfileBottomSheet(
                 text = "Edit Profile",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = NoorDarkPine,
+                    color = themeColors.arabicText,
                     fontSize = 20.sp
                 )
             )
@@ -1242,10 +1295,16 @@ private fun EditProfileBottomSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Display Name") },
+                label = { Text("Display Name", color = themeColors.translationText) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
+                )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1253,10 +1312,16 @@ private fun EditProfileBottomSheet(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email / Phone") },
+                label = { Text("Email / Phone", color = themeColors.translationText) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
+                )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1264,10 +1329,16 @@ private fun EditProfileBottomSheet(
             OutlinedTextField(
                 value = bio,
                 onValueChange = { bio = it },
-                label = { Text("Bio / Intention") },
+                label = { Text("Bio / Intention", color = themeColors.translationText) },
                 maxLines = 2,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
+                )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -1278,7 +1349,7 @@ private fun EditProfileBottomSheet(
                     .fillMaxWidth()
                     .height(48.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NoorTealDark)
+                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent)
             ) {
                 Text(
                     text = stringResource(R.string.action_save),
@@ -1298,7 +1369,8 @@ private fun EditProfileBottomSheet(
 private fun ChangePasswordBottomSheet(
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
-    onSave: (String) -> Unit
+    onSave: (String) -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var oldPass by remember { mutableStateOf("") }
@@ -1307,7 +1379,7 @@ private fun ChangePasswordBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = themeColors.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
@@ -1319,14 +1391,14 @@ private fun ChangePasswordBottomSheet(
                 text = "Change Password",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = NoorDarkPine,
+                    color = themeColors.arabicText,
                     fontSize = 20.sp
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Secure your account with a strong password",
-                style = MaterialTheme.typography.bodySmall.copy(color = NoorSageSlate)
+                style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -1334,11 +1406,17 @@ private fun ChangePasswordBottomSheet(
             OutlinedTextField(
                 value = oldPass,
                 onValueChange = { oldPass = it },
-                label = { Text("Current Password") },
+                label = { Text("Current Password", color = themeColors.translationText) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
+                )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1346,11 +1424,17 @@ private fun ChangePasswordBottomSheet(
             OutlinedTextField(
                 value = newPass,
                 onValueChange = { newPass = it },
-                label = { Text("New Password") },
+                label = { Text("New Password", color = themeColors.translationText) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedTextColor = themeColors.arabicText,
+                    unfocusedTextColor = themeColors.arabicText
+                )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -1361,7 +1445,7 @@ private fun ChangePasswordBottomSheet(
                     .fillMaxWidth()
                     .height(48.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NoorTealDark)
+                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent)
             ) {
                 Text(
                     text = "Update Password",

@@ -121,6 +121,7 @@ import com.example.ui.NoorDestination
 import com.example.ui.components.NoorGlassIconButton
 import com.example.ui.components.NoorTopBar
 import com.example.ui.theme.BorderTealGray
+import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.CanvasMint
 import com.example.ui.theme.DarkPine
 import com.example.ui.theme.DeepVibrantTeal
@@ -129,6 +130,7 @@ import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
+import com.example.ui.theme.ReadingThemes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -143,16 +145,7 @@ enum class AutoScrollSpeed(
     FAST("Fast", 96f)
 }
 
-data class QuranReadingThemeColors(
-    val background: Color,
-    val surface: Color,
-    val border: Color,
-    val arabicText: Color,
-    val translationText: Color,
-    val transliterationText: Color,
-    val accent: Color,
-    val name: String
-)
+typealias QuranReadingThemeColors = ReadingThemeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -331,47 +324,8 @@ fun QuranReaderScreen(
     }
 
     // Determine current theme colors
-    val themeColors = when (readingThemeName) {
-        "Sepia Parchment" -> QuranReadingThemeColors(
-            background = Color(0xFFF9F4E8),
-            surface = Color(0xFFFFFDF5),
-            border = Color(0xFFE8DCC2),
-            arabicText = Color(0xFF2C221E),
-            translationText = Color(0xFF5C4F48),
-            transliterationText = Color(0xFF8C7355),
-            accent = Color(0xFFB57E1A),
-            name = "Sepia Parchment"
-        )
-        "Obsidian Night" -> QuranReadingThemeColors(
-            background = Color(0xFF0F1418),
-            surface = Color(0xFF182026),
-            border = Color(0xFF26333C),
-            arabicText = Color(0xFFE2E8F0),
-            translationText = Color(0xFF94A3B8),
-            transliterationText = Color(0xFF38BDF8),
-            accent = Color(0xFF10B981),
-            name = "Obsidian Night"
-        )
-        "Emerald Noor" -> QuranReadingThemeColors(
-            background = Color(0xFFEBF7F5),
-            surface = Color(0xFFF4FAF9),
-            border = Color(0xFFBDE3DC),
-            arabicText = Color(0xFF0F2E2B),
-            translationText = Color(0xFF2D5A54),
-            transliterationText = Color(0xFF1A7A6E),
-            accent = DeepVibrantTeal,
-            name = "Emerald Noor"
-        )
-        else -> QuranReadingThemeColors(
-            background = CanvasMint,
-            surface = SurfaceWhite,
-            border = BorderTealGray,
-            arabicText = DarkPine,
-            translationText = Color(0xFF334E4A),
-            transliterationText = DeepVibrantTeal,
-            accent = DeepVibrantTeal,
-            name = "Madani Crisp"
-        )
+    val themeColors = remember(readingThemeName) {
+        ReadingThemes.getThemeByName(readingThemeName)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -388,6 +342,8 @@ fun QuranReaderScreen(
                         subtitle = "${currentSurah.totalVerses} Ayahs • ${currentSurah.englishMeaning}",
                         onBackClick = { viewModel.navigateBack() },
                         backContentDescription = "Back",
+                        isDark = themeColors.isDark,
+                        themeColors = themeColors,
                         actions = {
                             // Quick Toggle: Mushaf Flow Mode
                             NoorGlassIconButton(

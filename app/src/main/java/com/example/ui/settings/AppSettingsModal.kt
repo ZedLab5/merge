@@ -84,6 +84,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.ui.MainViewModel
 
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeColors
+
 // Palette tokens matching the clean Islamic light canvas
 private val NoorTealDark = Color(0xFF099382)
 private val NoorTealVibrant = Color(0xFF13A795)
@@ -105,6 +108,10 @@ fun AppSettingsModal(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
+
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDarkMode = themeColors.isDark
 
     val showArabicSecondary by viewModel.showArabicSecondaryText.collectAsStateWithLifecycle()
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
@@ -128,7 +135,7 @@ fun AppSettingsModal(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = themeColors.surface,
         tonalElevation = 0.dp,
         dragHandle = null,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -146,14 +153,14 @@ fun AppSettingsModal(
                     .padding(top = 4.dp, bottom = 12.dp)
                     .size(width = 42.dp, height = 4.5.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(Color(0xFFD4E0DA))
+                    .background(themeColors.border)
             )
 
             // Header Bar
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = Color.White,
-                border = BorderStroke(0.5.dp, NoorCardBorder)
+                color = themeColors.surface,
+                border = BorderStroke(0.5.dp, themeColors.border)
             ) {
                 Row(
                     modifier = Modifier
@@ -186,14 +193,14 @@ fun AppSettingsModal(
                                 text = stringResource(R.string.settings_title),
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = NoorDarkPine,
+                                    color = themeColors.arabicText,
                                     fontSize = 20.sp
                                 )
                             )
                             Text(
                                 text = stringResource(R.string.settings_subtitle),
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = NoorSageSlate,
+                                    color = themeColors.translationText,
                                     fontSize = 12.sp
                                 )
                             )
@@ -205,12 +212,12 @@ fun AppSettingsModal(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(NoorSurfaceSoft)
+                            .background(if (isDarkMode) themeColors.border else NoorSurfaceSoft)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = NoorDarkPine,
+                            tint = themeColors.arabicText,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -225,14 +232,15 @@ fun AppSettingsModal(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // 1. THEME ACCORDION (Fixed to Clean Light Theme)
+                // 1. THEME ACCORDION (With Dark Mode Toggle & Shared Theme Controls)
                 item(key = "section_theme") {
                     SettingsAccordionCard(
-                        icon = Icons.Default.LightMode,
+                        icon = if (isDarkMode) Icons.Default.Palette else Icons.Default.LightMode,
                         title = stringResource(R.string.settings_section_theme),
-                        subtitle = stringResource(R.string.settings_theme_fixed_sub),
+                        subtitle = if (isDarkMode) "Obsidian Night active" else "Clean Light Canvas active",
                         isExpanded = isThemeExpanded,
-                        onToggleExpand = { isThemeExpanded = !isThemeExpanded }
+                        onToggleExpand = { isThemeExpanded = !isThemeExpanded },
+                        themeColors = themeColors
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -241,36 +249,109 @@ fun AppSettingsModal(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = stringResource(R.string.settings_theme_clean_light),
+                                    text = "Dark Mode",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = NoorDarkPine,
+                                        color = themeColors.arabicText,
                                         fontSize = 14.5.sp
                                     )
                                 )
                                 Spacer(modifier = Modifier.height(3.dp))
                                 Text(
-                                    text = stringResource(R.string.settings_theme_desc),
+                                    text = if (isDarkMode) "Obsidian Night active across all app screens" else "Clean daytime mint canvas active",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = NoorSageSlate,
+                                        color = themeColors.translationText,
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
                                     )
                                 )
                             }
+
+                            Switch(
+                                checked = isDarkMode,
+                                onCheckedChange = { checked ->
+                                    viewModel.setSharedReadingTheme(if (checked) "Obsidian Night" else "Madani Crisp")
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = themeColors.accent,
+                                    uncheckedThumbColor = themeColors.translationText,
+                                    uncheckedTrackColor = themeColors.border
+                                )
+                            )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
+                        HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        // Palette Preview Swatches
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            PaletteSwatch(color = Color(0xFFF4FAF7), name = stringResource(R.string.settings_swatch_mint), modifier = Modifier.weight(1f))
-                            PaletteSwatch(color = Color(0xFF099382), name = stringResource(R.string.settings_swatch_teal), isDark = true, modifier = Modifier.weight(1f))
-                            PaletteSwatch(color = Color(0xFFD4A340), name = stringResource(R.string.settings_swatch_gold), isDark = true, modifier = Modifier.weight(1f))
-                            PaletteSwatch(color = Color(0xFF10261F), name = stringResource(R.string.settings_swatch_pine), isDark = true, modifier = Modifier.weight(1f))
+                        Text(
+                            text = "Reading & App Color Palettes",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = themeColors.translationText,
+                                fontSize = 11.5.sp
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ReadingThemes.allThemes.forEach { theme ->
+                                val isSelected = readingThemeName == theme.name
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.setSharedReadingTheme(theme.name) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (isSelected) (if (isDarkMode) themeColors.border else NoorSoftGreenBg) else (if (isDarkMode) themeColors.background else Color.White),
+                                    border = BorderStroke(1.dp, if (isSelected) themeColors.accent else themeColors.border)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .clip(CircleShape)
+                                                    .background(theme.surface)
+                                                    .border(1.dp, theme.border, CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(10.dp)
+                                                        .clip(CircleShape)
+                                                        .background(theme.accent)
+                                                )
+                                            }
+                                            Text(
+                                                text = theme.name,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                                    color = if (isSelected) themeColors.accent else themeColors.arabicText,
+                                                    fontSize = 13.5.sp
+                                                )
+                                            )
+                                        }
+
+                                        if (isSelected) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = themeColors.accent,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -977,14 +1058,15 @@ private fun SettingsAccordionCard(
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     trailingBadge: String? = null,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, if (isExpanded) NoorTealDark.copy(alpha = 0.45f) else NoorCardBorder)
+        color = themeColors.surface,
+        border = BorderStroke(1.dp, if (isExpanded) themeColors.accent.copy(alpha = 0.5f) else themeColors.border)
     ) {
         Column(
             modifier = Modifier
@@ -1007,14 +1089,14 @@ private fun SettingsAccordionCard(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(RoundedCornerShape(11.dp))
-                            .background(if (isExpanded) NoorSoftGreenBg else NoorSurfaceSoft)
-                            .border(1.dp, if (isExpanded) NoorSoftGreenBorder else NoorCardBorder, RoundedCornerShape(11.dp)),
+                            .background(if (themeColors.isDark) themeColors.border else (if (isExpanded) NoorSoftGreenBg else NoorSurfaceSoft))
+                            .border(1.dp, if (isExpanded) themeColors.accent.copy(alpha = 0.3f) else themeColors.border, RoundedCornerShape(11.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = NoorTealDark,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(19.dp)
                         )
                     }
@@ -1028,15 +1110,15 @@ private fun SettingsAccordionCard(
                                 text = title,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = NoorDarkPine,
+                                    color = themeColors.arabicText,
                                     fontSize = 15.sp
                                 )
                             )
                             if (trailingBadge != null) {
                                 Surface(
                                     shape = RoundedCornerShape(6.dp),
-                                    color = NoorSoftGreenBg,
-                                    border = BorderStroke(0.8.dp, NoorSoftGreenBorder)
+                                    color = if (themeColors.isDark) themeColors.border else NoorSoftGreenBg,
+                                    border = BorderStroke(0.8.dp, if (themeColors.isDark) themeColors.accent.copy(alpha = 0.3f) else NoorSoftGreenBorder)
                                 ) {
                                     Text(
                                         text = trailingBadge,
@@ -1044,7 +1126,7 @@ private fun SettingsAccordionCard(
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = NoorTealDark
+                                            color = themeColors.accent
                                         )
                                     )
                                 }
@@ -1053,7 +1135,7 @@ private fun SettingsAccordionCard(
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = NoorSageSlate,
+                                color = themeColors.translationText,
                                 fontSize = 11.5.sp
                             )
                         )
@@ -1062,15 +1144,15 @@ private fun SettingsAccordionCard(
 
                 Surface(
                     shape = CircleShape,
-                    color = if (isExpanded) NoorSoftGreenBg else NoorSurfaceSoft,
-                    border = BorderStroke(1.dp, if (isExpanded) NoorTealDark.copy(alpha = 0.4f) else NoorCardBorder),
+                    color = if (themeColors.isDark) themeColors.border else (if (isExpanded) NoorSoftGreenBg else NoorSurfaceSoft),
+                    border = BorderStroke(1.dp, if (isExpanded) themeColors.accent.copy(alpha = 0.4f) else themeColors.border),
                     modifier = Modifier.size(32.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                             contentDescription = if (isExpanded) "Collapse" else "Expand",
-                            tint = if (isExpanded) NoorTealDark else NoorSageSlate,
+                            tint = if (isExpanded) themeColors.accent else themeColors.translationText,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1087,7 +1169,7 @@ private fun SettingsAccordionCard(
                         .fillMaxWidth()
                         .padding(top = 14.dp)
                 ) {
-                    HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.8f))
+                    HorizontalDivider(color = themeColors.border.copy(alpha = 0.8f))
                     Spacer(modifier = Modifier.height(12.dp))
                     content()
                 }
@@ -1101,7 +1183,8 @@ private fun NotificationToggleRow(
     title: String,
     description: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -1114,13 +1197,13 @@ private fun NotificationToggleRow(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.5.sp,
-                    color = NoorDarkPine
+                    color = themeColors.arabicText
                 )
             )
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = NoorSageSlate,
+                    color = themeColors.translationText,
                     fontSize = 11.5.sp,
                     lineHeight = 15.sp
                 )
@@ -1134,9 +1217,9 @@ private fun NotificationToggleRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = NoorTealDark,
-                uncheckedThumbColor = NoorSageSlate,
-                uncheckedTrackColor = NoorSurfaceSoft
+                checkedTrackColor = themeColors.accent,
+                uncheckedThumbColor = themeColors.translationText,
+                uncheckedTrackColor = themeColors.border
             )
         )
     }

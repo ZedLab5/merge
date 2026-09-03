@@ -59,6 +59,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -118,6 +119,9 @@ import com.example.ui.theme.PrimaryTealGradient
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeSection
+import com.example.ui.theme.ReadingThemeColors
 import kotlinx.coroutines.launch
 
 val standardDhikrPresets = listOf(
@@ -202,6 +206,9 @@ fun TasbihScreen(
     val lapsCompleted by viewModel.tasbihLapsCompleted.collectAsStateWithLifecycle()
     val currentTheme by viewModel.tasbihVisualTheme.collectAsStateWithLifecycle()
 
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+
     var isTasbihBeadsVisible by remember { mutableStateOf(true) }
     var showCustomDhikrDialog by remember { mutableStateOf(false) }
     var showCustomTargetDialog by remember { mutableStateOf(false) }
@@ -225,6 +232,8 @@ fun TasbihScreen(
                 subtitle = stringResource(R.string.tasbih_screen_subtitle),
                 onBackClick = { viewModel.navigateBack() },
                 backContentDescription = stringResource(R.string.action_back),
+                isDark = themeColors.isDark,
+                themeColors = themeColors,
                 actions = {
                     NoorGlassIconButton(
                         onClick = { showThemesBottomSheet = true },
@@ -239,7 +248,7 @@ fun TasbihScreen(
                 }
             )
         },
-        containerColor = CanvasMint,
+        containerColor = themeColors.background,
         modifier = modifier
     ) { paddingValues ->
         // Static layout with zero vertical scrolling
@@ -475,6 +484,16 @@ fun TasbihScreen(
                         Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel), tint = DarkPine)
                     }
                 }
+
+                HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+
+                ReadingThemeSection(
+                    selectedThemeName = readingThemeName,
+                    onThemeSelect = { viewModel.setSharedReadingTheme(it) },
+                    activeTheme = themeColors
+                )
+
+                HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
 
                 val themesList = listOf(
                     Triple(

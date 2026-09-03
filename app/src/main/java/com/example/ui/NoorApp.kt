@@ -1,5 +1,6 @@
 package com.example.ui
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -49,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,8 +59,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -93,6 +98,8 @@ import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.PrimaryTealGradient
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.SurfaceWhite
 
 import androidx.compose.ui.res.stringResource
@@ -120,7 +127,46 @@ fun NoorApp(
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
             appLanguage == "العربية" ||
             appLanguage.startsWith("ar", ignoreCase = true)
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val readingTheme = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
     val isSettingsOpen by viewModel.isSettingsModalOpen.collectAsStateWithLifecycle()
+    val isReadingScreenDark = readingTheme.isDark && (
+        currentDest != NoorDestination.HOME &&
+        currentDest != NoorDestination.SALAT &&
+        currentDest != NoorDestination.QIBLA
+    )
+
+    val isDarkBarActive = isReadingScreenDark || (isSettingsOpen && readingTheme.isDark)
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        val statusBarColor = when {
+            isDarkBarActive -> readingTheme.surface
+            currentDest == NoorDestination.HOME -> Color.White
+            else -> Color(0xFF133E32) // Matches top header gradient of NoorTopBar
+        }
+        val isLightStatusBar = currentDest == NoorDestination.HOME && !isDarkBarActive
+        val navBarColor = if (isDarkBarActive) readingTheme.background else Color.White
+        val isLightNavBar = !isDarkBarActive
+
+        SideEffect {
+            val window = (view.context as? Activity)?.window
+            if (window != null) {
+                window.statusBarColor = statusBarColor.toArgb()
+                window.navigationBarColor = navBarColor.toArgb()
+                val controller = WindowCompat.getInsetsController(window, view)
+                controller.isAppearanceLightStatusBars = isLightStatusBar
+                controller.isAppearanceLightNavigationBars = isLightNavBar
+            }
+        }
+    }
+
+    val bottomNavSurface = if (isReadingScreenDark) readingTheme.surface else SurfaceWhite
+    val bottomNavBorder = if (isReadingScreenDark) readingTheme.border else BorderTealGray
+    val bottomNavSelectedTint = if (isReadingScreenDark) readingTheme.accent else DeepVibrantTeal
+    val bottomNavUnselectedTint = if (isReadingScreenDark) readingTheme.translationText.copy(alpha = 0.7f) else SlateTealMuted.copy(alpha = 0.6f)
+    val bottomNavSelectedText = if (isReadingScreenDark) readingTheme.arabicText else DarkPine
+    val bottomNavUnselectedText = if (isReadingScreenDark) readingTheme.translationText.copy(alpha = 0.8f) else SlateTealMuted.copy(alpha = 0.7f)
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(toastMsg) {
@@ -149,7 +195,7 @@ fun NoorApp(
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            containerColor = Color.White,
+            containerColor = if (isReadingScreenDark) readingTheme.background else Color.White,
         bottomBar = {
             val isQuranFullscreen by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
             val isBottomBarVisible = currentDest != NoorDestination.QURAN_AUDIO_STREAM &&
@@ -166,10 +212,10 @@ fun NoorApp(
                         .fillMaxWidth()
                         .navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 6.dp)
-                        .shadow(12.dp, RoundedCornerShape(28.dp), ambientColor = DeepVibrantTeal.copy(alpha = 0.10f), spotColor = DeepVibrantTeal.copy(alpha = 0.16f))
-                        .border(1.dp, BorderTealGray, RoundedCornerShape(28.dp)),
+                        .shadow(12.dp, RoundedCornerShape(28.dp), ambientColor = if (isReadingScreenDark) Color.Black.copy(alpha = 0.4f) else DeepVibrantTeal.copy(alpha = 0.10f), spotColor = if (isReadingScreenDark) Color.Black.copy(alpha = 0.5f) else DeepVibrantTeal.copy(alpha = 0.16f))
+                        .border(1.dp, bottomNavBorder, RoundedCornerShape(28.dp)),
                     shape = RoundedCornerShape(28.dp),
-                    color = SurfaceWhite
+                    color = bottomNavSurface
                 ) {
                     Row(
                         modifier = Modifier
@@ -179,9 +225,10 @@ fun NoorApp(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         bottomNavItems.forEach { item ->
+                            val isReadingListSelected = currentDest == NoorDestination.QURAN_SURAH_LIST || currentDest == NoorDestination.QURAN_READER || currentDest == NoorDestination.QURAN_KHATMA
                             val isSelected = when (item.destination) {
                                 null -> isSettingsOpen
-                                NoorDestination.QURAN_SURAH_LIST -> currentDest == NoorDestination.QURAN_SURAH_LIST || currentDest == NoorDestination.QURAN_READER || currentDest == NoorDestination.QURAN_KHATMA
+                                NoorDestination.QURAN_SURAH_LIST -> isReadingListSelected
                                 else -> currentDest == item.destination && !isSettingsOpen
                             }
                             val itemLabel = stringResource(item.labelRes)
@@ -203,7 +250,7 @@ fun NoorApp(
                                 Icon(
                                     imageVector = item.icon,
                                     contentDescription = itemLabel,
-                                    tint = if (isSelected) DeepVibrantTeal else SlateTealMuted.copy(alpha = 0.6f),
+                                    tint = if (isSelected) bottomNavSelectedTint else bottomNavUnselectedTint,
                                     modifier = Modifier.size(22.dp)
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
@@ -211,7 +258,7 @@ fun NoorApp(
                                     text = itemLabel,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) DarkPine else SlateTealMuted.copy(alpha = 0.7f),
+                                        color = if (isSelected) bottomNavSelectedText else bottomNavUnselectedText,
                                         fontSize = 10.5.sp
                                     )
                                 )
