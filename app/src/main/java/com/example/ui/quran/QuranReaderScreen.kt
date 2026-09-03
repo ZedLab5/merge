@@ -4,29 +4,44 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +58,8 @@ import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.NavigateBefore
 import androidx.compose.material.icons.filled.NavigateNext
@@ -76,13 +93,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -107,7 +129,19 @@ import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+
+enum class AutoScrollSpeed(
+    val label: String,
+    val dpPerSecond: Float
+) {
+    SLOW("Slow", 26f),
+    MEDIUM("Medium", 52f),
+    FAST("Fast", 96f)
+}
 
 data class QuranReadingThemeColors(
     val background: Color,
@@ -142,26 +176,129 @@ fun QuranReaderScreen(
     val targetAyahToScrollTo by viewModel.targetAyahToScrollTo.collectAsStateWithLifecycle()
     val khatmaState by viewModel.khatmaDashboardState.collectAsStateWithLifecycle()
     val isMushafFlowMode by viewModel.isMushafFlowMode.collectAsStateWithLifecycle()
+    val isFullscreenMode by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
+    val density = LocalDensity.current
     var showSettingsSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val listState = rememberLazyListState()
+    val mushafFlowScrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
 
-    // Automatically stop Ayah recitation audio whenever user leaves the Quran page
+    // Auto-Scroll States (Works in both normal cards and Mushaf Flow mode)
+    var isAutoScrolling by remember { mutableStateOf(false) }
+    var isAutoScrollPaused by remember { mutableStateOf(false) }
+    var autoScrollSpeed by remember { mutableStateOf(AutoScrollSpeed.MEDIUM) }
+
+    // Tap-to-toggle fullscreen handler
+    val onContentTap = {
+        viewModel.toggleQuranReaderFullscreen()
+    }
+
+    // Automatically clean up on leaving the Quran reader screen
     DisposableEffect(Unit) {
         onDispose {
+            isAutoScrolling = false
+            isAutoScrollPaused = false
+            viewModel.setQuranReaderFullscreen(false)
             if (viewModel.isAyahAudioMode.value) {
                 viewModel.stopAudio()
             }
         }
     }
 
-    // Record daily Quran reading streak activity
+    // Reset auto-scroll on surah change and record daily reading activity
     LaunchedEffect(currentSurah.number) {
         viewModel.recordQuranActivity()
+        isAutoScrolling = false
+        isAutoScrollPaused = false
     }
+
+    // Pause auto-scroll cleanly when switching reading modes (simplest and safest per requirement)
+    LaunchedEffect(isMushafFlowMode) {
+        if (isAutoScrolling) {
+            isAutoScrollPaused = true
+        }
+    }
+
+    // User drag detection: pause auto-scroll immediately whenever user touches/drags content
+    val isListDragged by listState.interactionSource.collectIsDraggedAsState()
+    val isMushafDragged by mushafFlowScrollState.interactionSource.collectIsDraggedAsState()
+    val isUserDragging = if (isMushafFlowMode) isMushafDragged else isListDragged
+
+    LaunchedEffect(isUserDragging) {
+        if (isUserDragging && isAutoScrolling && !isAutoScrollPaused) {
+            isAutoScrollPaused = true
+        }
+    }
+
+    // Continuous downward auto-scroll engine (branches across LazyListState & ScrollState)
+    val pxPerSec = with(density) { autoScrollSpeed.dpPerSecond.dp.toPx() }
+    LaunchedEffect(isAutoScrolling, isAutoScrollPaused, autoScrollSpeed, isMushafFlowMode) {
+        if (!isAutoScrolling || isAutoScrollPaused) return@LaunchedEffect
+
+        val activeScrollable: ScrollableState = if (isMushafFlowMode) mushafFlowScrollState else listState
+
+        try {
+            activeScrollable.scroll(MutatePriority.Default) {
+                var lastTimeNanos = 0L
+                while (isActive && isAutoScrolling && !isAutoScrollPaused) {
+                    withFrameNanos { frameTimeNanos ->
+                        if (lastTimeNanos > 0L) {
+                            val dt = (frameTimeNanos - lastTimeNanos) / 1_000_000_000f
+                            val delta = pxPerSec * dt
+                            val consumed = scrollBy(delta)
+                            if (delta > 0.05f && consumed <= 0.01f && !activeScrollable.canScrollForward) {
+                                isAutoScrolling = false
+                                isAutoScrollPaused = false
+                            }
+                        }
+                        lastTimeNanos = frameTimeNanos
+                    }
+                }
+            }
+        } catch (e: CancellationException) {
+            // User gesture (MutatePriority.UserInput) naturally preempts scroll
+            if (isAutoScrolling) {
+                isAutoScrollPaused = true
+            }
+        }
+    }
+
+    // Exit Button Visibility & Countdown Logic:
+    // Uses active mode's scroll state as source of truth (stays visible during scrolling, 2.5s fade after stop)
+    val isScrolling = if (isMushafFlowMode) {
+        mushafFlowScrollState.isScrollInProgress
+    } else {
+        listState.isScrollInProgress
+    }
+
+    var isExitButtonFadedOut by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isScrolling, isFullscreenMode) {
+        if (!isFullscreenMode) {
+            isExitButtonFadedOut = false
+            return@LaunchedEffect
+        }
+        if (isScrolling) {
+            isExitButtonFadedOut = false
+        } else {
+            delay(2500)
+            isExitButtonFadedOut = true
+        }
+    }
+
+    val exitButtonAlpha by animateFloatAsState(
+        targetValue = when {
+            !isFullscreenMode -> 0f
+            isScrolling -> 0.95f
+            isExitButtonFadedOut -> 0f
+            else -> 0.48f
+        },
+        animationSpec = tween(durationMillis = 220),
+        label = "exitButtonAlpha"
+    )
 
     // Auto-scroll to target bookmarked Ayah (only if targetAyahToScrollTo > 1, otherwise always open from the top at item 0)
     LaunchedEffect(targetAyahToScrollTo, currentSurah.number) {
@@ -240,46 +377,52 @@ fun QuranReaderScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                NoorTopBar(
-                    title = "${currentSurah.number}. ${currentSurah.nameEnglish}",
-                    eyebrow = "${currentSurah.revelationType.uppercase()} • ${currentSurah.nameArabic}",
-                    subtitle = "${currentSurah.totalVerses} Ayahs • ${currentSurah.englishMeaning}",
-                    onBackClick = { viewModel.navigateBack() },
-                    backContentDescription = "Back",
-                    actions = {
-                        // Quick Toggle: Mushaf Flow Mode
-                        NoorGlassIconButton(
-                            onClick = { viewModel.toggleMushafFlowMode() },
-                            icon = Icons.Default.ViewAgenda,
-                            contentDescription = "Distraction-Free Mushaf Flow",
-                            isActive = isMushafFlowMode
-                        )
+                AnimatedVisibility(
+                    visible = !isFullscreenMode,
+                    enter = fadeIn(tween(220)) + slideInVertically(tween(220)) { -it },
+                    exit = fadeOut(tween(220)) + slideOutVertically(tween(220)) { -it }
+                ) {
+                    NoorTopBar(
+                        title = "${currentSurah.number}. ${currentSurah.nameEnglish}",
+                        eyebrow = "${currentSurah.revelationType.uppercase()} • ${currentSurah.nameArabic}",
+                        subtitle = "${currentSurah.totalVerses} Ayahs • ${currentSurah.englishMeaning}",
+                        onBackClick = { viewModel.navigateBack() },
+                        backContentDescription = "Back",
+                        actions = {
+                            // Quick Toggle: Mushaf Flow Mode
+                            NoorGlassIconButton(
+                                onClick = { viewModel.toggleMushafFlowMode() },
+                                icon = Icons.Default.ViewAgenda,
+                                contentDescription = "Distraction-Free Mushaf Flow",
+                                isActive = isMushafFlowMode
+                            )
 
-                        // Minimal Audio Play/Pause Button for Reading & Listening
-                        NoorGlassIconButton(
-                            onClick = {
-                                if (isMp3PlayerRunning) {
-                                    viewModel.showToast("MP3 player is active. Pause it using the floating bar to start recitation here.")
-                                } else if (isCurrentSurahPlaying && isAyahAudioMode) {
-                                    viewModel.toggleAudioPlayback(currentSurah)
-                                } else {
-                                    val startVerse = if (currentPlayingVerse > 0) currentPlayingVerse else 1
-                                    viewModel.playAyah(currentSurah, startVerse, openPlayer = false)
-                                }
-                            },
-                            icon = if (isCurrentSurahPlaying && isAyahAudioMode) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = if (isCurrentSurahPlaying && isAyahAudioMode) "Pause Recitation" else "Play Recitation",
-                            isActive = isCurrentSurahPlaying && isAyahAudioMode
-                        )
+                            // Minimal Audio Play/Pause Button for Reading & Listening
+                            NoorGlassIconButton(
+                                onClick = {
+                                    if (isMp3PlayerRunning) {
+                                        viewModel.showToast("MP3 player is active. Pause it using the floating bar to start recitation here.")
+                                    } else if (isCurrentSurahPlaying && isAyahAudioMode) {
+                                        viewModel.toggleAudioPlayback(currentSurah)
+                                    } else {
+                                        val startVerse = if (currentPlayingVerse > 0) currentPlayingVerse else 1
+                                        viewModel.playAyah(currentSurah, startVerse, openPlayer = false)
+                                    }
+                                },
+                                icon = if (isCurrentSurahPlaying && isAyahAudioMode) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (isCurrentSurahPlaying && isAyahAudioMode) "Pause Recitation" else "Play Recitation",
+                                isActive = isCurrentSurahPlaying && isAyahAudioMode
+                            )
 
-                        // Reading Display Settings
-                        NoorGlassIconButton(
-                            onClick = { showSettingsSheet = true },
-                            icon = Icons.Default.Settings,
-                            contentDescription = "Reading Settings"
-                        )
-                    }
-                )
+                            // Reading Display Settings
+                            NoorGlassIconButton(
+                                onClick = { showSettingsSheet = true },
+                                icon = Icons.Default.Settings,
+                                contentDescription = "Reading Settings"
+                            )
+                        }
+                    )
+                }
             },
             containerColor = themeColors.background,
             modifier = modifier
@@ -294,15 +437,28 @@ fun QuranReaderScreen(
                     currentPlayingVerse = currentPlayingVerse,
                     isAudioDisabled = isMp3PlayerRunning,
                     viewModel = viewModel,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
+                    scrollState = mushafFlowScrollState,
+                    isFullscreenMode = isFullscreenMode,
+                    onContentTap = onContentTap
                 )
             } else {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = { onContentTap() }
+                            )
+                        }
                         .padding(paddingValues),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 90.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = if (isFullscreenMode) WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 12.dp else 16.dp,
+                        bottom = if (isFullscreenMode) 32.dp else 90.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Surah Header Banner with Previous / Next Navigation
@@ -689,9 +845,254 @@ fun QuranReaderScreen(
                                     )
                                 )
                             }
+
+                            HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
+
+                            // Fullscreen Reading Mode Toggle
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Fullscreen Reading Mode",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = themeColors.arabicText
+                                        )
+                                    )
+                                    Text(
+                                        text = "Hides top and bottom bars for an uninterrupted reading canvas",
+                                        style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
+                                    )
+                                }
+                                Switch(
+                                    checked = isFullscreenMode,
+                                    onCheckedChange = { checked ->
+                                        viewModel.setQuranReaderFullscreen(checked)
+                                        if (checked) {
+                                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                                showSettingsSheet = false
+                                            }
+                                        }
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = themeColors.accent
+                                    )
+                                )
+                            }
+
+                            HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
+
+                            // Auto-Scroll Section with Preset Speed Controls
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Auto-Scroll",
+                                            style = MaterialTheme.typography.titleSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = themeColors.arabicText
+                                            )
+                                        )
+                                        Text(
+                                            text = "Hands-free continuous downward reading at a steady pace",
+                                            style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
+                                        )
+                                    }
+                                    Switch(
+                                        checked = isAutoScrolling,
+                                        onCheckedChange = { enabled ->
+                                            isAutoScrolling = enabled
+                                            isAutoScrollPaused = false
+                                            if (enabled) {
+                                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                                    showSettingsSheet = false
+                                                }
+                                            }
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.White,
+                                            checkedTrackColor = themeColors.accent
+                                        )
+                                    )
+                                }
+
+                                // Auto-Scroll Speed Preset Selector
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Scroll Speed",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = FontWeight.Medium,
+                                                color = themeColors.arabicText
+                                            )
+                                        )
+                                        Text(
+                                            text = autoScrollSpeed.label,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = themeColors.accent
+                                            )
+                                        )
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(themeColors.background)
+                                            .border(1.dp, themeColors.border, RoundedCornerShape(12.dp))
+                                            .padding(4.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        AutoScrollSpeed.values().forEach { speed ->
+                                            val isSelected = autoScrollSpeed == speed
+                                            Surface(
+                                                shape = RoundedCornerShape(8.dp),
+                                                color = if (isSelected) themeColors.accent else Color.Transparent,
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clickable { autoScrollSpeed = speed }
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier.padding(vertical = 8.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = speed.label,
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                            color = if (isSelected) Color.White else themeColors.arabicText,
+                                                            fontSize = 13.sp
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
+        }
+
+        // Persistent Minimal Exit Button (when in Fullscreen Mode)
+        if (isFullscreenMode && exitButtonAlpha > 0.01f) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(top = 12.dp, end = 16.dp),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clickable(
+                            enabled = exitButtonAlpha > 0.1f,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { viewModel.setQuranReaderFullscreen(false) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = if (themeColors.name == "Obsidian Night") Color(0xFF1E2830).copy(alpha = 0.90f) else Color.White.copy(alpha = 0.90f),
+                        border = BorderStroke(1.dp, themeColors.accent.copy(alpha = 0.35f)),
+                        shadowElevation = 4.dp,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .alpha(exitButtonAlpha)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FullscreenExit,
+                                contentDescription = "Exit Fullscreen Mode",
+                                tint = themeColors.accent,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // "Resume Auto-Scroll" Floating Affordance
+        AnimatedVisibility(
+            visible = isAutoScrolling && isAutoScrollPaused,
+            enter = fadeIn(tween(220)) + slideInVertically(tween(220)) { it / 2 },
+            exit = fadeOut(tween(220)) + slideOutVertically(tween(220)) { it / 2 },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = if (isFullscreenMode) 24.dp else 94.dp)
+        ) {
+            Surface(
+                onClick = { isAutoScrollPaused = false },
+                shape = RoundedCornerShape(24.dp),
+                color = DeepVibrantTeal,
+                shadowElevation = 8.dp,
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 14.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Resume Auto-Scroll",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 13.sp
+                        )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.22f))
+                            .clickable {
+                                isAutoScrolling = false
+                                isAutoScrollPaused = false
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Stop Auto-Scroll",
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
+                        )
                     }
                 }
             }

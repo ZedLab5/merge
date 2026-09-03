@@ -791,6 +791,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val showTransliteration = MutableStateFlow(true)
     val showTranslation = MutableStateFlow(true)
     val isMushafFlowMode = MutableStateFlow(false) // Distraction-Free Pure Reading Flow
+    val isQuranReaderFullscreen = MutableStateFlow(false) // Immersive Fullscreen Mode (resets per session)
     val isTajweedHighlightsEnabled = MutableStateFlow(false) // Interactive Tajweed Color Highlights
     val quranReadingTheme = MutableStateFlow("Madani Crisp") // "Madani Crisp", "Sepia Parchment", "Obsidian Night", "Emerald Noor"
     val quranSearchQuery = MutableStateFlow("")
@@ -1866,6 +1867,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         sharedPrefs.edit().putBoolean("is_mushaf_flow_mode", newState).apply()
         triggerHaptic()
         showToast(if (newState) "Distraction-Free Mushaf Flow enabled 📖" else "Standard Reading View with Translations")
+    }
+
+    fun setQuranReaderFullscreen(enabled: Boolean) {
+        if (isQuranReaderFullscreen.value != enabled) {
+            isQuranReaderFullscreen.value = enabled
+            triggerHaptic()
+        }
+    }
+
+    fun toggleQuranReaderFullscreen() {
+        val newState = !isQuranReaderFullscreen.value
+        isQuranReaderFullscreen.value = newState
+        triggerHaptic()
     }
 
     fun toggleTajweedHighlights(enabled: Boolean? = null) {

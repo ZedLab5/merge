@@ -3,6 +3,7 @@ package com.example.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -150,7 +151,15 @@ fun NoorApp(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = Color.White,
         bottomBar = {
-            if (currentDest != NoorDestination.QURAN_AUDIO_STREAM) {
+            val isQuranFullscreen by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
+            val isBottomBarVisible = currentDest != NoorDestination.QURAN_AUDIO_STREAM &&
+                    !(currentDest == NoorDestination.QURAN_READER && isQuranFullscreen)
+
+            AnimatedVisibility(
+                visible = isBottomBarVisible,
+                enter = fadeIn(tween(220)) + slideInVertically(tween(220)) { it },
+                exit = fadeOut(tween(220)) + slideOutVertically(tween(220)) { it }
+            ) {
                 // Geometric Balance Tactile Navigation Bar with Settings Quick Access
                 Surface(
                     modifier = Modifier
@@ -162,56 +171,56 @@ fun NoorApp(
                     shape = RoundedCornerShape(28.dp),
                     color = SurfaceWhite
                 ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    bottomNavItems.forEach { item ->
-                        val isSelected = when (item.destination) {
-                            null -> isSettingsOpen
-                            NoorDestination.QURAN_SURAH_LIST -> currentDest == NoorDestination.QURAN_SURAH_LIST || currentDest == NoorDestination.QURAN_READER || currentDest == NoorDestination.QURAN_KHATMA
-                            else -> currentDest == item.destination && !isSettingsOpen
-                        }
-                        val itemLabel = stringResource(item.labelRes)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        bottomNavItems.forEach { item ->
+                            val isSelected = when (item.destination) {
+                                null -> isSettingsOpen
+                                NoorDestination.QURAN_SURAH_LIST -> currentDest == NoorDestination.QURAN_SURAH_LIST || currentDest == NoorDestination.QURAN_READER || currentDest == NoorDestination.QURAN_KHATMA
+                                else -> currentDest == item.destination && !isSettingsOpen
+                            }
+                            val itemLabel = stringResource(item.labelRes)
 
-                        Column(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable {
-                                    if (item.onClickOverride != null) {
-                                        item.onClickOverride.invoke()
-                                    } else if (item.destination != null) {
-                                        viewModel.navigateTo(item.destination)
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .clickable {
+                                        if (item.onClickOverride != null) {
+                                            item.onClickOverride.invoke()
+                                        } else if (item.destination != null) {
+                                            viewModel.navigateTo(item.destination)
+                                        }
                                     }
-                                }
-                                .padding(horizontal = 10.dp, vertical = 4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = itemLabel,
-                                tint = if (isSelected) DeepVibrantTeal else SlateTealMuted.copy(alpha = 0.6f),
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = itemLabel,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) DarkPine else SlateTealMuted.copy(alpha = 0.7f),
-                                    fontSize = 10.5.sp
+                                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = itemLabel,
+                                    tint = if (isSelected) DeepVibrantTeal else SlateTealMuted.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(22.dp)
                                 )
-                            )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = itemLabel,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) DarkPine else SlateTealMuted.copy(alpha = 0.7f),
+                                        fontSize = 10.5.sp
+                                    )
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }
     ) { paddingValues ->
         Box(
             modifier = Modifier

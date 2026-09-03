@@ -1,12 +1,17 @@
 package com.example.ui.quran
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -18,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
@@ -72,10 +78,12 @@ fun MushafFlowView(
     currentPlayingVerse: Int = 0,
     isAudioDisabled: Boolean = false,
     viewModel: MainViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
+    isFullscreenMode: Boolean = false,
+    onContentTap: () -> Unit = {}
 ) {
     val verses = surah.verses
-    val scrollState = rememberScrollState()
     val density = LocalDensity.current
 
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -158,12 +166,24 @@ fun MushafFlowView(
         }
     }
 
+    val topPadding = if (isFullscreenMode) {
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 12.dp
+    } else {
+        8.dp
+    }
+    val bottomPadding = if (isFullscreenMode) 32.dp else 90.dp
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(themeColors.background)
             .verticalScroll(scrollState)
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 90.dp),
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onContentTap() }
+                )
+            }
+            .padding(start = 16.dp, end = 16.dp, top = topPadding, bottom = bottomPadding),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // 1. Surah Header Banner (keeps standard banner with prev/next navigation)
