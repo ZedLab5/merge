@@ -94,6 +94,9 @@ import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceElevated
 import com.example.ui.theme.SurfaceWhite
 
+import com.example.ui.theme.ReadingThemeColors
+import com.example.ui.theme.ReadingThemes
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalatScreen(
@@ -102,12 +105,17 @@ fun SalatScreen(
 ) {
     var isSettingsModalOpen by remember { mutableStateOf(false) }
 
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+
     Scaffold(
         topBar = {
             NoorTopBar(
                 title = stringResource(R.string.salat_screen_title),
                 eyebrow = "NOOR",
                 subtitle = stringResource(R.string.salat_screen_subtitle),
+                isDark = themeColors.isDark,
+                themeColors = themeColors,
                 onBackClick = { viewModel.navigateBack() },
                 backContentDescription = stringResource(R.string.action_back),
                 actions = {
@@ -119,11 +127,12 @@ fun SalatScreen(
                 }
             )
         },
-        containerColor = CanvasMint,
+        containerColor = themeColors.background,
         modifier = modifier
     ) { paddingValues ->
         SalatTimesContent(
             viewModel = viewModel,
+            themeColors = themeColors,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -133,7 +142,8 @@ fun SalatScreen(
         if (isSettingsModalOpen) {
             SalatSettingsModalSheet(
                 onDismiss = { isSettingsModalOpen = false },
-                viewModel = viewModel
+                viewModel = viewModel,
+                themeColors = themeColors
             )
         }
     }
@@ -147,7 +157,8 @@ fun SalatScreen(
 @Composable
 private fun SalatSettingsModalSheet(
     onDismiss: () -> Unit,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    themeColors: ReadingThemeColors
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -169,7 +180,7 @@ private fun SalatSettingsModalSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = SurfaceWhite,
+        containerColor = themeColors.surface,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -177,7 +188,7 @@ private fun SalatSettingsModalSheet(
                     .width(40.dp)
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(BorderTealLight)
+                    .background(themeColors.border)
             )
         },
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
@@ -204,13 +215,13 @@ private fun SalatSettingsModalSheet(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(SoftTealTint),
+                            .background(if (themeColors.isDark) themeColors.border else SoftTealTint),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Tune,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -219,13 +230,13 @@ private fun SalatSettingsModalSheet(
                             text = stringResource(R.string.salat_settings_sheet_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine
+                                color = themeColors.arabicText
                             )
                         )
                         Text(
                             text = stringResource(R.string.salat_settings_sheet_sub),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = themeColors.translationText,
                                 fontSize = 11.5.sp
                             )
                         )
@@ -239,20 +250,20 @@ private fun SalatSettingsModalSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = stringResource(R.string.action_close),
-                        tint = SlateTealMuted,
+                        tint = themeColors.translationText,
                         modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            HorizontalDivider(color = BorderTealLight)
+            HorizontalDivider(color = themeColors.border)
 
             // 1. MOSQUE MODE (AUTO-SILENT DND)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, BorderTealLight)
+                color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+                border = BorderStroke(1.dp, themeColors.border)
             ) {
                 Column(
                     modifier = Modifier
@@ -270,14 +281,14 @@ private fun SalatSettingsModalSheet(
                                 text = stringResource(R.string.salat_mosque_mode_title),
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine
+                                    color = themeColors.arabicText
                                 )
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = stringResource(R.string.salat_mosque_mode_sub, silentDuration),
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = SlateTealMuted,
+                                    color = themeColors.translationText,
                                     fontSize = 11.5.sp
                                 )
                             )
@@ -290,9 +301,9 @@ private fun SalatSettingsModalSheet(
                             onCheckedChange = { viewModel.toggleAutoSilent() },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = DeepVibrantTeal,
-                                uncheckedTrackColor = BorderTealGray,
-                                uncheckedThumbColor = SlateTealMuted
+                                checkedTrackColor = themeColors.accent,
+                                uncheckedTrackColor = themeColors.border,
+                                uncheckedThumbColor = themeColors.translationText
                             )
                         )
                     }
@@ -305,7 +316,7 @@ private fun SalatSettingsModalSheet(
                             Text(
                                 text = stringResource(R.string.salat_silent_duration, silentDuration),
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = if (autoSilent) DeepVibrantTeal else SlateTealMuted,
+                                    color = if (autoSilent) themeColors.accent else themeColors.translationText,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             )
@@ -316,9 +327,9 @@ private fun SalatSettingsModalSheet(
                             valueRange = 10f..45f,
                             steps = 6,
                             colors = SliderDefaults.colors(
-                                thumbColor = if (autoSilent) DeepVibrantTeal else SlateTealMuted,
-                                activeTrackColor = if (autoSilent) DeepVibrantTeal else SlateTealMuted,
-                                inactiveTrackColor = BorderTealLight
+                                thumbColor = if (autoSilent) themeColors.accent else themeColors.translationText,
+                                activeTrackColor = if (autoSilent) themeColors.accent else themeColors.translationText,
+                                inactiveTrackColor = themeColors.border
                             )
                         )
                     }
@@ -330,6 +341,7 @@ private fun SalatSettingsModalSheet(
                 zones = viewModel.prayerZones,
                 selectedZone = selectedZone,
                 isArabic = isArabic,
+                themeColors = themeColors,
                 onSelectZone = { viewModel.selectPrayerZone(it) }
             )
 
@@ -337,6 +349,7 @@ private fun SalatSettingsModalSheet(
             SalatAuthorityDropdownSelector(
                 authorities = viewModel.calculationAuthorities,
                 selectedAuthority = selectedAuthority,
+                themeColors = themeColors,
                 onSelectAuthority = { viewModel.selectCalculationAuthority(it) }
             )
 
@@ -344,6 +357,7 @@ private fun SalatSettingsModalSheet(
             SalatManualOffsetsCard(
                 manualOffsets = manualOffsets,
                 isArabic = isArabic,
+                themeColors = themeColors,
                 onUpdateOffset = { prayerName, delta ->
                     viewModel.updatePrayerManualOffset(prayerName, delta)
                 },
@@ -356,6 +370,7 @@ private fun SalatSettingsModalSheet(
             SalatAdhanVoiceDropdownSelector(
                 selectedVoice = athanSound,
                 isPlaying = isAudioPlaying,
+                themeColors = themeColors,
                 onSelectVoice = { viewModel.athanSoundName.value = it },
                 onTogglePreview = { viewModel.toggleAthanAudioPreview() }
             )
@@ -364,8 +379,8 @@ private fun SalatSettingsModalSheet(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, BorderTealLight)
+                color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+                border = BorderStroke(1.dp, themeColors.border)
             ) {
                 Row(
                     modifier = Modifier
@@ -379,7 +394,7 @@ private fun SalatSettingsModalSheet(
                             text = stringResource(R.string.salat_hanafi_asr_title),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine
+                                color = themeColors.arabicText
                             )
                         )
                         Spacer(modifier = Modifier.height(2.dp))
@@ -387,7 +402,7 @@ private fun SalatSettingsModalSheet(
                             text = if (isHanafi) stringResource(R.string.salat_hanafi_asr_desc)
                             else stringResource(R.string.salat_standard_asr_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = themeColors.translationText,
                                 fontSize = 11.5.sp
                             )
                         )
@@ -400,9 +415,9 @@ private fun SalatSettingsModalSheet(
                         onCheckedChange = { viewModel.toggleHanafiAsr(it) },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = DeepVibrantTeal,
-                            uncheckedTrackColor = BorderTealGray,
-                            uncheckedThumbColor = SlateTealMuted
+                            checkedTrackColor = themeColors.accent,
+                            uncheckedTrackColor = themeColors.border,
+                            uncheckedThumbColor = themeColors.translationText
                         )
                     )
                 }
@@ -412,8 +427,8 @@ private fun SalatSettingsModalSheet(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, BorderTealLight)
+                color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+                border = BorderStroke(1.dp, themeColors.border)
             ) {
                 Row(
                     modifier = Modifier
@@ -427,13 +442,13 @@ private fun SalatSettingsModalSheet(
                             text = stringResource(R.string.salat_hijri_calib_title),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine
+                                color = themeColors.arabicText
                             )
                         )
                         Text(
                             text = stringResource(R.string.salat_hijri_calib_sub, if (hijriOffset > 0) "+$hijriOffset" else "$hijriOffset"),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = themeColors.translationText,
                                 fontSize = 11.5.sp
                             )
                         )
@@ -445,15 +460,15 @@ private fun SalatSettingsModalSheet(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = Color.White,
-                            border = BorderStroke(1.dp, BorderTealLight),
+                            color = if (themeColors.isDark) themeColors.border else Color.White,
+                            border = BorderStroke(1.dp, themeColors.border),
                             modifier = Modifier.clickable { viewModel.updateHijriAdjustment(-1) }
                         ) {
                             Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Remove,
                                     contentDescription = "Minus Day",
-                                    tint = SlateTealMuted,
+                                    tint = themeColors.translationText,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -463,22 +478,22 @@ private fun SalatSettingsModalSheet(
                             text = "$hijriOffset",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine
+                                color = themeColors.arabicText
                             ),
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
 
                         Surface(
                             shape = CircleShape,
-                            color = Color.White,
-                            border = BorderStroke(1.dp, BorderTealLight),
+                            color = if (themeColors.isDark) themeColors.border else Color.White,
+                            border = BorderStroke(1.dp, themeColors.border),
                             modifier = Modifier.clickable { viewModel.updateHijriAdjustment(1) }
                         ) {
                             Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
                                     contentDescription = "Plus Day",
-                                    tint = DeepVibrantTeal,
+                                    tint = themeColors.accent,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -493,7 +508,7 @@ private fun SalatSettingsModalSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal),
+                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent),
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
@@ -516,6 +531,7 @@ private fun SalatZoneDropdownSelector(
     zones: List<PrayerZone>,
     selectedZone: PrayerZone,
     isArabic: Boolean,
+    themeColors: ReadingThemeColors,
     onSelectZone: (PrayerZone) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -525,7 +541,7 @@ private fun SalatZoneDropdownSelector(
             text = stringResource(R.string.salat_zones_title),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = DarkPine
+                color = themeColors.arabicText
             )
         )
 
@@ -535,8 +551,8 @@ private fun SalatZoneDropdownSelector(
                     .fillMaxWidth()
                     .clickable { isExpanded = true },
                 shape = RoundedCornerShape(14.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, if (isExpanded) DeepVibrantTeal else BorderTealLight)
+                color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+                border = BorderStroke(1.dp, if (isExpanded) themeColors.accent else themeColors.border)
             ) {
                 Row(
                     modifier = Modifier
@@ -553,7 +569,7 @@ private fun SalatZoneDropdownSelector(
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(20.dp)
                         )
                         Column {
@@ -561,13 +577,13 @@ private fun SalatZoneDropdownSelector(
                                 text = if (isArabic) selectedZone.arabicName else "${selectedZone.name}, ${selectedZone.country}",
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine
+                                    color = themeColors.arabicText
                                 )
                             )
                             Text(
                                 text = selectedZone.zoneLabel,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = SlateTealMuted,
+                                    color = themeColors.translationText,
                                     fontSize = 11.sp
                                 )
                             )
@@ -577,7 +593,7 @@ private fun SalatZoneDropdownSelector(
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Select Zone",
-                        tint = DeepVibrantTeal,
+                        tint = themeColors.accent,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -589,8 +605,8 @@ private fun SalatZoneDropdownSelector(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .heightIn(max = 360.dp)
-                    .background(SurfaceWhite)
-                    .border(BorderStroke(1.dp, BorderTealLight), RoundedCornerShape(14.dp))
+                    .background(themeColors.surface)
+                    .border(BorderStroke(1.dp, themeColors.border), RoundedCornerShape(14.dp))
             ) {
                 zones.forEach { zone ->
                     val isSelected = zone.id == selectedZone.id
@@ -616,14 +632,14 @@ private fun SalatZoneDropdownSelector(
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.bodyMedium.copy(
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected) DeepVibrantTeal else DarkPine
+                                                color = if (isSelected) themeColors.accent else themeColors.arabicText
                                             )
                                         )
                                         Text(
                                             text = zone.zoneLabel,
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = SlateTealMuted,
+                                                color = themeColors.translationText,
                                                 fontSize = 10.5.sp
                                             )
                                         )
@@ -632,7 +648,7 @@ private fun SalatZoneDropdownSelector(
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = DeepVibrantTeal,
+                                            tint = themeColors.accent,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
@@ -654,6 +670,7 @@ private fun SalatZoneDropdownSelector(
 private fun SalatAuthorityDropdownSelector(
     authorities: List<CalculationAuthority>,
     selectedAuthority: CalculationAuthority,
+    themeColors: ReadingThemeColors,
     onSelectAuthority: (CalculationAuthority) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -663,7 +680,7 @@ private fun SalatAuthorityDropdownSelector(
             text = stringResource(R.string.salat_calc_authority_title),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = DarkPine
+                color = themeColors.arabicText
             )
         )
 
@@ -673,8 +690,8 @@ private fun SalatAuthorityDropdownSelector(
                     .fillMaxWidth()
                     .clickable { isExpanded = true },
                 shape = RoundedCornerShape(14.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, if (isExpanded) DeepVibrantTeal else BorderTealLight)
+                color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+                border = BorderStroke(1.dp, if (isExpanded) themeColors.accent else themeColors.border)
             ) {
                 Row(
                     modifier = Modifier
@@ -691,7 +708,7 @@ private fun SalatAuthorityDropdownSelector(
                         Icon(
                             imageVector = Icons.Default.Calculate,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(20.dp)
                         )
                         Column {
@@ -699,14 +716,14 @@ private fun SalatAuthorityDropdownSelector(
                                 text = selectedAuthority.name,
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine
+                                    color = themeColors.arabicText
                                 )
                             )
                             val ishaLabel = if (selectedAuthority.ishaIntervalMinutes != null) "${selectedAuthority.ishaIntervalMinutes}m" else "${selectedAuthority.ishaAngle}°"
                             Text(
                                 text = "Fajr: ${selectedAuthority.fajrAngle}° • Isha: $ishaLabel",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = SlateTealMuted,
+                                    color = themeColors.translationText,
                                     fontSize = 11.sp
                                 )
                             )
@@ -716,7 +733,7 @@ private fun SalatAuthorityDropdownSelector(
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Select Authority",
-                        tint = DeepVibrantTeal,
+                        tint = themeColors.accent,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -728,8 +745,8 @@ private fun SalatAuthorityDropdownSelector(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .heightIn(max = 360.dp)
-                    .background(SurfaceWhite)
-                    .border(BorderStroke(1.dp, BorderTealLight), RoundedCornerShape(14.dp))
+                    .background(themeColors.surface)
+                    .border(BorderStroke(1.dp, themeColors.border), RoundedCornerShape(14.dp))
             ) {
                 authorities.forEach { auth ->
                     val isSelected = auth.id == selectedAuthority.id
@@ -755,14 +772,14 @@ private fun SalatAuthorityDropdownSelector(
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.bodyMedium.copy(
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected) DeepVibrantTeal else DarkPine
+                                                color = if (isSelected) themeColors.accent else themeColors.arabicText
                                             )
                                         )
                                         Text(
                                             text = "Fajr: ${auth.fajrAngle}° • Isha: $authIshaLabel",
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = SlateTealMuted,
+                                                color = themeColors.translationText,
                                                 fontSize = 10.5.sp
                                             )
                                         )
@@ -771,7 +788,7 @@ private fun SalatAuthorityDropdownSelector(
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = DeepVibrantTeal,
+                                            tint = themeColors.accent,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
@@ -793,6 +810,7 @@ private fun SalatAuthorityDropdownSelector(
 private fun SalatManualOffsetsCard(
     manualOffsets: Map<String, Int>,
     isArabic: Boolean,
+    themeColors: ReadingThemeColors,
     onUpdateOffset: (String, Int) -> Unit,
     onResetOffsets: () -> Unit
 ) {
@@ -808,8 +826,8 @@ private fun SalatManualOffsetsCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = SurfaceElevated,
-        border = BorderStroke(1.dp, BorderTealLight)
+        color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+        border = BorderStroke(1.dp, themeColors.border)
     ) {
         Column(
             modifier = Modifier
@@ -827,13 +845,13 @@ private fun SalatManualOffsetsCard(
                         text = stringResource(R.string.salat_manual_offsets_title),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine
+                            color = themeColors.arabicText
                         )
                     )
                     Text(
                         text = stringResource(R.string.salat_manual_offsets_sub),
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontSize = 11.sp
                         )
                     )
@@ -842,7 +860,7 @@ private fun SalatManualOffsetsCard(
                 Text(
                     text = stringResource(R.string.salat_reset_offsets),
                     style = MaterialTheme.typography.labelSmall.copy(
-                        color = DeepVibrantTeal,
+                        color = themeColors.accent,
                         fontWeight = FontWeight.Bold
                     ),
                     modifier = Modifier
@@ -852,7 +870,7 @@ private fun SalatManualOffsetsCard(
                 )
             }
 
-            HorizontalDivider(color = BorderTealLight.copy(alpha = 0.5f), thickness = 0.8.dp)
+            HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f), thickness = 0.8.dp)
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 prayers.chunked(2).forEach { pair ->
@@ -867,8 +885,8 @@ private fun SalatManualOffsetsCard(
                             Surface(
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(12.dp),
-                                color = SurfaceWhite,
-                                border = BorderStroke(1.dp, BorderTealLight)
+                                color = if (themeColors.isDark) themeColors.background else SurfaceWhite,
+                                border = BorderStroke(1.dp, themeColors.border)
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -882,14 +900,14 @@ private fun SalatManualOffsetsCard(
                                             text = pLabel,
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 fontWeight = FontWeight.Bold,
-                                                color = DarkPine,
+                                                color = themeColors.arabicText,
                                                 fontSize = 12.sp
                                             )
                                         )
                                         Text(
                                             text = offsetText,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = if (currentOffset != 0) DeepVibrantTeal else SlateTealMuted,
+                                                color = if (currentOffset != 0) themeColors.accent else themeColors.translationText,
                                                 fontWeight = if (currentOffset != 0) FontWeight.Bold else FontWeight.Normal,
                                                 fontSize = 10.5.sp
                                             )
@@ -902,15 +920,15 @@ private fun SalatManualOffsetsCard(
                                     ) {
                                         Surface(
                                             shape = CircleShape,
-                                            color = CanvasMint,
-                                            border = BorderStroke(1.dp, BorderTealLight),
+                                            color = if (themeColors.isDark) themeColors.border else CanvasMint,
+                                            border = BorderStroke(1.dp, themeColors.border),
                                             modifier = Modifier.clickable { onUpdateOffset(pKey, -1) }
                                         ) {
                                             Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
                                                 Icon(
                                                     imageVector = Icons.Default.Remove,
                                                     contentDescription = "Minus 1 min",
-                                                    tint = SlateTealMuted,
+                                                    tint = themeColors.translationText,
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                             }
@@ -918,15 +936,15 @@ private fun SalatManualOffsetsCard(
 
                                         Surface(
                                             shape = CircleShape,
-                                            color = SoftTealTint,
-                                            border = BorderStroke(1.dp, BorderTealLight),
+                                            color = if (themeColors.isDark) themeColors.border else SoftTealTint,
+                                            border = BorderStroke(1.dp, themeColors.border),
                                             modifier = Modifier.clickable { onUpdateOffset(pKey, 1) }
                                         ) {
                                             Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
                                                 Icon(
                                                     imageVector = Icons.Default.Add,
                                                     contentDescription = "Plus 1 min",
-                                                    tint = DeepVibrantTeal,
+                                                    tint = themeColors.accent,
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                             }
@@ -949,6 +967,7 @@ private fun SalatManualOffsetsCard(
 private fun SalatAdhanVoiceDropdownSelector(
     selectedVoice: String,
     isPlaying: Boolean,
+    themeColors: ReadingThemeColors,
     onSelectVoice: (String) -> Unit,
     onTogglePreview: () -> Unit
 ) {
@@ -967,7 +986,7 @@ private fun SalatAdhanVoiceDropdownSelector(
             text = stringResource(R.string.salat_adhan_voice_title),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = DarkPine
+                color = themeColors.arabicText
             )
         )
 
@@ -977,8 +996,8 @@ private fun SalatAdhanVoiceDropdownSelector(
                     .fillMaxWidth()
                     .clickable { isExpanded = true },
                 shape = RoundedCornerShape(14.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, if (isExpanded) DeepVibrantTeal else BorderTealLight)
+                color = if (themeColors.isDark) themeColors.surface else SurfaceElevated,
+                border = BorderStroke(1.dp, if (isExpanded) themeColors.accent else themeColors.border)
             ) {
                 Row(
                     modifier = Modifier
@@ -995,7 +1014,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(20.dp)
                         )
                         Column {
@@ -1003,7 +1022,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                                 text = selectedVoice,
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine,
+                                    color = themeColors.arabicText,
                                     fontSize = 13.sp
                                 ),
                                 maxLines = 1,
@@ -1012,7 +1031,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                             Text(
                                 text = stringResource(R.string.salat_adhan_switch_sub),
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = SlateTealMuted,
+                                    color = themeColors.translationText,
                                     fontSize = 10.5.sp
                                 ),
                                 maxLines = 1,
@@ -1032,7 +1051,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                             Icon(
                                 imageVector = if (isPlaying) Icons.Default.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
                                 contentDescription = if (isPlaying) "Stop" else "Preview",
-                                tint = DeepVibrantTeal,
+                                tint = themeColors.accent,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -1040,7 +1059,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = "Select Voice",
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -1053,8 +1072,8 @@ private fun SalatAdhanVoiceDropdownSelector(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .heightIn(max = 360.dp)
-                    .background(SurfaceWhite)
-                    .border(BorderStroke(1.dp, BorderTealLight), RoundedCornerShape(14.dp))
+                    .background(themeColors.surface)
+                    .border(BorderStroke(1.dp, themeColors.border), RoundedCornerShape(14.dp))
             ) {
                 adhanVoices.forEach { voice ->
                     val isSelected = voice == selectedVoice
@@ -1079,7 +1098,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.bodyMedium.copy(
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected) DeepVibrantTeal else DarkPine,
+                                                color = if (isSelected) themeColors.accent else themeColors.arabicText,
                                                 fontSize = 13.sp
                                             )
                                         )
@@ -1088,7 +1107,7 @@ private fun SalatAdhanVoiceDropdownSelector(
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = DeepVibrantTeal,
+                                            tint = themeColors.accent,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
@@ -1113,6 +1132,7 @@ private fun SalatAdhanVoiceDropdownSelector(
 @Composable
 private fun SalatTimesContent(
     viewModel: MainViewModel,
+    themeColors: ReadingThemeColors,
     modifier: Modifier = Modifier
 ) {
     val prayerTimes by viewModel.prayerTimes.collectAsStateWithLifecycle()
@@ -1139,8 +1159,8 @@ private fun SalatTimesContent(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
-            color = SurfaceWhite,
-            border = BorderStroke(1.dp, BorderTealLight)
+            color = themeColors.surface,
+            border = BorderStroke(1.dp, themeColors.border)
         ) {
             Column(
                 modifier = Modifier
@@ -1157,13 +1177,13 @@ private fun SalatTimesContent(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(SoftTealTint),
+                            .background(if (themeColors.isDark) themeColors.border else SoftTealTint),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = "Zone",
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -1172,14 +1192,14 @@ private fun SalatTimesContent(
                             text = if (isArabic) selectedZone.arabicName else "${selectedZone.name}, ${selectedZone.country}",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine,
+                                color = themeColors.arabicText,
                                 fontSize = 16.5.sp
                             )
                         )
                         Text(
                             text = "${selectedAuthority.name} • ${if (isHanafi) stringResource(R.string.salat_hanafi_asr) else stringResource(R.string.salat_standard_asr)}",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = themeColors.translationText,
                                 fontSize = 12.sp
                             )
                         )
@@ -1189,8 +1209,8 @@ private fun SalatTimesContent(
                 // Daily Progress Bar & Date
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = CanvasMint,
-                    border = BorderStroke(1.dp, BorderTealGray)
+                    color = if (themeColors.isDark) themeColors.background else CanvasMint,
+                    border = BorderStroke(1.dp, themeColors.border)
                 ) {
                     Row(
                         modifier = Modifier
@@ -1206,13 +1226,13 @@ private fun SalatTimesContent(
                             Icon(
                                 imageVector = Icons.Default.CalendarMonth,
                                 contentDescription = stringResource(R.string.salat_date_cd),
-                                tint = SlateTealMuted,
+                                tint = themeColors.translationText,
                                 modifier = Modifier.size(15.dp)
                             )
                             Text(
                                 text = stringResource(R.string.salat_sample_hijri_date),
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = DarkPine,
+                                    color = themeColors.arabicText,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 12.5.sp
                                 )
@@ -1222,7 +1242,7 @@ private fun SalatTimesContent(
                         Text(
                             text = stringResource(R.string.salat_completed_count, completedPrayers.size),
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = DeepVibrantTeal,
+                                color = themeColors.accent,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
@@ -1235,8 +1255,8 @@ private fun SalatTimesContent(
         // Daily Prayer Timetable - Expanded High-Craft Single Card Style
         BentoCard(
             modifier = Modifier.fillMaxWidth(),
-            backgroundColor = SurfaceWhite,
-            borderColor = BorderTealGray,
+            backgroundColor = themeColors.surface,
+            borderColor = themeColors.border,
             contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp)
         ) {
             Column(
@@ -1250,7 +1270,7 @@ private fun SalatTimesContent(
                         text = stringResource(R.string.salat_daily_schedule_title),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 18.sp
                         )
                     )
@@ -1258,13 +1278,13 @@ private fun SalatTimesContent(
                     Text(
                         text = stringResource(R.string.salat_daily_schedule_sub),
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontSize = 12.5.sp
                         )
                     )
                 }
 
-                HorizontalDivider(color = BorderTealLight.copy(alpha = 0.6f), thickness = 1.dp)
+                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), thickness = 1.dp)
 
                 prayerTimes.forEachIndexed { index, prayer ->
                     val isChecked = completedPrayers.contains(prayer.name)
@@ -1294,6 +1314,7 @@ private fun SalatTimesContent(
                         offsetMin = offsetMin,
                         isNotificationEnabled = isNotificationEnabled,
                         isArabic = isArabic,
+                        themeColors = themeColors,
                         onTogglePrayer = {
                             if (isActionable && !isSunrise) {
                                 viewModel.togglePrayerCompleted(prayer)
@@ -1309,7 +1330,7 @@ private fun SalatTimesContent(
 
                     if (index < prayerTimes.size - 1) {
                         HorizontalDivider(
-                            color = BorderTealLight.copy(alpha = 0.4f),
+                            color = themeColors.border.copy(alpha = 0.4f),
                             thickness = 0.8.dp,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                         )
@@ -1321,8 +1342,8 @@ private fun SalatTimesContent(
         // Forbidden Prayer Times Notice Card
         BentoCard(
             modifier = Modifier.fillMaxWidth(),
-            backgroundColor = Color(0xFFFEF2F2),
-            borderColor = Color(0xFFFECACA)
+            backgroundColor = if (themeColors.isDark) Color(0xFF2A1517) else Color(0xFFFEF2F2),
+            borderColor = if (themeColors.isDark) Color(0xFF5C2328) else Color(0xFFFECACA)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -1335,20 +1356,23 @@ private fun SalatTimesContent(
                     Icon(
                         imageVector = Icons.Default.AccessTime,
                         contentDescription = if (isArabic) "أوقات الكراهة" else "Forbidden Times",
-                        tint = Color(0xFFDC2626),
+                        tint = if (themeColors.isDark) Color(0xFFF87171) else Color(0xFFDC2626),
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
                         text = if (isArabic) "أوقات الكراهة وصلاة المحظورة" else "Forbidden Prayer Times",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF991B1B)
+                            color = if (themeColors.isDark) Color(0xFFFCA5A5) else Color(0xFF991B1B)
                         )
                     )
                 }
                 Text(
                     text = if (isArabic) "الأوقات التي يكره أو يحرم فيها أداء صلاة النافلة المطلقة:" else "Times when performing voluntary prayers is forbidden or disliked:",
-                    style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFB91C1C), fontSize = 11.5.sp)
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = if (themeColors.isDark) Color(0xFFF87171) else Color(0xFFB91C1C),
+                        fontSize = 11.5.sp
+                    )
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 val forbiddenList = if (isArabic) listOf(
@@ -1364,7 +1388,7 @@ private fun SalatTimesContent(
                     Text(
                         text = item,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color(0xFF7F1D1D),
+                            color = if (themeColors.isDark) Color(0xFFFECACA) else Color(0xFF7F1D1D),
                             fontSize = 11.5.sp
                         )
                     )
@@ -1375,7 +1399,7 @@ private fun SalatTimesContent(
 }
 
 // =========================================================================
-// PRAYER ROW ITEM (INLINE COMPACT GREEN NOTIFICATION PILL & SPACIOUS LAYOUT)
+// PRAYER ROW ITEM (INLINE COMPACT NOTIFICATION PILL & SPACIOUS LAYOUT)
 // =========================================================================
 
 @Composable
@@ -1388,6 +1412,7 @@ private fun PrayerRowItem(
     offsetMin: Int,
     isNotificationEnabled: Boolean,
     isArabic: Boolean,
+    themeColors: ReadingThemeColors,
     onTogglePrayer: () -> Unit,
     onSetOffset: (Int) -> Unit,
     onToggleNotification: () -> Unit
@@ -1413,25 +1438,34 @@ private fun PrayerRowItem(
     // Row Background: Soft highlight for Active Prayer, clean/transparent for others
     val rowBackgroundModifier = when {
         prayer.isCurrent && !isSunrise -> Modifier
-            .background(SoftTealTint.copy(alpha = 0.65f), RoundedCornerShape(12.dp))
-            .border(BorderStroke(1.dp, DeepVibrantTeal.copy(alpha = 0.35f)), RoundedCornerShape(12.dp))
+            .background(
+                if (themeColors.isDark) themeColors.border.copy(alpha = 0.5f) else SoftTealTint.copy(alpha = 0.65f),
+                RoundedCornerShape(12.dp)
+            )
+            .border(
+                BorderStroke(1.dp, themeColors.accent.copy(alpha = 0.4f)),
+                RoundedCornerShape(12.dp)
+            )
         isSunrise -> Modifier
-            .background(Color(0xFFFFFBEB).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .background(
+                if (themeColors.isDark) Color(0xFF2D2311).copy(alpha = 0.6f) else Color(0xFFFFFBEB).copy(alpha = 0.5f),
+                RoundedCornerShape(12.dp)
+            )
         else -> Modifier
     }
 
     val iconContainerColor = when {
-        isChecked && !isSunrise -> Color(0xFF0D6E58)
-        prayer.isCurrent && !isSunrise -> Color.White
+        isChecked && !isSunrise -> themeColors.accent
+        prayer.isCurrent && !isSunrise -> if (themeColors.isDark) themeColors.border else Color.White
         isSunrise -> Color(0xFFD97706)
-        else -> CanvasMint
+        else -> if (themeColors.isDark) themeColors.border else CanvasMint
     }
 
     val prayerTitleColor = when {
-        isChecked && !isSunrise -> Color(0xFF0D6E58)
-        prayer.isCurrent && !isSunrise -> DeepVibrantTeal
-        isSunrise -> Color(0xFF92400E)
-        else -> DarkPine
+        isChecked && !isSunrise -> themeColors.accent
+        prayer.isCurrent && !isSunrise -> themeColors.accent
+        isSunrise -> if (themeColors.isDark) Color(0xFFFBBF24) else Color(0xFF92400E)
+        else -> themeColors.arabicText
     }
 
     Row(
@@ -1458,7 +1492,7 @@ private fun PrayerRowItem(
                     .background(iconContainerColor)
                     .then(
                         if (prayer.isCurrent && !isChecked)
-                            Modifier.border(BorderStroke(1.dp, BorderTealGray), CircleShape)
+                            Modifier.border(BorderStroke(1.dp, themeColors.border), CircleShape)
                         else Modifier
                     ),
                 contentAlignment = Alignment.Center
@@ -1484,7 +1518,7 @@ private fun PrayerRowItem(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = stringResource(R.string.salat_status_active),
-                            tint = SlateTealMuted,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -1492,7 +1526,7 @@ private fun PrayerRowItem(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            tint = SlateTealMuted.copy(alpha = 0.5f),
+                            tint = themeColors.translationText.copy(alpha = 0.5f),
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -1500,7 +1534,7 @@ private fun PrayerRowItem(
                         Icon(
                             imageVector = Icons.Default.RadioButtonUnchecked,
                             contentDescription = null,
-                            tint = SlateTealMuted,
+                            tint = themeColors.translationText,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -1525,12 +1559,12 @@ private fun PrayerRowItem(
                 if (isChecked) {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFF0D6E58).copy(alpha = 0.15f)
+                        color = themeColors.accent.copy(alpha = 0.18f)
                     ) {
                         Text(
                             text = if (isArabic) "تم" else "Done",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = Color(0xFF0D6E58),
+                                color = themeColors.accent,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp
                             ),
@@ -1540,12 +1574,12 @@ private fun PrayerRowItem(
                 } else if (prayer.isCurrent && !isSunrise) {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFFEF3C7)
+                        color = if (themeColors.isDark) Color(0xFF452A0A) else Color(0xFFFEF3C7)
                     ) {
                         Text(
                             text = if (isArabic) "الآن" else "Active",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = Color(0xFFB45309),
+                                color = if (themeColors.isDark) Color(0xFFFBBF24) else Color(0xFFB45309),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp
                             ),
@@ -1556,7 +1590,7 @@ private fun PrayerRowItem(
             }
         }
 
-        // Right: Compact Inline Green Notification Pill + Right-Aligned Time (Shifted Right)
+        // Right: Compact Inline Notification Pill + Right-Aligned Time (Shifted Right)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -1566,10 +1600,10 @@ private fun PrayerRowItem(
                 Box {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (isNotificationEnabled) SoftTealTint else Color(0xFFF1F5F9),
+                        color = if (isNotificationEnabled) (if (themeColors.isDark) themeColors.border else SoftTealTint) else (if (themeColors.isDark) themeColors.background else Color(0xFFF1F5F9)),
                         border = BorderStroke(
                             1.dp,
-                            if (isNotificationEnabled) DeepVibrantTeal.copy(alpha = 0.35f) else BorderTealLight
+                            if (isNotificationEnabled) themeColors.accent.copy(alpha = 0.35f) else themeColors.border
                         ),
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -1583,13 +1617,13 @@ private fun PrayerRowItem(
                             Icon(
                                 imageVector = if (isNotificationEnabled) Icons.Default.Notifications else Icons.Default.NotificationsOff,
                                 contentDescription = if (isNotificationEnabled) stringResource(R.string.salat_notification_active) else stringResource(R.string.salat_notification_muted),
-                                tint = if (isNotificationEnabled) DeepVibrantTeal else SlateTealMuted,
+                                tint = if (isNotificationEnabled) themeColors.accent else themeColors.translationText,
                                 modifier = Modifier.size(13.5.dp)
                             )
                             Text(
                                 text = shortOffsetLabel,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = if (isNotificationEnabled) DeepVibrantTeal else SlateTealMuted,
+                                    color = if (isNotificationEnabled) themeColors.accent else themeColors.translationText,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
                                 ),
@@ -1598,7 +1632,7 @@ private fun PrayerRowItem(
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = "Timing dropdown",
-                                tint = if (isNotificationEnabled) DeepVibrantTeal else SlateTealMuted,
+                                tint = if (isNotificationEnabled) themeColors.accent else themeColors.translationText,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -1608,8 +1642,8 @@ private fun PrayerRowItem(
                         expanded = isDropdownOpen,
                         onDismissRequest = { isDropdownOpen = false },
                         modifier = Modifier
-                            .background(SurfaceWhite)
-                            .border(BorderStroke(1.dp, BorderTealLight), RoundedCornerShape(12.dp))
+                            .background(themeColors.surface)
+                            .border(BorderStroke(1.dp, themeColors.border), RoundedCornerShape(12.dp))
                     ) {
                         // Toggle Mute / Turn Off
                         DropdownMenuItem(
@@ -1627,7 +1661,7 @@ private fun PrayerRowItem(
                                         textAlign = TextAlign.Center,
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isNotificationEnabled) Color(0xFFDC2626) else DeepVibrantTeal
+                                            color = if (isNotificationEnabled) (if (themeColors.isDark) Color(0xFFF87171) else Color(0xFFDC2626)) else themeColors.accent
                                         )
                                     )
                                 }
@@ -1640,13 +1674,13 @@ private fun PrayerRowItem(
                                 Icon(
                                     imageVector = if (isNotificationEnabled) Icons.Default.NotificationsOff else Icons.Default.Notifications,
                                     contentDescription = null,
-                                    tint = if (isNotificationEnabled) Color(0xFFDC2626) else DeepVibrantTeal,
+                                    tint = if (isNotificationEnabled) (if (themeColors.isDark) Color(0xFFF87171) else Color(0xFFDC2626)) else themeColors.accent,
                                     modifier = Modifier.size(15.dp)
                                 )
                             }
                         )
 
-                        HorizontalDivider(color = BorderTealLight.copy(alpha = 0.5f), thickness = 0.8.dp)
+                        HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f), thickness = 0.8.dp)
 
                         val timingOptions = listOf(
                             -30 to R.string.salat_dropdown_30_before,
@@ -1672,7 +1706,7 @@ private fun PrayerRowItem(
                                             textAlign = TextAlign.Center,
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected) DeepVibrantTeal else DarkPine
+                                                color = if (isSelected) themeColors.accent else themeColors.arabicText
                                             )
                                         )
                                     }
@@ -1686,7 +1720,7 @@ private fun PrayerRowItem(
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = DeepVibrantTeal,
+                                            tint = themeColors.accent,
                                             modifier = Modifier.size(14.dp)
                                         )
                                     }
@@ -1703,7 +1737,7 @@ private fun PrayerRowItem(
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = if (isChecked) Color(0xFF0D6E58) else if (prayer.isCurrent) DeepVibrantTeal else if (isSunrise) Color(0xFF92400E) else DarkPine,
+                    color = if (isChecked) themeColors.accent else if (prayer.isCurrent) themeColors.accent else if (isSunrise) (if (themeColors.isDark) Color(0xFFFBBF24) else Color(0xFF92400E)) else themeColors.arabicText,
                     fontSize = 15.5.sp
                 ),
                 modifier = Modifier.width(52.dp)

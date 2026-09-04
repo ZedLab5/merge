@@ -162,7 +162,7 @@ fun QuranSurahSelectionScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Top Section: Continue / Start Reading or Continue Your Khatma (Soft Gold Background)
+            // Top Section: Continue / Start Reading or Continue Your Khatma (Theme-Aware Gold/Dark Styling)
             item(key = "quran_top_resume_section") {
                 val isKhatmaActive = khatmaState != null && !khatmaState!!.plan.isCompleted
                 val prog = readingProgress
@@ -181,21 +181,34 @@ fun QuranSurahSelectionScreen(
                             }
                         },
                     shape = RoundedCornerShape(18.dp),
-                    color = Color(0xFFFFFDF7),
-                    border = BorderStroke(1.2.dp, Color(0xFFE5C887).copy(alpha = 0.65f)),
-                    shadowElevation = 1.dp
+                    color = if (themeColors.isDark) themeColors.surface else Color(0xFFFFFDF7),
+                    border = BorderStroke(
+                        1.2.dp,
+                        if (themeColors.isDark) themeColors.accent.copy(alpha = 0.4f) else Color(0xFFE5C887).copy(alpha = 0.65f)
+                    ),
+                    shadowElevation = if (themeColors.isDark) 0.dp else 1.dp
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFFDF8),
-                                        Color(0xFFFFF8E8),
-                                        Color(0xFFFFF2D6)
+                                if (themeColors.isDark) {
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            themeColors.surface,
+                                            themeColors.surface,
+                                            themeColors.border.copy(alpha = 0.5f)
+                                        )
                                     )
-                                )
+                                } else {
+                                    Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFFFFDF8),
+                                            Color(0xFFFFF8E8),
+                                            Color(0xFFFFF2D6)
+                                        )
+                                    )
+                                }
                             )
                             .padding(16.dp)
                     ) {
@@ -213,14 +226,18 @@ fun QuranSurahSelectionScreen(
                                     modifier = Modifier
                                         .size(44.dp)
                                         .clip(RoundedCornerShape(13.dp))
-                                        .background(Color(0xFFFDE8BB))
-                                        .border(1.dp, Color(0xFFD4A340).copy(alpha = 0.6f), RoundedCornerShape(13.dp)),
+                                        .background(if (themeColors.isDark) themeColors.border else Color(0xFFFDE8BB))
+                                        .border(
+                                            1.dp,
+                                            if (themeColors.isDark) themeColors.accent.copy(alpha = 0.5f) else Color(0xFFD4A340).copy(alpha = 0.6f),
+                                            RoundedCornerShape(13.dp)
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = if (isKhatmaActive) Icons.Default.AutoStories else (if (prog != null) Icons.Default.Bookmark else Icons.Default.AutoStories),
                                         contentDescription = null,
-                                        tint = Color(0xFFB8860B),
+                                        tint = if (themeColors.isDark) themeColors.accent else Color(0xFFB8860B),
                                         modifier = Modifier.size(22.dp)
                                     )
                                 }
@@ -229,7 +246,7 @@ fun QuranSurahSelectionScreen(
                                     Text(
                                         text = if (isKhatmaActive) "CONTINUE YOUR KHATMA" else (if (prog != null) "CONTINUE READING" else "START READING"),
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            color = Color(0xFFB8860B),
+                                            color = if (themeColors.isDark) themeColors.accent else Color(0xFFB8860B),
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 11.sp,
                                             letterSpacing = 0.8.sp
@@ -242,7 +259,7 @@ fun QuranSurahSelectionScreen(
                                             text = "${nextPos.surahNameEnglish} : Ayah ${nextPos.ayahNumber}",
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
-                                                color = DarkPine,
+                                                color = themeColors.arabicText,
                                                 fontSize = 15.5.sp
                                             ),
                                             maxLines = 1,
@@ -251,7 +268,7 @@ fun QuranSurahSelectionScreen(
                                         Text(
                                             text = "Juz ${nextPos.juzNumber} • ${khatmaState!!.progressPercentage.toInt()}% Completed (Day ${khatmaState!!.currentDayNumber}/${khatmaState!!.plan.totalDays})",
                                             style = MaterialTheme.typography.bodySmall.copy(
-                                                color = SlateTealMuted,
+                                                color = themeColors.translationText,
                                                 fontSize = 12.sp
                                             ),
                                             maxLines = 1,
@@ -262,7 +279,7 @@ fun QuranSurahSelectionScreen(
                                             text = "${prog.surahName} : Ayah ${prog.ayahNumber}",
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
-                                                color = DarkPine,
+                                                color = themeColors.arabicText,
                                                 fontSize = 15.5.sp
                                             ),
                                             maxLines = 1,
@@ -271,7 +288,7 @@ fun QuranSurahSelectionScreen(
                                         Text(
                                             text = "Ayah ${prog.ayahNumber} of ${prog.totalAyahs} • Last saved bookmark",
                                             style = MaterialTheme.typography.bodySmall.copy(
-                                                color = SlateTealMuted,
+                                                color = themeColors.translationText,
                                                 fontSize = 12.sp
                                             ),
                                             maxLines = 1,
@@ -282,14 +299,14 @@ fun QuranSurahSelectionScreen(
                                             text = "Surah Al-Fatihah",
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
-                                                color = DarkPine,
+                                                color = themeColors.arabicText,
                                                 fontSize = 15.5.sp
                                             )
                                         )
                                         Text(
                                             text = "The Opening • 7 Ayahs • Begin your recitation",
                                             style = MaterialTheme.typography.bodySmall.copy(
-                                                color = SlateTealMuted,
+                                                color = themeColors.translationText,
                                                 fontSize = 12.sp
                                             )
                                         )
@@ -348,8 +365,8 @@ fun QuranSurahSelectionScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(SurfaceWhite)
-                        .border(1.dp, BorderTealGray, RoundedCornerShape(14.dp))
+                        .background(themeColors.surface)
+                        .border(1.dp, themeColors.border, RoundedCornerShape(14.dp))
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -358,7 +375,7 @@ fun QuranSurahSelectionScreen(
                         val isSelected = selectedTab == tabName
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = if (isSelected) DeepVibrantTeal else Color.Transparent,
+                            color = if (isSelected) themeColors.accent else Color.Transparent,
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { selectedTab = tabName }
@@ -376,7 +393,7 @@ fun QuranSurahSelectionScreen(
                                     },
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) Color.White else DarkPine,
+                                        color = if (isSelected) Color.White else themeColors.arabicText,
                                         fontSize = 13.sp
                                     )
                                 )
@@ -397,10 +414,10 @@ fun QuranSurahSelectionScreen(
                             val isJuzSelected = selectedJuzNumber == juz
                             Surface(
                                 shape = RoundedCornerShape(10.dp),
-                                color = if (isJuzSelected) DeepVibrantTeal else SurfaceWhite,
+                                color = if (isJuzSelected) themeColors.accent else themeColors.surface,
                                 border = BorderStroke(
                                     1.dp,
-                                    if (isJuzSelected) DeepVibrantTeal else BorderTealGray
+                                    if (isJuzSelected) themeColors.accent else themeColors.border
                                 ),
                                 modifier = Modifier.clickable { selectedJuzNumber = juz }
                             ) {
@@ -408,7 +425,7 @@ fun QuranSurahSelectionScreen(
                                     text = "Juz $juz",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isJuzSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isJuzSelected) Color.White else DarkPine,
+                                        color = if (isJuzSelected) Color.White else themeColors.arabicText,
                                         fontSize = 12.sp
                                     ),
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
@@ -435,14 +452,14 @@ fun QuranSurahSelectionScreen(
                             else -> "${filteredSurahs.size} Surahs available"
                         },
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontWeight = FontWeight.Medium
                         )
                     )
                     Text(
                         text = "Standard Madani Hafs",
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = DeepVibrantTeal,
+                            color = themeColors.accent,
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp
                         )
@@ -458,8 +475,8 @@ fun QuranSurahSelectionScreen(
                             .fillMaxWidth()
                             .padding(vertical = 20.dp),
                         shape = RoundedCornerShape(16.dp),
-                        color = SurfaceWhite,
-                        border = BorderStroke(1.dp, BorderTealGray)
+                        color = themeColors.surface,
+                        border = BorderStroke(1.dp, themeColors.border)
                     ) {
                         Column(
                             modifier = Modifier
@@ -471,20 +488,20 @@ fun QuranSurahSelectionScreen(
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,
                                 contentDescription = null,
-                                tint = SlateTealMuted,
+                                tint = themeColors.translationText,
                                 modifier = Modifier.size(36.dp)
                             )
                             Text(
                                 text = "No Favorites Saved Yet",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine
+                                    color = themeColors.arabicText
                                 )
                             )
                             Text(
                                 text = "Tap the heart icon on any Surah to view your favorites here.",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = SlateTealMuted,
+                                    color = themeColors.translationText,
                                     textAlign = TextAlign.Center
                                 )
                             )

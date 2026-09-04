@@ -266,7 +266,8 @@ fun TasbihScreen(
                 transliteration = selectedDhikrTitle,
                 meaning = selectedDhikrMeaning,
                 count = count,
-                target = target
+                target = target,
+                themeColors = themeColors
             )
 
             // 2. Main Interactive Area: Bead String or Hidden Minimalist Tap Surface
@@ -282,17 +283,20 @@ fun TasbihScreen(
                             count = count,
                             target = target,
                             laps = lapsCompleted,
+                            themeColors = themeColors,
                             onIncrement = { viewModel.incrementTasbih() }
                         )
                         else -> TraditionalMarbleBeadsTheme(
                             count = count,
                             target = target,
                             laps = lapsCompleted,
+                            themeColors = themeColors,
                             onIncrement = { viewModel.incrementTasbih() }
                         )
                     }
                 } else {
                     HiddenBeadsTapSurface(
+                        themeColors = themeColors,
                         onIncrement = { viewModel.incrementTasbih() }
                     )
                 }
@@ -303,6 +307,7 @@ fun TasbihScreen(
                 target = target,
                 laps = lapsCompleted,
                 totalAllTime = totalAllTime,
+                themeColors = themeColors,
                 onSelectTarget = { newTarget ->
                     viewModel.setTasbihTarget(newTarget)
                 },
@@ -318,6 +323,7 @@ fun TasbihScreen(
         DhikrSelectionBottomSheet(
             selectedTitle = selectedDhikrTitle,
             sheetState = dhikrSheetState,
+            themeColors = themeColors,
             onSelectDhikr = { preset ->
                 viewModel.setDhikr(
                     dhikrTitle = preset.transliteration,
@@ -348,10 +354,14 @@ fun TasbihScreen(
     if (showCustomDhikrDialog) {
         AlertDialog(
             onDismissRequest = { showCustomDhikrDialog = false },
+            containerColor = themeColors.surface,
             title = {
                 Text(
                     text = stringResource(R.string.tasbih_dialog_add_dhikr_title),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = themeColors.arabicText
+                    )
                 )
             },
             text = {
@@ -360,6 +370,14 @@ fun TasbihScreen(
                         value = customDhikrArabicInput,
                         onValueChange = { customDhikrArabicInput = it },
                         label = { Text(stringResource(R.string.tasbih_dialog_arabic_label)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = themeColors.arabicText,
+                            unfocusedTextColor = themeColors.arabicText,
+                            focusedBorderColor = themeColors.accent,
+                            unfocusedBorderColor = themeColors.border,
+                            focusedLabelColor = themeColors.accent,
+                            unfocusedLabelColor = themeColors.translationText
+                        ),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -367,6 +385,14 @@ fun TasbihScreen(
                         value = customDhikrTransInput,
                         onValueChange = { customDhikrTransInput = it },
                         label = { Text(stringResource(R.string.tasbih_dialog_trans_label)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = themeColors.arabicText,
+                            unfocusedTextColor = themeColors.arabicText,
+                            focusedBorderColor = themeColors.accent,
+                            unfocusedBorderColor = themeColors.border,
+                            focusedLabelColor = themeColors.accent,
+                            unfocusedLabelColor = themeColors.translationText
+                        ),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -374,6 +400,14 @@ fun TasbihScreen(
                         value = customDhikrMeaningInput,
                         onValueChange = { customDhikrMeaningInput = it },
                         label = { Text(stringResource(R.string.tasbih_dialog_meaning_label)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = themeColors.arabicText,
+                            unfocusedTextColor = themeColors.arabicText,
+                            focusedBorderColor = themeColors.accent,
+                            unfocusedBorderColor = themeColors.border,
+                            focusedLabelColor = themeColors.accent,
+                            unfocusedLabelColor = themeColors.translationText
+                        ),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -395,14 +429,14 @@ fun TasbihScreen(
                             viewModel.showToast(toastMsg)
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal)
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent)
                 ) {
-                    Text(stringResource(R.string.tasbih_dialog_use_dhikr_btn))
+                    Text(stringResource(R.string.tasbih_dialog_use_dhikr_btn), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCustomDhikrDialog = false }) {
-                    Text(stringResource(R.string.action_cancel), color = SlateTealMuted)
+                    Text(stringResource(R.string.action_cancel), color = themeColors.translationText)
                 }
             }
         )
@@ -412,10 +446,14 @@ fun TasbihScreen(
     if (showCustomTargetDialog) {
         AlertDialog(
             onDismissRequest = { showCustomTargetDialog = false },
+            containerColor = themeColors.surface,
             title = {
                 Text(
                     text = stringResource(R.string.tasbih_dialog_set_target_title),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = themeColors.arabicText
+                    )
                 )
             },
             text = {
@@ -423,6 +461,14 @@ fun TasbihScreen(
                     value = customTargetInput,
                     onValueChange = { customTargetInput = it.filter { ch -> ch.isDigit() } },
                     label = { Text(stringResource(R.string.tasbih_dialog_target_input_label)) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = themeColors.arabicText,
+                        unfocusedTextColor = themeColors.arabicText,
+                        focusedBorderColor = themeColors.accent,
+                        unfocusedBorderColor = themeColors.border,
+                        focusedLabelColor = themeColors.accent,
+                        unfocusedLabelColor = themeColors.translationText
+                    ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -436,14 +482,14 @@ fun TasbihScreen(
                             showCustomTargetDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal)
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent)
                 ) {
-                    Text(stringResource(R.string.tasbih_dialog_set_target_btn))
+                    Text(stringResource(R.string.tasbih_dialog_set_target_btn), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCustomTargetDialog = false }) {
-                    Text(stringResource(R.string.action_cancel), color = SlateTealMuted)
+                    Text(stringResource(R.string.action_cancel), color = themeColors.translationText)
                 }
             }
         )
@@ -454,7 +500,7 @@ fun TasbihScreen(
         ModalBottomSheet(
             onDismissRequest = { showThemesBottomSheet = false },
             sheetState = themesSheetState,
-            containerColor = SurfaceWhite
+            containerColor = themeColors.surface
         ) {
             Column(
                 modifier = Modifier
@@ -472,7 +518,7 @@ fun TasbihScreen(
                         text = stringResource(R.string.tasbih_sheet_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 19.sp
                         )
                     )
@@ -481,11 +527,11 @@ fun TasbihScreen(
                             showThemesBottomSheet = false
                         }
                     }) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel), tint = DarkPine)
+                        Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel), tint = themeColors.arabicText)
                     }
                 }
 
-                HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+                HorizontalDivider(color = themeColors.border)
 
                 ReadingThemeSection(
                     selectedThemeName = readingThemeName,
@@ -493,7 +539,7 @@ fun TasbihScreen(
                     activeTheme = themeColors
                 )
 
-                HorizontalDivider(color = BorderTealGray.copy(alpha = 0.6f))
+                HorizontalDivider(color = themeColors.border)
 
                 val themesList = listOf(
                     Triple(
@@ -520,10 +566,10 @@ fun TasbihScreen(
                                 }
                             },
                         shape = RoundedCornerShape(16.dp),
-                        color = if (isSelected) SoftTealTint else CanvasMint,
+                        color = if (isSelected) (if (themeColors.isDark) themeColors.border else SoftTealTint) else themeColors.surface,
                         border = BorderStroke(
                             if (isSelected) 2.dp else 1.dp,
-                            if (isSelected) DeepVibrantTeal else BorderTealGray
+                            if (isSelected) themeColors.accent else themeColors.border
                         )
                     ) {
                         Row(
@@ -538,7 +584,7 @@ fun TasbihScreen(
                                     text = themeName,
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = DarkPine,
+                                        color = themeColors.arabicText,
                                         fontSize = 16.sp
                                     )
                                 )
@@ -546,7 +592,7 @@ fun TasbihScreen(
                                 Text(
                                     text = themeDesc,
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = SlateTealMuted,
+                                        color = themeColors.translationText,
                                         fontSize = 12.5.sp
                                     )
                                 )
@@ -556,7 +602,7 @@ fun TasbihScreen(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clip(CircleShape)
-                                        .background(DeepVibrantTeal),
+                                        .background(themeColors.accent),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
@@ -585,6 +631,7 @@ fun TraditionalMarbleBeadsTheme(
     count: Int,
     target: Int,
     laps: Int,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     onIncrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -661,7 +708,7 @@ fun TraditionalMarbleBeadsTheme(
 
             drawPath(
                 path = stringPath,
-                color = Color(0xFF0F3820).copy(alpha = 0.65f),
+                color = if (themeColors.isDark) themeColors.border.copy(alpha = 0.9f) else Color(0xFF0F3820).copy(alpha = 0.65f),
                 style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
             )
 
@@ -746,37 +793,42 @@ fun TraditionalMarbleBeadsTheme(
                 .scale(buttonScale),
             contentAlignment = Alignment.Center
         ) {
-            // Layer 1: Outer Pedestal Ring (White with centered soft shadow)
+            // Layer 1: Outer Pedestal Ring (Centered soft shadow)
             Box(
                 modifier = Modifier
                     .size(136.dp)
                     .shadow(
-                        elevation = 4.dp,
+                        elevation = if (themeColors.isDark) 0.dp else 4.dp,
                         shape = CircleShape,
                         ambientColor = Color.Black.copy(alpha = 0.1f),
                         spotColor = Color.Black.copy(alpha = 0.1f)
                     )
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(if (themeColors.isDark) themeColors.border else Color.White)
+                    .then(
+                        if (themeColors.isDark) Modifier.border(1.dp, themeColors.accent.copy(alpha = 0.25f), CircleShape)
+                        else Modifier
+                    )
             )
 
-            // Layer 2: Inner Primary Circular Button Stacked Directly On Top (Smaller top circle for side spacing)
+            // Layer 2: Inner Primary Circular Button Stacked Directly On Top (Theme-aware surface)
             Surface(
                 modifier = Modifier
                     .size(108.dp)
                     .shadow(
-                        elevation = 12.dp,
+                        elevation = if (themeColors.isDark) 0.dp else 12.dp,
                         shape = CircleShape,
                         ambientColor = Color.Black.copy(alpha = 0.15f),
                         spotColor = Color.Black.copy(alpha = 0.15f)
                     ),
                 shape = CircleShape,
-                color = Color.White
+                color = themeColors.surface,
+                border = if (themeColors.isDark) BorderStroke(1.dp, themeColors.border) else null
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White),
+                        .background(themeColors.surface),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -786,14 +838,14 @@ fun TraditionalMarbleBeadsTheme(
                         Icon(
                             imageVector = Icons.Default.TouchApp,
                             contentDescription = stringResource(R.string.tasbih_tap_to_count),
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = stringResource(R.string.tasbih_tap_button_cue),
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = DarkPine,
+                                color = themeColors.arabicText,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.2.sp
@@ -816,6 +868,7 @@ fun MinimalCircleCounterTheme(
     count: Int,
     target: Int,
     laps: Int,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     onIncrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -855,7 +908,7 @@ fun MinimalCircleCounterTheme(
 
                 // Background Ring Track
                 drawCircle(
-                    color = Color(0xFFE2E8F0),
+                    color = if (themeColors.isDark) themeColors.border else Color(0xFFE2E8F0),
                     radius = radius,
                     center = center,
                     style = Stroke(width = strokeWidth)
@@ -865,10 +918,10 @@ fun MinimalCircleCounterTheme(
                 drawArc(
                     brush = Brush.sweepGradient(
                         colors = listOf(
-                            DeepVibrantTeal,
+                            themeColors.accent,
                             Color(0xFF22C55E),
                             MetallicGold,
-                            DeepVibrantTeal
+                            themeColors.accent
                         ),
                         center = center
                     ),
@@ -882,9 +935,9 @@ fun MinimalCircleCounterTheme(
             // Inner Card
             Surface(
                 shape = CircleShape,
-                color = SurfaceWhite,
-                border = BorderStroke(1.dp, BorderTealGray),
-                shadowElevation = 6.dp,
+                color = themeColors.surface,
+                border = BorderStroke(1.dp, themeColors.border),
+                shadowElevation = if (themeColors.isDark) 0.dp else 6.dp,
                 modifier = Modifier.size(210.dp)
             ) {
                 Column(
@@ -896,7 +949,7 @@ fun MinimalCircleCounterTheme(
                         text = "$count",
                         style = MaterialTheme.typography.displayLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = themeColors.arabicText,
                             fontSize = 54.sp
                         )
                     )
@@ -904,7 +957,7 @@ fun MinimalCircleCounterTheme(
                         text = stringResource(R.string.tasbih_minimal_of_target, target),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal,
+                            color = themeColors.accent,
                             fontSize = 12.sp,
                             letterSpacing = 1.sp
                         )
@@ -913,7 +966,7 @@ fun MinimalCircleCounterTheme(
                     Text(
                         text = stringResource(R.string.tasbih_minimal_percent_done, (progress * 100).toInt()),
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontSize = 11.sp
                         )
                     )
@@ -934,6 +987,7 @@ fun ActiveDhikrInfoCard(
     meaning: String,
     count: Int,
     target: Int,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     modifier: Modifier = Modifier
 ) {
     // Remove any Arabic characters from the phonetic transliteration string
@@ -944,8 +998,8 @@ fun ActiveDhikrInfoCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = SurfaceWhite,
-        border = null, // Completely flat design with zero borders and zero shadows
+        color = themeColors.surface,
+        border = BorderStroke(1.dp, themeColors.border),
         shadowElevation = 0.dp
     ) {
         Column(
@@ -960,7 +1014,7 @@ fun ActiveDhikrInfoCard(
                 text = arabicText,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = DeepVibrantTeal,
+                    color = themeColors.accent,
                     fontSize = 28.sp
                 ),
                 textAlign = TextAlign.Center
@@ -972,7 +1026,7 @@ fun ActiveDhikrInfoCard(
                     text = cleanTransliteration,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = DarkPine,
+                        color = themeColors.arabicText,
                         fontSize = 15.sp
                     ),
                     textAlign = TextAlign.Center
@@ -983,7 +1037,7 @@ fun ActiveDhikrInfoCard(
             Text(
                 text = meaning,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = SlateTealMuted,
+                    color = themeColors.translationText,
                     fontSize = 12.5.sp
                 ),
                 textAlign = TextAlign.Center,
@@ -1003,7 +1057,7 @@ fun ActiveDhikrInfoCard(
                     text = "$count",
                     style = MaterialTheme.typography.displayMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = DarkPine,
+                        color = themeColors.arabicText,
                         fontSize = 38.sp,
                         letterSpacing = (-1).sp
                     )
@@ -1012,7 +1066,7 @@ fun ActiveDhikrInfoCard(
                     text = " / $target",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = SlateTealMuted,
+                        color = themeColors.translationText,
                         fontSize = 15.sp
                     ),
                     modifier = Modifier.padding(bottom = 5.dp, start = 4.dp)
@@ -1026,7 +1080,7 @@ fun ActiveDhikrInfoCard(
                     .fillMaxWidth(0.85f)
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(BorderTealGray.copy(alpha = 0.5f))
+                    .background(themeColors.border.copy(alpha = 0.5f))
             ) {
                 Box(
                     modifier = Modifier
@@ -1035,7 +1089,7 @@ fun ActiveDhikrInfoCard(
                         .clip(RoundedCornerShape(2.dp))
                         .background(
                             Brush.horizontalGradient(
-                                listOf(DeepVibrantTeal, Color(0xFF22C55E))
+                                listOf(themeColors.accent, Color(0xFF22C55E))
                             )
                         )
                 )
@@ -1049,6 +1103,7 @@ fun ActiveDhikrInfoCard(
  */
 @Composable
 fun HiddenBeadsTapSurface(
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     onIncrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -1064,7 +1119,8 @@ fun HiddenBeadsTapSurface(
     ) {
         Surface(
             shape = CircleShape,
-            color = SoftTealTint.copy(alpha = 0.85f),
+            color = if (themeColors.isDark) themeColors.border else SoftTealTint.copy(alpha = 0.85f),
+            border = if (themeColors.isDark) BorderStroke(1.dp, themeColors.accent.copy(alpha = 0.3f)) else null,
             modifier = Modifier
                 .size(190.dp)
                 .clickable(
@@ -1084,7 +1140,7 @@ fun HiddenBeadsTapSurface(
                     Icon(
                         imageVector = Icons.Default.TouchApp,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = themeColors.accent,
                         modifier = Modifier.size(38.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -1092,7 +1148,7 @@ fun HiddenBeadsTapSurface(
                         text = stringResource(R.string.tasbih_tap_button_cue),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Black,
-                            color = DeepVibrantTeal,
+                            color = themeColors.accent,
                             fontSize = 18.sp,
                             letterSpacing = 2.sp
                         )
@@ -1101,7 +1157,7 @@ fun HiddenBeadsTapSurface(
                     Text(
                         text = stringResource(R.string.tasbih_tap_to_count_prompt),
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted,
+                            color = themeColors.translationText,
                             fontSize = 11.sp
                         )
                     )
@@ -1116,6 +1172,7 @@ fun HiddenBeadsTapSurface(
 fun DhikrSelectionBottomSheet(
     selectedTitle: String,
     sheetState: androidx.compose.material3.SheetState,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     onSelectDhikr: (DhikrItem) -> Unit,
     onAddCustom: () -> Unit,
     onDismiss: () -> Unit,
@@ -1124,7 +1181,7 @@ fun DhikrSelectionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = SurfaceWhite,
+        containerColor = themeColors.surface,
         modifier = modifier
     ) {
         Column(
@@ -1144,7 +1201,7 @@ fun DhikrSelectionBottomSheet(
                     text = stringResource(R.string.tasbih_select_dhikr_sheet_title),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = DarkPine,
+                        color = themeColors.arabicText,
                         fontSize = 19.sp
                     )
                 )
@@ -1152,7 +1209,7 @@ fun DhikrSelectionBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = stringResource(R.string.action_cancel),
-                        tint = DarkPine
+                        tint = themeColors.arabicText
                     )
                 }
             }
@@ -1163,8 +1220,8 @@ fun DhikrSelectionBottomSheet(
                     .fillMaxWidth()
                     .clickable(onClick = onAddCustom),
                 shape = RoundedCornerShape(14.dp),
-                color = SoftTealTint,
-                border = BorderStroke(1.dp, DeepVibrantTeal.copy(alpha = 0.4f))
+                color = if (themeColors.isDark) themeColors.border else SoftTealTint,
+                border = BorderStroke(1.dp, themeColors.accent.copy(alpha = 0.4f))
             ) {
                 Row(
                     modifier = Modifier
@@ -1175,7 +1232,7 @@ fun DhikrSelectionBottomSheet(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = DeepVibrantTeal,
+                        color = themeColors.accent,
                         modifier = Modifier.size(32.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -1192,14 +1249,14 @@ fun DhikrSelectionBottomSheet(
                             text = stringResource(R.string.tasbih_custom_chip),
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DeepVibrantTeal,
+                                color = themeColors.accent,
                                 fontSize = 14.sp
                             )
                         )
                         Text(
                             text = stringResource(R.string.tasbih_dialog_add_dhikr_title),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = themeColors.translationText,
                                 fontSize = 11.sp
                             )
                         )
@@ -1222,10 +1279,10 @@ fun DhikrSelectionBottomSheet(
                             .fillMaxWidth()
                             .clickable { onSelectDhikr(preset) },
                         shape = RoundedCornerShape(14.dp),
-                        color = if (isSelected) SoftTealTint else CanvasMint,
+                        color = if (isSelected) (if (themeColors.isDark) themeColors.border else SoftTealTint) else themeColors.surface,
                         border = BorderStroke(
                             if (isSelected) 1.5.dp else 1.dp,
-                            if (isSelected) DeepVibrantTeal else BorderTealGray
+                            if (isSelected) themeColors.accent else themeColors.border
                         )
                     ) {
                         Row(
@@ -1243,14 +1300,14 @@ fun DhikrSelectionBottomSheet(
                                     text = preset.transliteration,
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = DarkPine,
+                                        color = themeColors.arabicText,
                                         fontSize = 14.sp
                                     )
                                 )
                                 Text(
                                     text = preset.translation,
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = SlateTealMuted,
+                                        color = themeColors.translationText,
                                         fontSize = 11.5.sp
                                     ),
                                     maxLines = 1,
@@ -1264,7 +1321,7 @@ fun DhikrSelectionBottomSheet(
                                 text = preset.arabicText,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DeepVibrantTeal,
+                                    color = themeColors.accent,
                                     fontSize = 18.sp
                                 )
                             )
@@ -1274,7 +1331,7 @@ fun DhikrSelectionBottomSheet(
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = DeepVibrantTeal,
+                                    tint = themeColors.accent,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -1287,7 +1344,7 @@ fun DhikrSelectionBottomSheet(
 }
 
 /**
- * Merged Control Bar: Completely flat, header title at top-left, light-themed number dropdown,
+ * Merged Control Bar: Completely flat, header title at top-left, theme-aware number dropdown,
  * "Choose Zikr" button, Laps & Total metrics aligned on the left, and Reset Count on the right.
  */
 @Composable
@@ -1295,6 +1352,7 @@ fun MergedTasbihControlBottomBar(
     target: Int,
     laps: Int,
     totalAllTime: Int,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     onSelectTarget: (Int) -> Unit,
     onCustomTargetClick: () -> Unit,
     onOpenDhikrSelector: () -> Unit,
@@ -1307,8 +1365,8 @@ fun MergedTasbihControlBottomBar(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = SurfaceWhite,
-        border = null, // Completely flat design with zero borders and zero shadows
+        color = themeColors.surface,
+        border = BorderStroke(1.dp, themeColors.border),
         shadowElevation = 0.dp
     ) {
         Column(
@@ -1322,7 +1380,7 @@ fun MergedTasbihControlBottomBar(
                 text = stringResource(R.string.tasbih_card_header_title),
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = DarkPine,
+                    color = themeColors.arabicText,
                     fontSize = 14.sp
                 ),
                 modifier = Modifier.align(Alignment.Start)
@@ -1341,8 +1399,8 @@ fun MergedTasbihControlBottomBar(
                             .fillMaxWidth()
                             .clickable { isNumberMenuExpanded = true },
                         shape = RoundedCornerShape(12.dp),
-                        color = SoftTealTint,
-                        border = BorderStroke(1.dp, BorderTealGray)
+                        color = if (themeColors.isDark) themeColors.border else SoftTealTint,
+                        border = BorderStroke(1.dp, themeColors.border)
                     ) {
                         Row(
                             modifier = Modifier
@@ -1355,7 +1413,7 @@ fun MergedTasbihControlBottomBar(
                                 text = stringResource(R.string.tasbih_choose_number_format, target),
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine,
+                                    color = themeColors.arabicText,
                                     fontSize = 13.sp
                                 ),
                                 maxLines = 1,
@@ -1364,17 +1422,17 @@ fun MergedTasbihControlBottomBar(
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
                                 contentDescription = null,
-                                tint = DeepVibrantTeal,
+                                tint = themeColors.accent,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                     }
 
-                    // Dropdown Menu with Light Theme background
+                    // Dropdown Menu with theme-aware background
                     DropdownMenu(
                         expanded = isNumberMenuExpanded,
                         onDismissRequest = { isNumberMenuExpanded = false },
-                        modifier = Modifier.background(SurfaceWhite)
+                        modifier = Modifier.background(themeColors.surface)
                     ) {
                         standardNumbers.forEach { num ->
                             DropdownMenuItem(
@@ -1382,7 +1440,7 @@ fun MergedTasbihControlBottomBar(
                                     Text(
                                         text = "$num",
                                         fontWeight = if (target == num) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (target == num) DeepVibrantTeal else DarkPine
+                                        color = if (target == num) themeColors.accent else themeColors.arabicText
                                     )
                                 },
                                 onClick = {
@@ -1394,7 +1452,7 @@ fun MergedTasbihControlBottomBar(
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = DeepVibrantTeal,
+                                            tint = themeColors.accent,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
@@ -1424,8 +1482,8 @@ fun MergedTasbihControlBottomBar(
                         .weight(1f)
                         .clickable(onClick = onOpenDhikrSelector),
                     shape = RoundedCornerShape(12.dp),
-                    color = SoftTealTint,
-                    border = BorderStroke(1.dp, BorderTealGray)
+                    color = if (themeColors.isDark) themeColors.border else SoftTealTint,
+                    border = BorderStroke(1.dp, themeColors.border)
                 ) {
                     Row(
                         modifier = Modifier
@@ -1438,7 +1496,7 @@ fun MergedTasbihControlBottomBar(
                             text = stringResource(R.string.tasbih_choose_zikr_btn),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine,
+                                color = themeColors.arabicText,
                                 fontSize = 13.sp
                             ),
                             maxLines = 1,
@@ -1447,7 +1505,7 @@ fun MergedTasbihControlBottomBar(
                         Icon(
                             imageVector = Icons.Default.LibraryBooks,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = themeColors.accent,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -1468,14 +1526,14 @@ fun MergedTasbihControlBottomBar(
                     // Session Laps Badge
                     Surface(
                         shape = RoundedCornerShape(10.dp),
-                        color = CanvasMint,
-                        border = BorderStroke(1.dp, BorderTealGray)
+                        color = if (themeColors.isDark) themeColors.border else CanvasMint,
+                        border = BorderStroke(1.dp, themeColors.border)
                     ) {
                         Text(
                             text = stringResource(R.string.tasbih_laps_badge, laps),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DeepVibrantTeal,
+                                color = themeColors.accent,
                                 fontSize = 12.sp
                             ),
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
@@ -1485,14 +1543,14 @@ fun MergedTasbihControlBottomBar(
                     // All-Time Total Badge
                     Surface(
                         shape = RoundedCornerShape(10.dp),
-                        color = CanvasMint,
-                        border = BorderStroke(1.dp, BorderTealGray)
+                        color = if (themeColors.isDark) themeColors.border else CanvasMint,
+                        border = BorderStroke(1.dp, themeColors.border)
                     ) {
                         Text(
                             text = stringResource(R.string.tasbih_total_badge, totalAllTime),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine,
+                                color = themeColors.arabicText,
                                 fontSize = 12.sp
                             ),
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
@@ -1501,10 +1559,14 @@ fun MergedTasbihControlBottomBar(
                 }
 
                 // Right side: Reset Count Action Button
+                val resetBgColor = if (themeColors.isDark) Color(0xFF3B1219) else Color(0xFFFEE2E2)
+                val resetBorderColor = if (themeColors.isDark) Color(0xFF7F1D1D) else Color(0xFFFECACA)
+                val resetTextColor = if (themeColors.isDark) Color(0xFFF87171) else Color(0xFFE11D48)
+
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = Color(0xFFFEE2E2),
-                    border = BorderStroke(1.dp, Color(0xFFFECACA)),
+                    color = resetBgColor,
+                    border = BorderStroke(1.dp, resetBorderColor),
                     modifier = Modifier.clickable(onClick = onResetCount)
                 ) {
                     Row(
@@ -1515,14 +1577,14 @@ fun MergedTasbihControlBottomBar(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = stringResource(R.string.tasbih_reset_count_action),
-                            tint = Color(0xFFE11D48),
+                            tint = resetTextColor,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = stringResource(R.string.tasbih_reset_count_action),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFE11D48),
+                                color = resetTextColor,
                                 fontSize = 11.5.sp
                             )
                         )

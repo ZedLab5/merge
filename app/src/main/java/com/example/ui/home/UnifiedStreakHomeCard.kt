@@ -28,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,37 +38,44 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.MainViewModel
 import com.example.ui.NoorDestination
+import com.example.ui.theme.BorderTealGray
+import com.example.ui.theme.BorderTealLight
+import com.example.ui.theme.CanvasMint
+import com.example.ui.theme.DarkPine
+import com.example.ui.theme.DeepVibrantTeal
+import com.example.ui.theme.MetallicGold
+import com.example.ui.theme.ReadingThemeColors
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.SlateTealMuted
+import com.example.ui.theme.SoftTealTint
+import com.example.ui.theme.SurfaceWhite
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-// Custom Gradient Black Glassy & Fire Palette Constants
-private val GlassDarkGradientStart = Color(0xFF1E252B)
-private val GlassDarkGradientCenter = Color(0xFF14191D)
-private val GlassDarkGradientEnd = Color(0xFF0C0F12)
-
+// Fire accent colors (used for active flame highlights across both light and dark themes)
 private val FireOrange = Color(0xFFFF5722)
 private val FireAmber = Color(0xFFF59E0B)
 private val FireYellow = Color(0xFFFFCA28)
-private val WarmCreamText = Color(0xFFFFF8E7)
-private val MutedGlassText = Color(0xFF94A3B8)
-private val GlassBorder = Color(0xFFFFFFFF).copy(alpha = 0.12f)
-private val InnerGlassSurface = Color(0xFFFFFFFF).copy(alpha = 0.05f)
 
 @Composable
 fun UnifiedStreakHomeCard(
     viewModel: MainViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    customThemeColors: ReadingThemeColors? = null
 ) {
     val streakData by viewModel.unifiedStreakData.collectAsStateWithLifecycle()
     val isArabic by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isLangArabic = isArabic.equals("Arabic", ignoreCase = true) || isArabic == "العربية"
+
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = customThemeColors ?: remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
 
     val completedDeeds = streakData.todayCompletedCount.coerceIn(0, 4)
     val percentage = ((completedDeeds / 4f) * 100).toInt()
@@ -77,40 +85,43 @@ fun UnifiedStreakHomeCard(
         label = "streakProgressFraction"
     )
 
+    // Dynamic Theme Tokens
+    val cardBackground = if (isDark) themeColors.surface else SurfaceWhite
+    val cardBorder = if (isDark) themeColors.border else BorderTealGray
+    val titleColor = if (isDark) themeColors.arabicText else DarkPine
+    val subtitleColor = if (isDark) FireAmber else DeepVibrantTeal
+    val descriptionColor = if (isDark) themeColors.translationText else SlateTealMuted
+    val innerSurfaceColor = if (isDark) themeColors.background else Color(0xFFF7FAF9)
+    val innerBorderColor = if (isDark) themeColors.border else Color(0xFFDFEBE5)
+    val trackColor = if (isDark) themeColors.border else Color(0xFFE2EBE6)
+    val ctaBackground = if (isDark) themeColors.border.copy(alpha = 0.35f) else SoftTealTint
+    val ctaBorder = if (isDark) themeColors.border else BorderTealLight
+    val ctaTextColor = if (isDark) themeColors.arabicText else DarkPine
+    val ctaActionColor = if (isDark) themeColors.accent else DeepVibrantTeal
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(26.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable {
                 viewModel.navigateTo(NoorDestination.STREAKS)
             }
             .testTag("unified_streak_home_card"),
-        shape = RoundedCornerShape(26.dp),
-        shadowElevation = 6.dp,
-        border = BorderStroke(1.dp, GlassBorder)
+        shape = RoundedCornerShape(24.dp),
+        color = cardBackground,
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.2.dp, cardBorder)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            GlassDarkGradientStart,
-                            GlassDarkGradientCenter,
-                            GlassDarkGradientEnd
-                        )
-                    )
-                )
-        ) {
-            // Ambient Glassy Auras (Subtle Fire Glow at Top Left & Soft Frost at Bottom Right)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Subtle ambient warm/teal glow aura matching the theme
             Box(
                 modifier = Modifier
-                    .size(200.dp)
+                    .size(180.dp)
                     .align(Alignment.TopStart)
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                FireOrange.copy(alpha = 0.12f),
+                                (if (isDark) FireOrange.copy(alpha = 0.08f) else FireOrange.copy(alpha = 0.05f)),
                                 Color.Transparent
                             )
                         )
@@ -124,7 +135,7 @@ fun UnifiedStreakHomeCard(
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFF38BDF8).copy(alpha = 0.06f),
+                                (if (isDark) themeColors.accent.copy(alpha = 0.06f) else DeepVibrantTeal.copy(alpha = 0.04f)),
                                 Color.Transparent
                             )
                         )
@@ -134,47 +145,59 @@ fun UnifiedStreakHomeCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 18.dp)
+                    .padding(horizontal = 18.dp, vertical = 18.dp)
             ) {
                 // =========================================================================
-                // 1. HERO HEADER: Left (Fire Icon & Streak Title) + Right (% Progress Circle)
+                // 1. HERO HEADER: Left (Fire Icon & Streak Title) + Right (% Progress Gauge)
                 // =========================================================================
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // LEFT SIDE: Fire Icon (without circle) + Titles & Status
+                    // LEFT SIDE: Fire Icon + Titles & Status
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 12.dp)
                     ) {
-                        // Title Row with raw Fire Icon
+                        // Title Row with Fire Icon
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Raw Fire Icon with authentic flame color
-                            Icon(
-                                imageVector = Icons.Filled.LocalFireDepartment,
-                                contentDescription = "Fire Streak",
-                                tint = FireOrange,
-                                modifier = Modifier.size(24.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (isDark) themeColors.background else Color(0xFFFFF4EB))
+                                    .border(
+                                        1.dp,
+                                        if (isDark) themeColors.border else Color(0xFFFFD8BF),
+                                        RoundedCornerShape(10.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.LocalFireDepartment,
+                                    contentDescription = "Fire Streak",
+                                    tint = FireOrange,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
 
                             Text(
                                 text = if (isLangArabic) "سلسلة المواظبة" else "Devotion Streak",
-                                style = MaterialTheme.typography.titleLarge.copy(
+                                style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    letterSpacing = 0.2.sp
+                                    color = titleColor,
+                                    fontSize = 17.sp,
+                                    letterSpacing = 0.1.sp
                                 )
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(5.dp))
 
                         // Sub-headline: Streak continuous chain
                         Text(
@@ -183,22 +206,33 @@ fun UnifiedStreakHomeCard(
                             } else {
                                 if (isLangArabic) "ابدأ مسيرة المواظبة اليوم" else "Start your daily devotion chain"
                             },
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = FireYellow,
-                                fontSize = 13.sp,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = subtitleColor,
+                                fontSize = 12.5.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(7.dp))
 
-                        // Status Badge: Translucent Glass Pill
+                        // Status Badge: Clean Theme Pill
+                        val isAnyCompleted = streakData.isTodayAnyCompleted
                         Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = if (streakData.isTodayAnyCompleted) FireAmber.copy(alpha = 0.18f) else Color.White.copy(alpha = 0.08f),
+                            shape = RoundedCornerShape(12.dp),
+                            color = when {
+                                isDark && isAnyCompleted -> themeColors.accent.copy(alpha = 0.15f)
+                                isDark -> themeColors.border.copy(alpha = 0.4f)
+                                isAnyCompleted -> SoftTealTint
+                                else -> Color(0xFFF1F5F4)
+                            },
                             border = BorderStroke(
                                 1.dp,
-                                if (streakData.isTodayAnyCompleted) FireAmber.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.15f)
+                                when {
+                                    isDark && isAnyCompleted -> themeColors.accent.copy(alpha = 0.4f)
+                                    isDark -> themeColors.border
+                                    isAnyCompleted -> DeepVibrantTeal.copy(alpha = 0.35f)
+                                    else -> Color(0xFFDFEBE5)
+                                }
                             )
                         ) {
                             Row(
@@ -206,14 +240,30 @@ fun UnifiedStreakHomeCard(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isAnyCompleted) {
+                                                if (isDark) themeColors.accent else DeepVibrantTeal
+                                            } else {
+                                                if (isDark) themeColors.translationText else SlateTealMuted
+                                            }
+                                        )
+                                )
                                 Text(
-                                    text = if (streakData.isTodayAnyCompleted) {
+                                    text = if (isAnyCompleted) {
                                         if (isLangArabic) "نشط اليوم ✓" else "Active Today ✓"
                                     } else {
                                         if (isLangArabic) "بانتظار الإنجاز" else "Pending Today"
                                     },
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = if (streakData.isTodayAnyCompleted) WarmCreamText else MutedGlassText,
+                                        color = if (isAnyCompleted) {
+                                            if (isDark) themeColors.arabicText else DeepVibrantTeal
+                                        } else {
+                                            if (isDark) themeColors.translationText else SlateTealMuted
+                                        },
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 11.sp
                                     )
@@ -229,17 +279,18 @@ fun UnifiedStreakHomeCard(
                     ) {
                         Canvas(modifier = Modifier.size(72.dp)) {
                             val strokeWidth = 5.5.dp.toPx()
-                            // Outer Track: Translucent white glass ring
+                            // Outer Track
                             drawCircle(
-                                color = Color.White.copy(alpha = 0.12f),
+                                color = trackColor,
                                 style = Stroke(width = strokeWidth)
                             )
-                            // Active Progress Arc: Glowing Fire Gradient Arc starting at 0%
+                            // Active Progress Arc
                             if (progressFraction > 0f) {
                                 drawArc(
                                     brush = Brush.sweepGradient(
                                         listOf(
                                             FireOrange,
+                                            FireAmber,
                                             FireYellow,
                                             FireOrange
                                         )
@@ -261,15 +312,15 @@ fun UnifiedStreakHomeCard(
                                 text = "$percentage%",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Black,
-                                    color = Color.White,
-                                    fontSize = 17.sp,
+                                    color = titleColor,
+                                    fontSize = 16.5.sp,
                                     lineHeight = 18.sp
                                 )
                             )
                             Text(
                                 text = if (isLangArabic) "إنجاز" else "DONE",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = if (percentage > 0) FireYellow else MutedGlassText,
+                                    color = if (percentage > 0) FireAmber else descriptionColor,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 8.5.sp,
                                     letterSpacing = 0.6.sp
@@ -282,18 +333,18 @@ fun UnifiedStreakHomeCard(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 // =========================================================================
-                // 2. CURRENT WEEK CHAIN (Inside the Glassy Card)
+                // 2. CURRENT WEEK CHAIN (Theme-Adaptive Inner Card)
                 // =========================================================================
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = InnerGlassSurface,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                    color = innerSurfaceColor,
+                    border = BorderStroke(1.dp, innerBorderColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                            .padding(horizontal = 13.dp, vertical = 11.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -304,22 +355,22 @@ fun UnifiedStreakHomeCard(
                                 text = if (isLangArabic) "مسار الأسبوع الحالي" else "CURRENT WEEK CHAIN",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = MutedGlassText,
+                                    color = descriptionColor,
                                     fontSize = 10.sp,
-                                    letterSpacing = 0.6.sp
+                                    letterSpacing = 0.5.sp
                                 )
                             )
                             Text(
                                 text = "$completedDeeds/4 ${if (isLangArabic) "طاعات" else "deeds"}",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = if (completedDeeds > 0) FireYellow else MutedGlassText,
+                                    color = if (completedDeeds > 0) subtitleColor else descriptionColor,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.5.sp
                                 )
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         // 7 Day Status Indicators (M T W T F S S)
                         val today = LocalDate.now()
@@ -365,17 +416,17 @@ fun UnifiedStreakHomeCard(
                                             .clip(CircleShape)
                                             .background(
                                                 when {
-                                                    jewel.isCompleted -> FireAmber.copy(alpha = 0.25f)
-                                                    jewel.isToday -> Color.White.copy(alpha = 0.12f)
-                                                    else -> Color.White.copy(alpha = 0.05f)
+                                                    jewel.isCompleted -> if (isDark) FireAmber.copy(alpha = 0.2f) else Color(0xFFFFF4EB)
+                                                    jewel.isToday -> if (isDark) themeColors.surface else SurfaceWhite
+                                                    else -> if (isDark) themeColors.surface.copy(alpha = 0.5f) else SurfaceWhite
                                                 }
                                             )
                                             .border(
                                                 width = if (jewel.isToday) 1.5.dp else 1.dp,
                                                 color = when {
-                                                    jewel.isCompleted -> FireAmber
-                                                    jewel.isToday -> FireYellow
-                                                    else -> Color.White.copy(alpha = 0.1f)
+                                                    jewel.isCompleted -> if (isDark) FireAmber else Color(0xFFFFD8BF)
+                                                    jewel.isToday -> if (isDark) themeColors.accent else DeepVibrantTeal
+                                                    else -> if (isDark) themeColors.border else Color(0xFFE2EBE6)
                                                 },
                                                 shape = CircleShape
                                             ),
@@ -393,7 +444,7 @@ fun UnifiedStreakHomeCard(
                                                 modifier = Modifier
                                                     .size(6.dp)
                                                     .clip(CircleShape)
-                                                    .background(FireYellow)
+                                                    .background(if (isDark) themeColors.accent else DeepVibrantTeal)
                                             )
                                         }
                                     }
@@ -402,7 +453,7 @@ fun UnifiedStreakHomeCard(
                                         text = jewel.label,
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = if (jewel.isToday) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (jewel.isToday) FireYellow else MutedGlassText,
+                                            color = if (jewel.isToday) titleColor else descriptionColor,
                                             fontSize = 11.sp
                                         )
                                     )
@@ -424,7 +475,7 @@ fun UnifiedStreakHomeCard(
                         "Complete your 4 daily devotions (Salat, Quran, Azkar, Tasbih) to keep your spiritual streak flame alive."
                     },
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MutedGlassText,
+                        color = descriptionColor,
                         fontSize = 11.5.sp,
                         lineHeight = 16.sp
                     ),
@@ -437,19 +488,20 @@ fun UnifiedStreakHomeCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White.copy(alpha = 0.06f))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ctaBackground)
+                        .border(1.dp, ctaBorder, RoundedCornerShape(12.dp))
                         .clickable { viewModel.navigateTo(NoorDestination.STREAKS) }
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .padding(horizontal = 12.dp, vertical = 9.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = if (isLangArabic) "عرض تفاصيل السلسلة والأوسمة" else "View Full Streaks & Analytics",
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = WarmCreamText,
+                            color = ctaTextColor,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 12.5.sp
                         )
                     )
 
@@ -460,15 +512,15 @@ fun UnifiedStreakHomeCard(
                         Text(
                             text = if (isLangArabic) "فتح الصفحة" else "Open",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = FireYellow,
+                                color = ctaActionColor,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
+                                fontSize = 11.5.sp
                             )
                         )
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "Navigate to Streaks",
-                            tint = FireYellow,
+                            tint = ctaActionColor,
                             modifier = Modifier.size(13.dp)
                         )
                     }
@@ -484,4 +536,5 @@ private data class DayJewelInfo(
     val isCompleted: Boolean,
     val isFuture: Boolean
 )
+
 

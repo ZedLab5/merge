@@ -232,12 +232,12 @@ fun AppSettingsModal(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // 1. THEME ACCORDION (With Dark Mode Toggle & Shared Theme Controls)
+                // 1. THEME ACCORDION (Simplified Light / Dark Switch Only)
                 item(key = "section_theme") {
                     SettingsAccordionCard(
                         icon = if (isDarkMode) Icons.Default.Palette else Icons.Default.LightMode,
                         title = stringResource(R.string.settings_section_theme),
-                        subtitle = if (isDarkMode) "Obsidian Night active" else "Clean Light Canvas active",
+                        subtitle = if (isDarkMode) "Dark Mode (Obsidian Night) active" else "Light Mode active",
                         isExpanded = isThemeExpanded,
                         onToggleExpand = { isThemeExpanded = !isThemeExpanded },
                         themeColors = themeColors
@@ -258,7 +258,7 @@ fun AppSettingsModal(
                                 )
                                 Spacer(modifier = Modifier.height(3.dp))
                                 Text(
-                                    text = if (isDarkMode) "Obsidian Night active across all app screens" else "Clean daytime mint canvas active",
+                                    text = if (isDarkMode) "Obsidian Night active app-wide" else "Default clean light theme active",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = themeColors.translationText,
                                         fontSize = 12.sp,
@@ -280,79 +280,6 @@ fun AppSettingsModal(
                                 )
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Text(
-                            text = "Reading & App Color Palettes",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = themeColors.translationText,
-                                fontSize = 11.5.sp
-                            )
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ReadingThemes.allThemes.forEach { theme ->
-                                val isSelected = readingThemeName == theme.name
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.setSharedReadingTheme(theme.name) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = if (isSelected) (if (isDarkMode) themeColors.border else NoorSoftGreenBg) else (if (isDarkMode) themeColors.background else Color.White),
-                                    border = BorderStroke(1.dp, if (isSelected) themeColors.accent else themeColors.border)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(24.dp)
-                                                    .clip(CircleShape)
-                                                    .background(theme.surface)
-                                                    .border(1.dp, theme.border, CircleShape),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(10.dp)
-                                                        .clip(CircleShape)
-                                                        .background(theme.accent)
-                                                )
-                                            }
-                                            Text(
-                                                text = theme.name,
-                                                style = MaterialTheme.typography.bodyMedium.copy(
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                                                    color = if (isSelected) themeColors.accent else themeColors.arabicText,
-                                                    fontSize = 13.5.sp
-                                                )
-                                            )
-                                        }
-
-                                        if (isSelected) {
-                                            Icon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = null,
-                                                tint = themeColors.accent,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
 
@@ -363,14 +290,15 @@ fun AppSettingsModal(
                         title = stringResource(R.string.settings_section_language),
                         subtitle = stringResource(R.string.settings_language_sub),
                         isExpanded = isLanguageExpanded,
-                        onToggleExpand = { isLanguageExpanded = !isLanguageExpanded }
+                        onToggleExpand = { isLanguageExpanded = !isLanguageExpanded },
+                        themeColors = themeColors
                     ) {
                         // Global App Language Selector
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(NoorSurfaceSoft)
+                                .background(if (themeColors.isDark) themeColors.border else NoorSurfaceSoft)
                                 .clickable { showLanguageSelector = !showLanguageSelector }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -380,7 +308,7 @@ fun AppSettingsModal(
                                 Text(
                                     text = stringResource(R.string.settings_primary_language),
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = NoorSageSlate,
+                                        color = themeColors.translationText,
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 11.sp
                                     )
@@ -389,7 +317,7 @@ fun AppSettingsModal(
                                     text = "$appLanguage",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = NoorDarkPine,
+                                        color = themeColors.arabicText,
                                         fontSize = 14.sp
                                     )
                                 )
@@ -398,7 +326,7 @@ fun AppSettingsModal(
                             Icon(
                                 imageVector = if (showLanguageSelector) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                                 contentDescription = null,
-                                tint = NoorTealDark
+                                tint = themeColors.accent
                             )
                         }
 
@@ -432,8 +360,8 @@ fun AppSettingsModal(
                                                 showLanguageSelector = false
                                             },
                                         shape = RoundedCornerShape(10.dp),
-                                        color = if (isSelected) NoorSoftGreenBg else Color.White,
-                                        border = BorderStroke(1.dp, if (isSelected) NoorTealDark else NoorCardBorder)
+                                        color = if (isSelected) (if (themeColors.isDark) themeColors.border else NoorSoftGreenBg) else (if (themeColors.isDark) themeColors.surface else Color.White),
+                                        border = BorderStroke(1.dp, if (isSelected) themeColors.accent else themeColors.border)
                                     ) {
                                         Row(
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
@@ -444,7 +372,7 @@ fun AppSettingsModal(
                                                 text = label,
                                                 style = MaterialTheme.typography.bodySmall.copy(
                                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                    color = if (isSelected) NoorTealDark else NoorDarkPine,
+                                                    color = if (isSelected) themeColors.accent else themeColors.arabicText,
                                                     fontSize = 13.sp
                                                 )
                                             )
@@ -452,7 +380,7 @@ fun AppSettingsModal(
                                                 Icon(
                                                     imageVector = Icons.Default.Check,
                                                     contentDescription = null,
-                                                    tint = NoorTealDark,
+                                                    tint = themeColors.accent,
                                                     modifier = Modifier.size(16.dp)
                                                 )
                                             }
@@ -463,7 +391,7 @@ fun AppSettingsModal(
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = NoorCardBorder.copy(alpha = 0.6f))
+                        HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f))
                         Spacer(modifier = Modifier.height(14.dp))
 
                         // GLOBAL ARABIC SECONDARY LAYER TOGGLE
@@ -477,7 +405,7 @@ fun AppSettingsModal(
                                     text = stringResource(R.string.settings_show_arabic_secondary),
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = NoorDarkPine,
+                                        color = themeColors.arabicText,
                                         fontSize = 14.sp
                                     )
                                 )
@@ -485,7 +413,7 @@ fun AppSettingsModal(
                                 Text(
                                     text = stringResource(R.string.settings_show_arabic_desc),
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = NoorSageSlate,
+                                        color = themeColors.translationText,
                                         fontSize = 11.5.sp,
                                         lineHeight = 16.sp
                                     )
@@ -497,9 +425,9 @@ fun AppSettingsModal(
                                 onCheckedChange = { viewModel.toggleArabicSecondaryText(it) },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
-                                    checkedTrackColor = NoorTealDark,
-                                    uncheckedThumbColor = NoorSageSlate,
-                                    uncheckedTrackColor = NoorSurfaceSoft
+                                    checkedTrackColor = themeColors.accent,
+                                    uncheckedThumbColor = themeColors.translationText,
+                                    uncheckedTrackColor = themeColors.border
                                 )
                             )
                         }
@@ -513,13 +441,15 @@ fun AppSettingsModal(
                         title = stringResource(R.string.settings_section_notifications),
                         subtitle = stringResource(R.string.settings_notif_sub),
                         isExpanded = isNotifExpanded,
-                        onToggleExpand = { isNotifExpanded = !isNotifExpanded }
+                        onToggleExpand = { isNotifExpanded = !isNotifExpanded },
+                        themeColors = themeColors
                     ) {
                         NotificationToggleRow(
                             title = stringResource(R.string.settings_notif_azkar),
                             description = stringResource(R.string.settings_notif_azkar_desc),
                             checked = morningAzkarNotif,
-                            onCheckedChange = { viewModel.toggleMorningEveningAzkarNotification() }
+                            onCheckedChange = { viewModel.toggleMorningEveningAzkarNotification() },
+                            themeColors = themeColors
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -528,7 +458,8 @@ fun AppSettingsModal(
                             title = stringResource(R.string.settings_notif_daily_ayah),
                             description = stringResource(R.string.settings_notif_ayah_desc),
                             checked = dailyAyahNotif,
-                            onCheckedChange = { viewModel.toggleDailyAyahNotification() }
+                            onCheckedChange = { viewModel.toggleDailyAyahNotification() },
+                            themeColors = themeColors
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -537,7 +468,8 @@ fun AppSettingsModal(
                             title = stringResource(R.string.settings_notif_qaza),
                             description = stringResource(R.string.settings_notif_qaza_desc),
                             checked = qazaNotif,
-                            onCheckedChange = { viewModel.toggleQazaReminderNotification() }
+                            onCheckedChange = { viewModel.toggleQazaReminderNotification() },
+                            themeColors = themeColors
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -546,7 +478,8 @@ fun AppSettingsModal(
                             title = stringResource(R.string.settings_notif_vibrate_adhan),
                             description = stringResource(R.string.settings_notif_vibrate_desc),
                             checked = vibrateAdhan,
-                            onCheckedChange = { viewModel.toggleVibrationOnAdhan() }
+                            onCheckedChange = { viewModel.toggleVibrationOnAdhan() },
+                            themeColors = themeColors
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -565,7 +498,7 @@ fun AppSettingsModal(
                                     Icon(
                                         imageVector = Icons.Default.VolumeUp,
                                         contentDescription = null,
-                                        tint = NoorTealDark,
+                                        tint = themeColors.accent,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
@@ -573,7 +506,7 @@ fun AppSettingsModal(
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 13.sp,
-                                            color = NoorDarkPine
+                                            color = themeColors.arabicText
                                         )
                                     )
                                 }
@@ -581,7 +514,7 @@ fun AppSettingsModal(
                                     text = "$adhanVolume%",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = NoorTealDark
+                                        color = themeColors.accent
                                     )
                                 )
                             }
@@ -590,9 +523,9 @@ fun AppSettingsModal(
                                 onValueChange = { viewModel.setAdhanSoundVolume(it.toInt()) },
                                 valueRange = 0f..100f,
                                 colors = SliderDefaults.colors(
-                                    thumbColor = NoorTealDark,
-                                    activeTrackColor = NoorTealDark,
-                                    inactiveTrackColor = NoorCardBorder
+                                    thumbColor = themeColors.accent,
+                                    activeTrackColor = themeColors.accent,
+                                    inactiveTrackColor = themeColors.border
                                 )
                             )
                         }
@@ -607,12 +540,13 @@ fun AppSettingsModal(
                         subtitle = stringResource(R.string.settings_calc_sub),
                         trailingBadge = "MWL",
                         isExpanded = isCalcExpanded,
-                        onToggleExpand = { isCalcExpanded = !isCalcExpanded }
+                        onToggleExpand = { isCalcExpanded = !isCalcExpanded },
+                        themeColors = themeColors
                     ) {
                         Text(
                             text = stringResource(R.string.settings_calc_details),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = NoorSageSlate,
+                                color = themeColors.translationText,
                                 fontSize = 12.sp,
                                 lineHeight = 18.sp
                             )
@@ -627,12 +561,13 @@ fun AppSettingsModal(
                         title = stringResource(R.string.settings_section_contact),
                         subtitle = stringResource(R.string.settings_contact_sub),
                         isExpanded = isContactExpanded,
-                        onToggleExpand = { isContactExpanded = !isContactExpanded }
+                        onToggleExpand = { isContactExpanded = !isContactExpanded },
+                        themeColors = themeColors
                     ) {
                         Text(
                             text = stringResource(R.string.settings_contact_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = NoorSageSlate,
+                                color = themeColors.translationText,
                                 fontSize = 12.sp,
                                 lineHeight = 16.5.sp
                             )
@@ -659,7 +594,7 @@ fun AppSettingsModal(
                                     }
                                 },
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = NoorTealDark),
+                                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
@@ -667,10 +602,11 @@ fun AppSettingsModal(
                                 Icon(
                                     imageVector = Icons.Default.Email,
                                     contentDescription = null,
+                                    tint = Color.White,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.settings_email_support), fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.settings_email_support), color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
                             }
 
                             OutlinedButton(
@@ -680,8 +616,8 @@ fun AppSettingsModal(
                                     viewModel.showToast("Email address copied: support@alnoorapp.com")
                                 },
                                 shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, NoorTealDark.copy(alpha = 0.5f)),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = NoorTealDark),
+                                border = BorderStroke(1.dp, themeColors.accent.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = themeColors.accent),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
@@ -689,10 +625,11 @@ fun AppSettingsModal(
                                 Icon(
                                     imageVector = Icons.Default.ContentCopy,
                                     contentDescription = null,
+                                    tint = themeColors.accent,
                                     modifier = Modifier.size(15.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.settings_copy_email), fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.settings_copy_email), color = themeColors.accent, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -705,12 +642,13 @@ fun AppSettingsModal(
                         title = stringResource(R.string.settings_section_privacy),
                         subtitle = stringResource(R.string.settings_privacy_sub),
                         isExpanded = isPrivacyExpanded,
-                        onToggleExpand = { isPrivacyExpanded = !isPrivacyExpanded }
+                        onToggleExpand = { isPrivacyExpanded = !isPrivacyExpanded },
+                        themeColors = themeColors
                     ) {
                         Text(
                             text = stringResource(R.string.settings_privacy_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = NoorSageSlate,
+                                color = themeColors.translationText,
                                 fontSize = 12.sp,
                                 lineHeight = 16.5.sp
                             )
@@ -722,14 +660,14 @@ fun AppSettingsModal(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(NoorSoftGreenBg)
-                                .border(1.dp, NoorSoftGreenBorder, RoundedCornerShape(10.dp))
+                                .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg)
+                                .border(1.dp, if (themeColors.isDark) themeColors.accent.copy(alpha = 0.3f) else NoorSoftGreenBorder, RoundedCornerShape(10.dp))
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            PrivacyItem(title = stringResource(R.string.settings_privacy_item1_title), detail = stringResource(R.string.settings_privacy_item1_desc))
-                            PrivacyItem(title = stringResource(R.string.settings_privacy_item2_title), detail = stringResource(R.string.settings_privacy_item2_desc))
-                            PrivacyItem(title = stringResource(R.string.settings_privacy_item3_title), detail = stringResource(R.string.settings_privacy_item3_desc))
+                            PrivacyItem(title = stringResource(R.string.settings_privacy_item1_title), detail = stringResource(R.string.settings_privacy_item1_desc), themeColors = themeColors)
+                            PrivacyItem(title = stringResource(R.string.settings_privacy_item2_title), detail = stringResource(R.string.settings_privacy_item2_desc), themeColors = themeColors)
+                            PrivacyItem(title = stringResource(R.string.settings_privacy_item3_title), detail = stringResource(R.string.settings_privacy_item3_desc), themeColors = themeColors)
                         }
                     }
                 }
@@ -741,12 +679,13 @@ fun AppSettingsModal(
                         title = stringResource(R.string.settings_section_about),
                         subtitle = stringResource(R.string.settings_about_sub),
                         isExpanded = isAboutExpanded,
-                        onToggleExpand = { isAboutExpanded = !isAboutExpanded }
+                        onToggleExpand = { isAboutExpanded = !isAboutExpanded },
+                        themeColors = themeColors
                     ) {
                         Text(
                             text = stringResource(R.string.settings_about_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = NoorSageSlate,
+                                color = themeColors.translationText,
                                 fontSize = 12.sp,
                                 lineHeight = 16.5.sp
                             )
@@ -758,8 +697,8 @@ fun AppSettingsModal(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(NoorSurfaceSoft)
-                                .border(1.dp, NoorCardBorder, RoundedCornerShape(10.dp))
+                                .background(if (themeColors.isDark) themeColors.border else NoorSurfaceSoft)
+                                .border(1.dp, themeColors.border, RoundedCornerShape(10.dp))
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -767,14 +706,14 @@ fun AppSettingsModal(
                                 text = stringResource(R.string.settings_about_sources_title),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = NoorDarkPine,
+                                    color = themeColors.accent,
                                     fontSize = 11.5.sp
                                 )
                             )
                             Text(
                                 text = stringResource(R.string.settings_about_sources_list),
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = NoorDarkPine.copy(alpha = 0.85f),
+                                    color = themeColors.arabicText,
                                     fontSize = 11.sp,
                                     lineHeight = 16.sp
                                 )
@@ -788,8 +727,8 @@ fun AppSettingsModal(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, NoorCardBorder)
+                        color = themeColors.surface,
+                        border = BorderStroke(1.dp, themeColors.border)
                     ) {
                         Column(
                             modifier = Modifier
@@ -805,14 +744,14 @@ fun AppSettingsModal(
                                     modifier = Modifier
                                         .size(38.dp)
                                         .clip(RoundedCornerShape(11.dp))
-                                        .background(NoorSoftGreenBg)
-                                        .border(1.dp, NoorSoftGreenBorder, RoundedCornerShape(11.dp)),
+                                        .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg)
+                                        .border(1.dp, if (themeColors.isDark) themeColors.accent.copy(alpha = 0.3f) else NoorSoftGreenBorder, RoundedCornerShape(11.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Share,
                                         contentDescription = null,
-                                        tint = NoorTealDark,
+                                        tint = themeColors.accent,
                                         modifier = Modifier.size(19.dp)
                                     )
                                 }
@@ -822,14 +761,14 @@ fun AppSettingsModal(
                                         text = "Share Al-Noor",
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = NoorDarkPine,
+                                            color = themeColors.arabicText,
                                             fontSize = 15.5.sp
                                         )
                                     )
                                     Text(
                                         text = "Spread beneficial knowledge with loved ones",
                                         style = MaterialTheme.typography.bodySmall.copy(
-                                            color = NoorSageSlate,
+                                            color = themeColors.translationText,
                                             fontSize = 12.sp
                                         )
                                     )
@@ -841,7 +780,7 @@ fun AppSettingsModal(
                             Text(
                                 text = "\"Whoever guides someone to goodness will have a reward like one who did it.\" (Sahih Muslim)",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = NoorDarkPine,
+                                    color = themeColors.arabicText,
                                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                     fontSize = 12.sp,
                                     lineHeight = 16.5.sp
@@ -891,8 +830,8 @@ fun AppSettingsModal(
 
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFF4FAF7),
-                                    border = BorderStroke(1.dp, Color(0xFFCCE4DC)),
+                                    color = if (themeColors.isDark) themeColors.border else Color(0xFFF4FAF7),
+                                    border = BorderStroke(1.dp, themeColors.border),
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(42.dp)
@@ -911,14 +850,14 @@ fun AppSettingsModal(
                                         Icon(
                                             imageVector = Icons.Default.ContentCopy,
                                             contentDescription = null,
-                                            tint = NoorTealDark,
+                                            tint = themeColors.accent,
                                             modifier = Modifier.size(14.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             text = "Copy Link",
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = NoorTealDark,
+                                                color = themeColors.accent,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 12.5.sp
                                             )
@@ -935,8 +874,8 @@ fun AppSettingsModal(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, NoorCardBorder)
+                        color = themeColors.surface,
+                        border = BorderStroke(1.dp, themeColors.border)
                     ) {
                         Column(
                             modifier = Modifier
@@ -952,14 +891,14 @@ fun AppSettingsModal(
                                     modifier = Modifier
                                         .size(38.dp)
                                         .clip(RoundedCornerShape(11.dp))
-                                        .background(NoorSoftGreenBg)
-                                        .border(1.dp, NoorSoftGreenBorder, RoundedCornerShape(11.dp)),
+                                        .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg)
+                                        .border(1.dp, if (themeColors.isDark) themeColors.accent.copy(alpha = 0.3f) else NoorSoftGreenBorder, RoundedCornerShape(11.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Public,
                                         contentDescription = null,
-                                        tint = NoorTealDark,
+                                        tint = themeColors.accent,
                                         modifier = Modifier.size(19.dp)
                                     )
                                 }
@@ -969,14 +908,14 @@ fun AppSettingsModal(
                                         text = "Follow Us",
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = NoorDarkPine,
+                                            color = themeColors.arabicText,
                                             fontSize = 15.5.sp
                                         )
                                     )
                                     Text(
                                         text = "Official social channels & updates",
                                         style = MaterialTheme.typography.bodySmall.copy(
-                                            color = NoorSageSlate,
+                                            color = themeColors.translationText,
                                             fontSize = 12.sp
                                         )
                                     )
@@ -992,6 +931,7 @@ fun AppSettingsModal(
                                 SocialChannelChip(
                                     label = "𝕏 Twitter",
                                     handle = "@AlNoorIslamic",
+                                    themeColors = themeColors,
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
@@ -1002,6 +942,7 @@ fun AppSettingsModal(
                                 SocialChannelChip(
                                     label = "YouTube",
                                     handle = "@AlNoorApp",
+                                    themeColors = themeColors,
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
@@ -1020,6 +961,7 @@ fun AppSettingsModal(
                                 SocialChannelChip(
                                     label = "Telegram",
                                     handle = "t.me/AlNoorApp",
+                                    themeColors = themeColors,
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
@@ -1030,6 +972,7 @@ fun AppSettingsModal(
                                 SocialChannelChip(
                                     label = "Instagram",
                                     handle = "@AlNoor.App",
+                                    themeColors = themeColors,
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
@@ -1257,21 +1200,22 @@ private fun PaletteSwatch(
 @Composable
 private fun PrivacyItem(
     title: String,
-    detail: String
+    detail: String,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
     Column {
         Text(
             text = "• $title",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = NoorTealDark,
+                color = themeColors.accent,
                 fontSize = 12.sp
             )
         )
         Text(
             text = detail,
             style = MaterialTheme.typography.bodySmall.copy(
-                color = NoorDarkPine.copy(alpha = 0.85f),
+                color = themeColors.arabicText.copy(alpha = 0.85f),
                 fontSize = 11.5.sp,
                 lineHeight = 15.sp
             )
@@ -1284,13 +1228,14 @@ private fun SocialChannelChip(
     label: String,
     handle: String,
     modifier: Modifier = Modifier,
+    themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp,
     onClick: () -> Unit
 ) {
     Surface(
         modifier = modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        color = NoorSurfaceSoft,
-        border = BorderStroke(1.dp, NoorCardBorder)
+        color = if (themeColors.isDark) themeColors.border else NoorSurfaceSoft,
+        border = BorderStroke(1.dp, themeColors.border)
     ) {
         Row(
             modifier = Modifier
@@ -1304,14 +1249,14 @@ private fun SocialChannelChip(
                     text = label,
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = NoorDarkPine,
+                        color = themeColors.arabicText,
                         fontSize = 12.sp
                     )
                 )
                 Text(
                     text = handle,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = NoorSageSlate,
+                        color = themeColors.translationText,
                         fontSize = 10.5.sp
                     )
                 )
@@ -1319,7 +1264,7 @@ private fun SocialChannelChip(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
-                tint = NoorTealDark,
+                tint = themeColors.accent,
                 modifier = Modifier.size(13.dp)
             )
         }
