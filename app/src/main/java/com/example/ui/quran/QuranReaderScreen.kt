@@ -157,7 +157,8 @@ fun QuranReaderScreen(
     val fontSizeSp by viewModel.arabicFontSizeSp.collectAsStateWithLifecycle()
     val showTransliteration by viewModel.showTransliteration.collectAsStateWithLifecycle()
     val showTranslation by viewModel.showTranslation.collectAsStateWithLifecycle()
-    val readingThemeName by viewModel.quranReadingTheme.collectAsStateWithLifecycle()
+    val sharedThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val isSepiaMode by viewModel.isQuranSepiaMode.collectAsStateWithLifecycle()
     val isAudioPlaying by viewModel.isAudioPlaying.collectAsStateWithLifecycle()
     val currentPlayingVerse by viewModel.currentPlayingVerse.collectAsStateWithLifecycle()
     val currentPlayingSurah by viewModel.currentPlayingSurah.collectAsStateWithLifecycle()
@@ -323,9 +324,10 @@ fun QuranReaderScreen(
         }
     }
 
-    // Determine current theme colors
-    val themeColors = remember(readingThemeName) {
-        ReadingThemes.getThemeByName(readingThemeName)
+    // Determine current theme colors for Quran Reader: Sepia if toggled, otherwise app-wide theme
+    val themeColors = remember(isSepiaMode, sharedThemeName) {
+        if (isSepiaMode) ReadingThemes.SepiaParchment
+        else ReadingThemes.getThemeByName(sharedThemeName)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -651,62 +653,68 @@ fun QuranReaderScreen(
                             }
                         }
 
-                        // 2. Reading Canvas Theme Options (Tightened vertical padding)
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        // 2. Reading Canvas Sepia Parchment Toggle (Exclusive to Quran Reader)
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { viewModel.toggleQuranSepiaMode() },
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (themeColors.isDark) themeColors.surface else Color(0xFFFAF6EE),
+                            border = BorderStroke(
+                                1.2.dp,
+                                if (isSepiaMode) Color(0xFFB57E1A) else themeColors.border.copy(alpha = 0.6f)
+                            )
                         ) {
-                            Text(
-                                text = "Reading Canvas Theme",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = themeColors.arabicText
-                                )
-                            )
-
-                            val themes = listOf(
-                                "Madani Crisp" to Color(0xFFF2FBF9),
-                                "Sepia Parchment" to Color(0xFFF9F4E8),
-                                "Obsidian Night" to Color(0xFF0F1418),
-                                "Emerald Noor" to Color(0xFFEBF7F5)
-                            )
-
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                themes.forEach { (name, color) ->
-                                    val isSelected = readingThemeName == name
-                                    Surface(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable { viewModel.quranReadingTheme.value = name },
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = color,
-                                        border = BorderStroke(
-                                            if (isSelected) 1.8.dp else 1.dp,
-                                            if (isSelected) themeColors.accent else themeColors.border.copy(alpha = 0.5f)
-                                        ),
-                                        shadowElevation = if (isSelected) 1.dp else 0.dp
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         Box(
                                             modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 4.dp, vertical = 8.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = name.split(" ").first(),
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontSize = 11.5.sp,
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                                    color = if (name == "Obsidian Night") Color.White else if (isSelected) themeColors.accent else DarkPine
-                                                ),
-                                                maxLines = 1
+                                                .size(12.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFF9F4E8))
+                                                .border(1.dp, Color(0xFFB57E1A), CircleShape)
+                                        )
+                                        Text(
+                                            text = "Sepia Parchment Theme",
+                                            style = MaterialTheme.typography.titleSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = themeColors.arabicText,
+                                                fontSize = 14.5.sp
                                             )
-                                        }
+                                        )
                                     }
+                                    Spacer(modifier = Modifier.height(3.dp))
+                                    Text(
+                                        text = "Warm vintage parchment canvas exclusively for Quran reading",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = themeColors.translationText,
+                                            fontSize = 12.sp,
+                                            lineHeight = 16.sp
+                                        )
+                                    )
                                 }
+
+                                Switch(
+                                    checked = isSepiaMode,
+                                    onCheckedChange = { viewModel.toggleQuranSepiaMode(it) },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = Color(0xFFB57E1A),
+                                        uncheckedThumbColor = themeColors.translationText,
+                                        uncheckedTrackColor = themeColors.border
+                                    )
+                                )
                             }
                         }
 

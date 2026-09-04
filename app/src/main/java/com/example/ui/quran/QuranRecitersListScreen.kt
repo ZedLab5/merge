@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Headphones
@@ -42,8 +40,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +51,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,13 +61,11 @@ import com.example.R
 import com.example.data.model.Reciter
 import com.example.data.quran.QuranData
 import com.example.ui.MainViewModel
-import com.example.ui.NoorDestination
 import com.example.ui.components.NoorTopBar
 import com.example.ui.theme.BorderTealGray
-import com.example.ui.theme.CanvasMint
 import com.example.ui.theme.DarkPine
 import com.example.ui.theme.DeepVibrantTeal
-import com.example.ui.theme.PrimaryTealGradient
+import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
@@ -85,6 +82,9 @@ fun QuranRecitersListScreen(
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
             appLanguage == "العربية" ||
             appLanguage.startsWith("ar", ignoreCase = true)
+
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All") }
@@ -117,16 +117,15 @@ fun QuranRecitersListScreen(
     }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-        containerColor = CanvasMint,
+        modifier = modifier.fillMaxSize(),
+        containerColor = themeColors.background,
         topBar = {
             NoorTopBar(
                 title = if (isArabic) "قراء القرآن الكريم" else "Quran Reciters",
                 eyebrow = if (isArabic) "تلاوات عطرة" else "AUTHENTIC RECITATIONS",
                 subtitle = if (isArabic) "${reciters.size} قارئاً معتمداً" else "${reciters.size} World Renowned Qaris",
+                isDark = themeColors.isDark,
+                themeColors = themeColors,
                 onBackClick = { viewModel.navigateBack() },
                 backContentDescription = stringResource(R.string.action_back)
             )
@@ -136,8 +135,8 @@ fun QuranRecitersListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Search Input
             item(key = "search_bar") {
@@ -148,14 +147,17 @@ fun QuranRecitersListScreen(
                     placeholder = {
                         Text(
                             text = if (isArabic) "ابحث عن قارئ..." else "Search reciter or country...",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = SlateTealMuted)
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = themeColors.translationText.copy(alpha = 0.8f),
+                                fontSize = 14.sp
+                            )
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search",
-                            tint = SlateTealMuted
+                            tint = if (searchQuery.isNotBlank()) themeColors.accent else themeColors.translationText
                         )
                     },
                     trailingIcon = {
@@ -164,17 +166,20 @@ fun QuranRecitersListScreen(
                                 Icon(
                                     imageVector = Icons.Default.Clear,
                                     contentDescription = "Clear",
-                                    tint = SlateTealMuted
+                                    tint = themeColors.translationText
                                 )
                             }
                         }
                     },
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = SurfaceWhite,
-                        unfocusedContainerColor = SurfaceWhite,
-                        focusedBorderColor = DeepVibrantTeal,
-                        unfocusedBorderColor = BorderTealGray
+                        focusedTextColor = themeColors.arabicText,
+                        unfocusedTextColor = themeColors.arabicText,
+                        focusedContainerColor = if (themeColors.isDark) themeColors.surface else SurfaceWhite,
+                        unfocusedContainerColor = if (themeColors.isDark) themeColors.surface else SurfaceWhite,
+                        focusedBorderColor = themeColors.accent,
+                        unfocusedBorderColor = if (themeColors.isDark) themeColors.border else BorderTealGray,
+                        cursorColor = themeColors.accent
                     ),
                     singleLine = true
                 )
@@ -189,176 +194,276 @@ fun QuranRecitersListScreen(
                     items(filterOptions) { (key, label) ->
                         val isSelected = selectedFilter == key
                         Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected) DeepVibrantTeal else SurfaceWhite,
-                            border = BorderStroke(1.dp, if (isSelected) DeepVibrantTeal else BorderTealGray),
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) {
+                                themeColors.accent
+                            } else {
+                                if (themeColors.isDark) themeColors.surface else SurfaceWhite
+                            },
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) themeColors.accent else if (themeColors.isDark) themeColors.border else BorderTealGray
+                            ),
                             modifier = Modifier.clickable { selectedFilter = key }
                         ) {
                             Text(
                                 text = label,
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) Color.White else DarkPine,
+                                    color = if (isSelected) {
+                                        if (themeColors.isDark) DarkPine else Color.White
+                                    } else {
+                                        if (themeColors.isDark) themeColors.translationText else DarkPine
+                                    },
                                     fontSize = 12.5.sp
                                 ),
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                             )
                         }
                     }
                 }
             }
 
+            // Reciters Count Indicator
+            item(key = "results_count") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isArabic) "${filteredReciters.size} قارئ متاح" else "${filteredReciters.size} Reciters available",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = themeColors.translationText,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 11.5.sp
+                        )
+                    )
+                }
+            }
+
             // Reciters List
+            if (filteredReciters.isEmpty()) {
+                item(key = "empty_reciters") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 40.dp, horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = themeColors.translationText.copy(alpha = 0.5f),
+                            modifier = Modifier.size(44.dp)
+                        )
+                        Text(
+                            text = if (isArabic) "لم يتم العثور على أي قارئ" else "No reciters found",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = themeColors.arabicText
+                            )
+                        )
+                        Text(
+                            text = if (isArabic) "جرب البحث باسم آخر أو تغيير التصفية" else "Try searching with a different name or clearing filters",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = themeColors.translationText
+                            )
+                        )
+                    }
+                }
+            }
+
             items(filteredReciters, key = { it.id }) { reciter ->
                 val isSelected = reciter.id == currentSelectedReciter.id
                 val reciterName = if (isArabic) reciter.nameAr.ifBlank { reciter.name } else reciter.name
                 val reciterStyle = if (isArabic) reciter.styleAr.ifBlank { reciter.style } else reciter.style
 
+                val cardBg = if (isSelected) {
+                    if (themeColors.isDark) themeColors.surface else SoftTealTint.copy(alpha = 0.5f)
+                } else {
+                    if (themeColors.isDark) themeColors.surface else SurfaceWhite
+                }
+
+                val cardBorder = if (isSelected) {
+                    themeColors.accent
+                } else {
+                    if (themeColors.isDark) themeColors.border else BorderTealGray
+                }
+
+                val avatarBg = if (isSelected) {
+                    if (themeColors.isDark) themeColors.border else SoftTealTint
+                } else {
+                    if (themeColors.isDark) themeColors.background else Color(0xFFF1F5F3)
+                }
+
+                val avatarBorder = if (isSelected) {
+                    themeColors.accent
+                } else {
+                    if (themeColors.isDark) themeColors.border else BorderTealGray
+                }
+
+                val buttonBg = if (isSelected) {
+                    themeColors.accent
+                } else {
+                    if (themeColors.isDark) themeColors.border else SoftTealTint
+                }
+
+                val buttonTextCol = if (isSelected) {
+                    if (themeColors.isDark) DarkPine else Color.White
+                } else {
+                    if (themeColors.isDark) themeColors.accent else DeepVibrantTeal
+                }
+
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .clickable {
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(
+                            role = Role.Button,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(bounded = true)
+                        ) {
                             viewModel.selectReciter(reciter)
                             viewModel.playSurahAudio(QuranData.surahs.first(), openPlayer = true)
                         },
-                    shape = RoundedCornerShape(18.dp),
-                    color = SurfaceWhite,
-                    border = BorderStroke(1.dp, if (isSelected) DeepVibrantTeal else BorderTealGray)
+                    shape = RoundedCornerShape(16.dp),
+                    color = cardBg,
+                    border = BorderStroke(if (isSelected) 1.5.dp else 1.dp, cardBorder)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Avatar + Info
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
-                            modifier = Modifier.weight(1f)
+                        // Leading Avatar Icon
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(avatarBg)
+                                .border(1.dp, avatarBorder, CircleShape),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(46.dp)
-                                    .clip(CircleShape)
-                                    .background(if (isSelected) SoftTealTint else Color(0xFFF1F5F3))
-                                    .border(1.dp, if (isSelected) DeepVibrantTeal else BorderTealGray, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = if (isSelected) Icons.Default.Headphones else Icons.Default.Mic,
-                                    contentDescription = reciterName,
-                                    tint = if (isSelected) DeepVibrantTeal else SlateTealMuted,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = if (isSelected) Icons.Default.Headphones else Icons.Default.Mic,
+                                contentDescription = reciterName,
+                                tint = if (isSelected) themeColors.accent else themeColors.translationText,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
 
-                            Column {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = reciterName,
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = DarkPine,
-                                            fontSize = 15.5.sp
-                                        )
-                                    )
-                                    if (isSelected) {
-                                        Surface(
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = DeepVibrantTeal
+                        // Center Content Column (flexible width, will never squeeze other elements)
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            // Row 1: Reciter Name + Active badge if selected
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = reciterName,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = themeColors.arabicText,
+                                        fontSize = 15.sp
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+
+                                if (isSelected) {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = themeColors.accent
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.5.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(3.dp)
                                         ) {
-                                            Row(
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Check,
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(10.dp)
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = if (themeColors.isDark) DarkPine else Color.White,
+                                                modifier = Modifier.size(10.dp)
+                                            )
+                                            Text(
+                                                text = if (isArabic) "المحدد" else "Active",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    color = if (themeColors.isDark) DarkPine else Color.White,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
                                                 )
-                                                Text(
-                                                    text = if (isArabic) "المحدد" else "Active",
-                                                    style = MaterialTheme.typography.labelSmall.copy(
-                                                        color = Color.White,
-                                                        fontSize = 9.5.sp,
-                                                        fontWeight = FontWeight.Bold
-                                                    )
-                                                )
-                                            }
+                                            )
                                         }
                                     }
                                 }
-
-                                Spacer(modifier = Modifier.height(3.dp))
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text(
-                                        text = reciterStyle,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = DeepVibrantTeal,
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 12.sp
-                                        )
-                                    )
-                                    Text(
-                                        text = "•",
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = SlateTealMuted,
-                                            fontSize = 12.sp
-                                        )
-                                    )
-                                    Text(
-                                        text = reciter.country,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = SlateTealMuted,
-                                            fontSize = 12.sp
-                                        )
-                                    )
-                                }
                             }
+
+                            // Row 2: Recitation Style description
+                            Text(
+                                text = reciterStyle,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = themeColors.accent,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            // Row 3: Country / Origin
+                            Text(
+                                text = reciter.country,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = themeColors.translationText.copy(alpha = 0.85f),
+                                    fontSize = 11.5.sp
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
 
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        // Play CTA button
-                        Button(
-                            onClick = {
+                        // Trailing Action Button: Play / Active
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = buttonBg,
+                            modifier = Modifier.clickable(
+                                role = Role.Button,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = ripple(bounded = true)
+                            ) {
                                 viewModel.selectReciter(reciter)
                                 viewModel.playSurahAudio(QuranData.surahs.first(), openPlayer = true)
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isSelected) DeepVibrantTeal else SoftTealTint
-                            ),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                            }
                         ) {
                             Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = null,
-                                    tint = if (isSelected) Color.White else DeepVibrantTeal,
-                                    modifier = Modifier.size(16.dp)
+                                    tint = buttonTextCol,
+                                    modifier = Modifier.size(15.dp)
                                 )
                                 Text(
                                     text = if (isArabic) "استمع" else "Play",
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = if (isSelected) Color.White else DeepVibrantTeal,
+                                        color = buttonTextCol,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp
+                                        fontSize = 11.5.sp
                                     )
                                 )
                             }
@@ -368,7 +473,7 @@ fun QuranRecitersListScreen(
             }
 
             item(key = "bottom_space") {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(28.dp))
             }
         }
     }

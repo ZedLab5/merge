@@ -793,8 +793,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isMushafFlowMode = MutableStateFlow(false) // Distraction-Free Pure Reading Flow
     val isQuranReaderFullscreen = MutableStateFlow(false) // Immersive Fullscreen Mode (resets per session)
     val isTajweedHighlightsEnabled = MutableStateFlow(false) // Interactive Tajweed Color Highlights
-    val sharedReadingTheme = MutableStateFlow("Madani Crisp") // "Madani Crisp", "Sepia Parchment", "Obsidian Night", "Emerald Noor"
-    val quranReadingTheme = sharedReadingTheme // Shared single source of truth across reading screens
+    val isQuranSepiaMode = MutableStateFlow(false) // Independent Sepia Parchment Canvas exclusive to Quran Reader
+    val sharedReadingTheme = MutableStateFlow("Madani Crisp") // App-wide theme: "Madani Crisp" (Light) or "Obsidian Night" (Dark)
+    val quranReadingTheme = sharedReadingTheme // Maintained for backward compatibility
     val quranSearchQuery = MutableStateFlow("")
     val quranFilterCategory = MutableStateFlow("All") // "All", "Meccan", "Medinan", "Popular", "Juz 'Amma"
     val hasSeenQuranOnboarding = MutableStateFlow(false)
@@ -886,7 +887,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         showAzkarBenefits.value = sharedPrefs.getBoolean("azkar_benefits", true)
         isMushafFlowMode.value = sharedPrefs.getBoolean("is_mushaf_flow_mode", false)
         isTajweedHighlightsEnabled.value = sharedPrefs.getBoolean("is_tajweed_highlights", false)
-        sharedReadingTheme.value = sharedPrefs.getString("shared_reading_theme", "Madani Crisp") ?: "Madani Crisp"
+        isQuranSepiaMode.value = sharedPrefs.getBoolean("is_quran_sepia_mode", false)
+        val savedSharedTheme = sharedPrefs.getString("shared_reading_theme", "Madani Crisp") ?: "Madani Crisp"
+        sharedReadingTheme.value = if (savedSharedTheme == "Obsidian Night") "Obsidian Night" else "Madani Crisp"
 
         val savedZoneId = sharedPrefs.getString("selected_prayer_zone_id", null)
         if (savedZoneId != null) {
@@ -1871,9 +1874,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         showToast(if (newState) "Distraction-Free Mushaf Flow enabled 📖" else "Standard Reading View with Translations")
     }
 
+    fun toggleQuranSepiaMode(enabled: Boolean? = null) {
+        val newState = enabled ?: !isQuranSepiaMode.value
+        isQuranSepiaMode.value = newState
+        sharedPrefs.edit().putBoolean("is_quran_sepia_mode", newState).apply()
+        triggerHaptic()
+        showToast(if (newState) "Sepia Parchment Quran Canvas active 📜" else "Standard Reading Canvas active")
+    }
+
     fun setSharedReadingTheme(themeName: String) {
-        sharedReadingTheme.value = themeName
-        sharedPrefs.edit().putString("shared_reading_theme", themeName).apply()
+        val normalized = if (themeName == "Obsidian Night") "Obsidian Night" else "Madani Crisp"
+        sharedReadingTheme.value = normalized
+        sharedPrefs.edit().putString("shared_reading_theme", normalized).apply()
         triggerHaptic()
     }
 

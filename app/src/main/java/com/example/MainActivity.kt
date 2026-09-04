@@ -1,6 +1,7 @@
 package com.example
 
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,6 +22,7 @@ import com.example.ui.MainViewModel
 import com.example.ui.NoorApp
 import com.example.ui.theme.CanvasMint
 import com.example.ui.theme.NoorTheme
+import com.example.ui.theme.ReadingThemes
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -30,6 +32,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isStatusBarContrastEnforced = false
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
             val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
@@ -59,15 +65,18 @@ class MainActivity : ComponentActivity() {
                 context.createConfigurationContext(config)
             }
 
+            val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+            val readingTheme = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+
             CompositionLocalProvider(
                 LocalConfiguration provides localizedConfiguration,
                 LocalLayoutDirection provides layoutDirection,
                 LocalContext provides localizedContext
             ) {
-                NoorTheme {
+                NoorTheme(darkTheme = readingTheme.isDark) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = CanvasMint
+                        color = if (readingTheme.isDark) readingTheme.background else CanvasMint
                     ) {
                         NoorApp(viewModel = viewModel)
                     }

@@ -76,33 +76,19 @@ object ReadingThemes {
         isDark = true
     )
 
-    val EmeraldNoor = ReadingThemeColors(
-        background = Color(0xFFEBF7F5),
-        surface = Color(0xFFF4FAF9),
-        border = Color(0xFFBDE3DC),
-        arabicText = Color(0xFF0F2E2B),
-        translationText = Color(0xFF2D5A54),
-        transliterationText = Color(0xFF1A7A6E),
-        accent = DeepVibrantTeal,
-        name = "Emerald Noor",
-        isDark = false
-    )
-
-    val allThemes = listOf(MadaniCrisp, SepiaParchment, ObsidianNight, EmeraldNoor)
+    val allThemes = listOf(MadaniCrisp, SepiaParchment, ObsidianNight)
 
     fun getThemeByName(name: String): ReadingThemeColors {
         return when (name) {
             "Sepia Parchment" -> SepiaParchment
             "Obsidian Night" -> ObsidianNight
-            "Emerald Noor" -> EmeraldNoor
             else -> MadaniCrisp
         }
     }
 }
 
 /**
- * Shared horizontal row for selecting one of the four reading canvas themes.
- * Reusable across Quran, Duas, Azkar, and Tasbih preference sheets.
+ * Shared horizontal row for selecting reading canvas themes.
  */
 @Composable
 fun ReadingThemePickerRow(
@@ -114,8 +100,7 @@ fun ReadingThemePickerRow(
     val themes = listOf(
         "Madani Crisp" to Color(0xFFF2FBF9),
         "Sepia Parchment" to Color(0xFFF9F4E8),
-        "Obsidian Night" to Color(0xFF0F1418),
-        "Emerald Noor" to Color(0xFFEBF7F5)
+        "Obsidian Night" to Color(0xFF0F1418)
     )
 
     Row(

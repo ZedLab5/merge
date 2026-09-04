@@ -79,8 +79,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -112,23 +110,25 @@ import com.example.data.quran.KhatmaSessionInfo
 import com.example.ui.MainViewModel
 import com.example.ui.components.NoorGlassIconButton
 import com.example.ui.components.NoorTopBar
-import com.example.ui.theme.BorderTealGray
-import com.example.ui.theme.BorderTealLight
-import com.example.ui.theme.CanvasMint
-import com.example.ui.theme.DarkPine
-import com.example.ui.theme.DeepVibrantTeal
-import com.example.ui.theme.GoldAccentGradient
-import com.example.ui.theme.GoldBadgeBg
-import com.example.ui.theme.MetallicGold
-import com.example.ui.theme.PrimaryTealGradient
-import com.example.ui.theme.SlateTealMuted
-import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceElevated
-import com.example.ui.theme.SurfaceWhite
+import com.example.ui.theme.ReadingThemes
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+
+// Plan B Dark Theme Tokens for Quran Khatma Screen
+private val KhatmaDarkBg = Color(0xFF0F1418)
+private val KhatmaDarkCard = Color(0xFF182026)
+private val KhatmaDarkElevated = Color(0xFF222C34)
+private val KhatmaDarkBorder = Color(0xFF26333C)
+private val KhatmaDarkBorderLight = Color(0xFF33434F)
+private val KhatmaDarkTextPrimary = Color(0xFFF1F5F9)
+private val KhatmaDarkTextSecondary = Color(0xFF94A3B8)
+private val KhatmaDarkTextMuted = Color(0xFF64748B)
+private val KhatmaDarkAccent = Color(0xFF10B981) // Crisp Emerald Accent
+private val KhatmaDarkAccentSoft = Color(0xFF10B981).copy(alpha = 0.15f)
+private val KhatmaDarkGold = Color(0xFFE5C378)
+private val KhatmaDarkGoldBg = Color(0xFFE5C378).copy(alpha = 0.15f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,6 +154,8 @@ fun QuranKhatmaScreen(
                 subtitle = "Completion Planner & Progress",
                 onBackClick = onNavigateBack,
                 backContentDescription = "Back",
+                isDark = true,
+                themeColors = ReadingThemes.ObsidianNight,
                 actions = {
                     NoorGlassIconButton(
                         onClick = { viewModel.isKhatmaHistorySheetOpen.value = true },
@@ -170,7 +172,7 @@ fun QuranKhatmaScreen(
                 }
             )
         },
-        containerColor = CanvasMint
+        containerColor = KhatmaDarkBg
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -203,7 +205,7 @@ fun QuranKhatmaScreen(
         ModalBottomSheet(
             onDismissRequest = { viewModel.isKhatmaSetupSheetOpen.value = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = SurfaceWhite
+            containerColor = KhatmaDarkCard
         ) {
             KhatmaSetupSheetContent(
                 viewModel = viewModel,
@@ -216,7 +218,7 @@ fun QuranKhatmaScreen(
         ModalBottomSheet(
             onDismissRequest = { viewModel.isKhatmaSettingsSheetOpen.value = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = SurfaceWhite
+            containerColor = KhatmaDarkCard
         ) {
             KhatmaSettingsSheetContent(
                 viewModel = viewModel,
@@ -234,7 +236,7 @@ fun QuranKhatmaScreen(
         ModalBottomSheet(
             onDismissRequest = { viewModel.isKhatmaPaceAdjustSheetOpen.value = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = SurfaceWhite
+            containerColor = KhatmaDarkCard
         ) {
             KhatmaPaceAdjustmentSheetContent(
                 viewModel = viewModel,
@@ -248,7 +250,7 @@ fun QuranKhatmaScreen(
         ModalBottomSheet(
             onDismissRequest = { viewModel.isKhatmaHistorySheetOpen.value = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = SurfaceWhite
+            containerColor = KhatmaDarkCard
         ) {
             KhatmaHistorySheetContent(
                 historyList = historyList,
@@ -276,26 +278,27 @@ fun QuranKhatmaScreen(
 }
 
 /**
- * Empty / Setup View to create a new Khatma
+ * Clean Khatma Setup / Onboarding View
  */
 @Composable
 fun KhatmaSetupView(
     viewModel: MainViewModel,
-    isExistingKhatmaCompleted: Boolean,
-    onOpenHistory: () -> Unit
+    isExistingKhatmaCompleted: Boolean = false,
+    onOpenHistory: () -> Unit = {}
 ) {
     var selectedDays by remember { mutableIntStateOf(30) }
-    var customDays by remember { mutableFloatStateOf(30f) }
     var isCustomSelected by remember { mutableStateOf(false) }
-    var selectedSessions by remember { mutableIntStateOf(3) }
+    var customDays by remember { mutableFloatStateOf(30f) }
+    var selectedSessions by remember { mutableIntStateOf(1) }
     var reminderEnabled by remember { mutableStateOf(true) }
-    var reminderTime by remember { mutableStateOf("07:00 AM") }
-    var planTitle by remember { mutableStateOf("Personal Khatma") }
+    var reminderTime by remember { mutableStateOf("20:30") }
+    var planTitle by remember { mutableStateOf("Quran Khatma") }
 
     val effectiveDays = if (isCustomSelected) customDays.roundToInt() else selectedDays
-    val dailyTargetAyahs = kotlin.math.ceil(KhatmaEngine.TOTAL_QURAN_AYAHS.toDouble() / effectiveDays).toInt()
-    val estCompletionDate = LocalDate.now().plusDays((effectiveDays - 1).toLong())
-        .format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()))
+    val dailyTargetAyahs = (KhatmaEngine.TOTAL_QURAN_AYAHS.toDouble() / effectiveDays.toDouble()).roundToInt()
+    val estCompletionDate = remember(effectiveDays) {
+        LocalDate.now().plusDays(effectiveDays.toLong()).format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault()))
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -308,10 +311,8 @@ fun KhatmaSetupView(
             // Spiritual Welcome Banner
             Card(
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = SurfaceWhite
-                ),
-                border = BorderStroke(1.dp, BorderTealGray),
+                colors = CardDefaults.cardColors(containerColor = KhatmaDarkCard),
+                border = BorderStroke(1.dp, KhatmaDarkBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -322,7 +323,7 @@ fun KhatmaSetupView(
                         text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal,
+                            color = KhatmaDarkAccent,
                             fontFamily = FontFamily.Serif
                         ),
                         textAlign = TextAlign.Center
@@ -332,7 +333,7 @@ fun KhatmaSetupView(
                         text = if (isExistingKhatmaCompleted) "Start a Fresh Khatma" else "Begin Your Quran Khatma",
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DarkPine,
+                            color = KhatmaDarkTextPrimary,
                             letterSpacing = (-0.5).sp
                         ),
                         textAlign = TextAlign.Center
@@ -341,7 +342,7 @@ fun KhatmaSetupView(
                     Text(
                         text = "Set a peaceful, structured reading plan. Track your progress verse by verse with daily barakah.",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = SlateTealMuted
+                            color = KhatmaDarkTextSecondary
                         ),
                         textAlign = TextAlign.Center
                     )
@@ -355,7 +356,7 @@ fun KhatmaSetupView(
                 text = "Choose Completion Goal",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = DarkPine
+                    color = KhatmaDarkTextPrimary
                 )
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -368,15 +369,15 @@ fun KhatmaSetupView(
                 items(presets) { days ->
                     val isSelected = !isCustomSelected && selectedDays == days
                     val chipBg by animateColorAsState(
-                        if (isSelected) DeepVibrantTeal else SurfaceWhite,
+                        if (isSelected) KhatmaDarkAccent else KhatmaDarkCard,
                         label = "chipBg"
                     )
-                    val contentColor = if (isSelected) Color.White else DarkPine
+                    val contentColor = if (isSelected) Color.White else KhatmaDarkTextPrimary
 
                     Surface(
                         shape = RoundedCornerShape(16.dp),
                         color = chipBg,
-                        border = if (isSelected) null else BorderStroke(1.dp, BorderTealGray),
+                        border = if (isSelected) null else BorderStroke(1.dp, KhatmaDarkBorder),
                         modifier = Modifier
                             .clickable {
                                 isCustomSelected = false
@@ -405,7 +406,7 @@ fun KhatmaSetupView(
                                     else -> "Gentle Journey"
                                 },
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = if (isSelected) Color.White.copy(alpha = 0.85f) else SlateTealMuted
+                                    color = if (isSelected) Color.White.copy(alpha = 0.85f) else KhatmaDarkTextMuted
                                 )
                             )
                         }
@@ -415,15 +416,15 @@ fun KhatmaSetupView(
                 item {
                     val isSelected = isCustomSelected
                     val chipBg by animateColorAsState(
-                        if (isSelected) DeepVibrantTeal else SurfaceWhite,
+                        if (isSelected) KhatmaDarkAccent else KhatmaDarkCard,
                         label = "chipBg"
                     )
-                    val contentColor = if (isSelected) Color.White else DarkPine
+                    val contentColor = if (isSelected) Color.White else KhatmaDarkTextPrimary
 
                     Surface(
                         shape = RoundedCornerShape(16.dp),
                         color = chipBg,
-                        border = if (isSelected) null else BorderStroke(1.dp, BorderTealGray),
+                        border = if (isSelected) null else BorderStroke(1.dp, KhatmaDarkBorder),
                         modifier = Modifier
                             .clickable { isCustomSelected = true }
                             .testTag("khatma_preset_custom_days")
@@ -442,7 +443,7 @@ fun KhatmaSetupView(
                             Text(
                                 text = "${customDays.roundToInt()} Days",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = if (isSelected) Color.White.copy(alpha = 0.85f) else SlateTealMuted
+                                    color = if (isSelected) Color.White.copy(alpha = 0.85f) else KhatmaDarkTextMuted
                                 )
                             )
                         }
@@ -465,14 +466,14 @@ fun KhatmaSetupView(
                             text = "Custom Duration",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
-                                color = DarkPine
+                                color = KhatmaDarkTextPrimary
                             )
                         )
                         Text(
                             text = "${customDays.roundToInt()} Days",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DeepVibrantTeal
+                                color = KhatmaDarkAccent
                             )
                         )
                     }
@@ -482,9 +483,9 @@ fun KhatmaSetupView(
                         valueRange = 5f..180f,
                         steps = 34,
                         colors = SliderDefaults.colors(
-                            thumbColor = DeepVibrantTeal,
-                            activeTrackColor = DeepVibrantTeal,
-                            inactiveTrackColor = BorderTealLight
+                            thumbColor = KhatmaDarkAccent,
+                            activeTrackColor = KhatmaDarkAccent,
+                            inactiveTrackColor = KhatmaDarkBorderLight
                         ),
                         modifier = Modifier.testTag("khatma_custom_slider")
                     )
@@ -498,13 +499,13 @@ fun KhatmaSetupView(
                 text = "Daily Reading Sessions",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = DarkPine
+                    color = KhatmaDarkTextPrimary
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Split your daily target into bite-sized reflection sessions",
-                style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
             )
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -522,11 +523,11 @@ fun KhatmaSetupView(
                         onClick = { selectedSessions = count },
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.outlinedCardColors(
-                            containerColor = if (isSelected) SoftTealTint else SurfaceWhite
+                            containerColor = if (isSelected) KhatmaDarkAccentSoft else KhatmaDarkCard
                         ),
                         border = BorderStroke(
                             if (isSelected) 1.5.dp else 1.dp,
-                            if (isSelected) DeepVibrantTeal else BorderTealGray
+                            if (isSelected) KhatmaDarkAccent else KhatmaDarkBorder
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -541,14 +542,14 @@ fun KhatmaSetupView(
                                 text = label,
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) DeepVibrantTeal else DarkPine
+                                    color = if (isSelected) KhatmaDarkAccent else KhatmaDarkTextPrimary
                                 )
                             )
                             if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
                                     contentDescription = "Selected",
-                                    tint = DeepVibrantTeal,
+                                    tint = KhatmaDarkAccent,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -562,8 +563,8 @@ fun KhatmaSetupView(
             // Daily Reminder Switch & Time
             Card(
                 shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                border = BorderStroke(1.dp, BorderTealGray),
+                colors = CardDefaults.cardColors(containerColor = KhatmaDarkCard),
+                border = BorderStroke(1.dp, KhatmaDarkBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -580,19 +581,19 @@ fun KhatmaSetupView(
                         Icon(
                             imageVector = if (reminderEnabled) Icons.Default.NotificationsActive else Icons.Default.Notifications,
                             contentDescription = "Reminder",
-                            tint = if (reminderEnabled) DeepVibrantTeal else SlateTealMuted
+                            tint = if (reminderEnabled) KhatmaDarkAccent else KhatmaDarkTextMuted
                         )
                         Column {
                             Text(
                                 text = "Daily Reminder",
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.SemiBold,
-                                    color = DarkPine
+                                    color = KhatmaDarkTextPrimary
                                 )
                             )
                             Text(
                                 text = if (reminderEnabled) "Notify at $reminderTime" else "Disabled",
-                                style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                                style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                             )
                         }
                     }
@@ -601,9 +602,9 @@ fun KhatmaSetupView(
                         onCheckedChange = { reminderEnabled = it },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = DeepVibrantTeal,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = BorderTealLight
+                            checkedTrackColor = KhatmaDarkAccent,
+                            uncheckedThumbColor = KhatmaDarkTextMuted,
+                            uncheckedTrackColor = KhatmaDarkBorder
                         )
                     )
                 }
@@ -614,8 +615,8 @@ fun KhatmaSetupView(
             // Plan Summary & Calculation Preview
             Card(
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                border = BorderStroke(1.dp, BorderTealGray),
+                colors = CardDefaults.cardColors(containerColor = KhatmaDarkCard),
+                border = BorderStroke(1.dp, KhatmaDarkBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -626,37 +627,37 @@ fun KhatmaSetupView(
                         text = "Plan Summary",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal
+                            color = KhatmaDarkAccent
                         )
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Daily Target:", style = MaterialTheme.typography.bodyMedium.copy(color = SlateTealMuted))
+                        Text(text = "Daily Target:", style = MaterialTheme.typography.bodyMedium.copy(color = KhatmaDarkTextSecondary))
                         Text(
                             text = "~$dailyTargetAyahs Ayahs / day",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                         )
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Estimated Completion:", style = MaterialTheme.typography.bodyMedium.copy(color = SlateTealMuted))
+                        Text(text = "Estimated Completion:", style = MaterialTheme.typography.bodyMedium.copy(color = KhatmaDarkTextSecondary))
                         Text(
                             text = estCompletionDate,
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                         )
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Total Holy Quran:", style = MaterialTheme.typography.bodyMedium.copy(color = SlateTealMuted))
+                        Text(text = "Total Holy Quran:", style = MaterialTheme.typography.bodyMedium.copy(color = KhatmaDarkTextSecondary))
                         Text(
                             text = "6,236 Ayahs (114 Surahs)",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                         )
                     }
                 }
@@ -677,7 +678,7 @@ fun KhatmaSetupView(
                     )
                 },
                 shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal),
+                colors = ButtonDefaults.buttonColors(containerColor = KhatmaDarkAccent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
@@ -700,12 +701,12 @@ fun KhatmaSetupView(
                 OutlinedButton(
                     onClick = onOpenHistory,
                     shape = RoundedCornerShape(18.dp),
-                    border = BorderStroke(1.dp, BorderTealGray),
+                    border = BorderStroke(1.dp, KhatmaDarkBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(imageVector = Icons.Default.History, contentDescription = null, tint = DeepVibrantTeal)
+                    Icon(imageVector = Icons.Default.History, contentDescription = null, tint = KhatmaDarkAccent)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("View Completed Khatma History", color = DeepVibrantTeal, fontWeight = FontWeight.SemiBold)
+                    Text("View Completed Khatma History", color = KhatmaDarkAccent, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -728,13 +729,13 @@ fun KhatmaDashboardContent(
     Column(modifier = Modifier.fillMaxSize()) {
         TabRow(
             selectedTabIndex = selectedTab,
-            containerColor = CanvasMint,
-            contentColor = DeepVibrantTeal,
+            containerColor = KhatmaDarkBg,
+            contentColor = KhatmaDarkAccent,
             indicator = { tabPositions ->
                 if (selectedTab < tabPositions.size) {
                     TabRowDefaults.SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = DeepVibrantTeal
+                        color = KhatmaDarkAccent
                     )
                 }
             }
@@ -742,14 +743,14 @@ fun KhatmaDashboardContent(
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("Dashboard", fontWeight = FontWeight.Bold, color = if (selectedTab == 0) DeepVibrantTeal else SlateTealMuted) },
-                icon = { Icon(Icons.Default.TrendingUp, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (selectedTab == 0) DeepVibrantTeal else SlateTealMuted) }
+                text = { Text("Dashboard", fontWeight = FontWeight.Bold, color = if (selectedTab == 0) KhatmaDarkAccent else KhatmaDarkTextSecondary) },
+                icon = { Icon(Icons.Default.TrendingUp, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (selectedTab == 0) KhatmaDarkAccent else KhatmaDarkTextSecondary) }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Reading Plan (${state.totalDays} Days)", fontWeight = FontWeight.Bold, color = if (selectedTab == 1) DeepVibrantTeal else SlateTealMuted) },
-                icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (selectedTab == 1) DeepVibrantTeal else SlateTealMuted) }
+                text = { Text("Reading Plan (${state.totalDays} Days)", fontWeight = FontWeight.Bold, color = if (selectedTab == 1) KhatmaDarkAccent else KhatmaDarkTextSecondary) },
+                icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = if (selectedTab == 1) KhatmaDarkAccent else KhatmaDarkTextSecondary) }
             )
         }
 
@@ -826,19 +827,19 @@ fun KhatmaDashboardOverview(
                 OutlinedButton(
                     onClick = onOpenPaceAdjust,
                     shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, BorderTealGray),
+                    border = BorderStroke(1.dp, KhatmaDarkBorder),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(18.dp), tint = DeepVibrantTeal)
+                    Icon(imageVector = Icons.Default.Speed, contentDescription = null, modifier = Modifier.size(18.dp), tint = KhatmaDarkAccent)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Adjust Pace", fontSize = 13.sp, color = DeepVibrantTeal, fontWeight = FontWeight.SemiBold)
+                    Text("Adjust Pace", fontSize = 13.sp, color = KhatmaDarkAccent, fontWeight = FontWeight.SemiBold)
                 }
 
                 Button(
                     onClick = { viewModel.markKhatmaCompleted() },
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DeepVibrantTeal
+                        containerColor = KhatmaDarkAccent
                     ),
                     modifier = Modifier.weight(1f)
                 ) {
@@ -869,9 +870,9 @@ fun KhatmaHeroProgressCard(
     Card(
         shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(
-            containerColor = SurfaceWhite
+            containerColor = KhatmaDarkCard
         ),
-        border = BorderStroke(1.dp, BorderTealGray),
+        border = BorderStroke(1.dp, KhatmaDarkBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -888,11 +889,11 @@ fun KhatmaHeroProgressCard(
                 Column {
                     Text(
                         text = state.plan.title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                     )
                     Text(
                         text = "Day ${state.currentDayNumber} of ${state.totalDays} • ${state.daysRemaining} Days remaining",
-                        style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                        style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                     )
                 }
 
@@ -910,13 +911,13 @@ fun KhatmaHeroProgressCard(
                         text = "${state.readAyahsCount.formatNumber()} / ${state.totalAyahs.formatNumber()}",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            color = DarkPine,
+                            color = KhatmaDarkTextPrimary,
                             letterSpacing = (-0.5).sp
                         )
                     )
                     Text(
                         text = "Ayahs completed (${state.progressPercentage}%)",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = SlateTealMuted)
+                        style = MaterialTheme.typography.bodyMedium.copy(color = KhatmaDarkTextSecondary)
                     )
                 }
 
@@ -928,13 +929,13 @@ fun KhatmaHeroProgressCard(
                     CircularProgressIndicator(
                         progress = { 1f },
                         modifier = Modifier.fillMaxSize(),
-                        color = Color(0xFFE2EBE6),
+                        color = Color(0xFF222E38),
                         strokeWidth = 6.dp
                     )
                     CircularProgressIndicator(
                         progress = { animatedProgress },
                         modifier = Modifier.fillMaxSize(),
-                        color = DeepVibrantTeal,
+                        color = KhatmaDarkAccent,
                         strokeWidth = 6.dp,
                         strokeCap = StrokeCap.Round
                     )
@@ -942,7 +943,7 @@ fun KhatmaHeroProgressCard(
                         text = "${state.progressPercentage}%",
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal
+                            color = KhatmaDarkAccent
                         )
                     )
                 }
@@ -956,8 +957,8 @@ fun KhatmaHeroProgressCard(
                         .fillMaxWidth()
                         .height(10.dp)
                         .clip(RoundedCornerShape(5.dp)),
-                    color = DeepVibrantTeal,
-                    trackColor = Color(0xFFE2EBE6),
+                    color = KhatmaDarkAccent,
+                    trackColor = Color(0xFF222E38),
                     strokeCap = StrokeCap.Round
                 )
             }
@@ -965,8 +966,8 @@ fun KhatmaHeroProgressCard(
             // Current Reading Position Badge
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = SurfaceElevated,
-                border = BorderStroke(1.dp, BorderTealLight),
+                color = KhatmaDarkElevated,
+                border = BorderStroke(1.dp, KhatmaDarkBorderLight),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -983,31 +984,31 @@ fun KhatmaHeroProgressCard(
                         Icon(
                             imageVector = Icons.Default.AutoStories,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = KhatmaDarkAccent,
                             modifier = Modifier.size(18.dp)
                         )
                         Column {
                             Text(
                                 text = "Current Position",
-                                style = MaterialTheme.typography.labelSmall.copy(color = SlateTealMuted)
+                                style = MaterialTheme.typography.labelSmall.copy(color = KhatmaDarkTextMuted)
                             )
                             Text(
                                 text = "${state.currentPosition.surahNameEnglish} (Ayah ${state.currentPosition.ayahNumber})",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                             )
                         }
                     }
 
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = GoldBadgeBg,
-                        border = BorderStroke(1.dp, MetallicGold.copy(alpha = 0.4f))
+                        color = KhatmaDarkGoldBg,
+                        border = BorderStroke(1.dp, KhatmaDarkGold.copy(alpha = 0.4f))
                     ) {
                         Text(
                             text = "Juz ${state.currentPosition.juzNumber}",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = MetallicGold
+                                color = KhatmaDarkGold
                             ),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
@@ -1019,7 +1020,7 @@ fun KhatmaHeroProgressCard(
             Button(
                 onClick = onContinueReading,
                 shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal),
+                colors = ButtonDefaults.buttonColors(containerColor = KhatmaDarkAccent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
@@ -1050,8 +1051,8 @@ fun KhatmaTodaySessionsCard(
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-        border = BorderStroke(1.dp, BorderTealGray),
+        colors = CardDefaults.cardColors(containerColor = KhatmaDarkCard),
+        border = BorderStroke(1.dp, KhatmaDarkBorder),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -1067,13 +1068,13 @@ fun KhatmaTodaySessionsCard(
                 Column {
                     Text(
                         text = "Today's Target",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                     )
                     Text(
                         text = "${state.todayReadAyahs} / ${state.todayTargetAyahs} Ayahs",
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (state.isTodayTargetAchieved) DeepVibrantTeal else DarkPine
+                            color = if (state.isTodayTargetAchieved) KhatmaDarkAccent else KhatmaDarkTextPrimary
                         )
                     )
                 }
@@ -1081,7 +1082,7 @@ fun KhatmaTodaySessionsCard(
                 if (state.isTodayTargetAchieved) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = DeepVibrantTeal
+                        color = KhatmaDarkAccent
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -1106,7 +1107,7 @@ fun KhatmaTodaySessionsCard(
                 } else {
                     Text(
                         text = "${state.todayRemainingAyahs} Ayahs remaining",
-                        style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                        style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                     )
                 }
             }
@@ -1119,8 +1120,8 @@ fun KhatmaTodaySessionsCard(
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp)),
-                color = DeepVibrantTeal,
-                trackColor = Color(0xFFE2EBE6),
+                color = KhatmaDarkAccent,
+                trackColor = Color(0xFF222E38),
                 strokeCap = StrokeCap.Round
             )
 
@@ -1129,7 +1130,7 @@ fun KhatmaTodaySessionsCard(
                 text = "Daily Reflection Sessions (${state.dailySessions.size})",
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = SlateTealMuted
+                    color = KhatmaDarkTextSecondary
                 )
             )
 
@@ -1154,7 +1155,7 @@ fun SessionRowItem(
 ) {
     val isDone = session.isCompleted
     val containerBg by animateColorAsState(
-        if (isDone) SoftTealTint else SurfaceElevated,
+        if (isDone) KhatmaDarkAccentSoft else KhatmaDarkElevated,
         label = "sessionBg"
     )
 
@@ -1163,7 +1164,7 @@ fun SessionRowItem(
         color = containerBg,
         border = BorderStroke(
             1.dp,
-            if (isDone) DeepVibrantTeal.copy(alpha = 0.4f) else BorderTealLight
+            if (isDone) KhatmaDarkAccent.copy(alpha = 0.5f) else KhatmaDarkBorderLight
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -1188,7 +1189,7 @@ fun SessionRowItem(
                     Icon(
                         imageVector = if (isDone) Icons.Default.CheckCircle else Icons.Default.CheckCircleOutline,
                         contentDescription = if (isDone) "Completed" else "Mark Complete",
-                        tint = if (isDone) DeepVibrantTeal else SlateTealMuted
+                        tint = if (isDone) KhatmaDarkAccent else KhatmaDarkTextMuted
                     )
                 }
 
@@ -1197,13 +1198,13 @@ fun SessionRowItem(
                         text = session.title,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = if (isDone) DeepVibrantTeal else DarkPine
+                            color = if (isDone) KhatmaDarkAccent else KhatmaDarkTextPrimary
                         )
                     )
                     Text(
                         text = "${session.startAyahCoord.displayShort} → ${session.endAyahCoord.displayShort} (${session.targetAyahsCount} Ayahs)",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted
+                            color = KhatmaDarkTextSecondary
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -1214,7 +1215,7 @@ fun SessionRowItem(
             OutlinedButton(
                 onClick = onRead,
                 shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, BorderTealGray),
+                border = BorderStroke(1.dp, if (isDone) KhatmaDarkAccent.copy(alpha = 0.4f) else KhatmaDarkBorderLight),
                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                 modifier = Modifier.height(34.dp)
             ) {
@@ -1222,7 +1223,7 @@ fun SessionRowItem(
                     text = if (isDone) "Review" else "Read",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = DeepVibrantTeal
+                    color = KhatmaDarkAccent
                 )
             }
         }
@@ -1239,29 +1240,29 @@ fun KhatmaPaceBannerCard(
 ) {
     val (bgColor, borderColor, icon, title, description) = when (state.paceStatus) {
         KhatmaPaceStatus.AHEAD -> Quintuple(
-            SurfaceWhite,
-            BorderTealGray,
+            KhatmaDarkCard,
+            KhatmaDarkBorder,
             Icons.Default.TrendingUp,
             "Ahead of Schedule (+${state.paceDiffAyahs} Ayahs)",
             "Masha'Allah! You are reading ahead of your planned timeline. Keep this blessed momentum."
         )
         KhatmaPaceStatus.BEHIND -> Quintuple(
-            SurfaceWhite,
+            KhatmaDarkCard,
             Color(0xFFE57373).copy(alpha = 0.5f),
             Icons.Default.Speed,
             "Behind Schedule (${state.paceDiffAyahs} Ayahs)",
             "Life happens. Choose a gentle catch-up pace or extend your timeline with peace and barakah."
         )
         KhatmaPaceStatus.ON_TRACK -> Quintuple(
-            SurfaceWhite,
-            BorderTealGray,
+            KhatmaDarkCard,
+            KhatmaDarkBorder,
             Icons.Default.CheckCircle,
             "Right on Track",
             "You are adhering faithfully to your daily Khatma goals. May Allah accept every letter."
         )
         KhatmaPaceStatus.COMPLETED -> Quintuple(
-            SurfaceWhite,
-            BorderTealGray,
+            KhatmaDarkCard,
+            KhatmaDarkBorder,
             Icons.Default.Star,
             "Khatma Completed! Alhamdulillah",
             "You have recited all 6,236 Ayahs of the Holy Quran."
@@ -1285,13 +1286,13 @@ fun KhatmaPaceBannerCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (state.paceStatus == KhatmaPaceStatus.BEHIND) Color(0xFFD32F2F) else DeepVibrantTeal
+                    tint = if (state.paceStatus == KhatmaPaceStatus.BEHIND) Color(0xFFEF5350) else KhatmaDarkAccent
                 )
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = DarkPine
+                        color = KhatmaDarkTextPrimary
                     )
                 )
             }
@@ -1299,7 +1300,7 @@ fun KhatmaPaceBannerCard(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = SlateTealMuted
+                    color = KhatmaDarkTextSecondary
                 )
             )
 
@@ -1307,7 +1308,7 @@ fun KhatmaPaceBannerCard(
                 Button(
                     onClick = onOpenPaceAdjust,
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal),
+                    colors = ButtonDefaults.buttonColors(containerColor = KhatmaDarkAccent),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Compassionate Pace Adjuster", color = Color.White, fontWeight = FontWeight.Bold)
@@ -1375,8 +1376,8 @@ fun StatGridItem(
 ) {
     Card(
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-        border = BorderStroke(1.dp, BorderTealGray),
+        colors = CardDefaults.cardColors(containerColor = KhatmaDarkCard),
+        border = BorderStroke(1.dp, KhatmaDarkBorder),
         modifier = modifier
     ) {
         Column(
@@ -1390,24 +1391,24 @@ fun StatGridItem(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.labelSmall.copy(color = SlateTealMuted)
+                    style = MaterialTheme.typography.labelSmall.copy(color = KhatmaDarkTextSecondary)
                 )
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = DeepVibrantTeal,
+                    tint = KhatmaDarkAccent,
                     modifier = Modifier.size(16.dp)
                 )
             }
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.labelSmall.copy(color = SlateTealMuted),
+                style = MaterialTheme.typography.labelSmall.copy(color = KhatmaDarkTextSecondary),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -1451,36 +1452,36 @@ fun KhatmaTimelineView(
                     onClick = { filterMode = 0 },
                     label = { Text("All Days (${timeline.size})") },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DeepVibrantTeal,
+                        selectedContainerColor = KhatmaDarkAccent,
                         selectedLabelColor = Color.White,
-                        containerColor = SurfaceWhite,
-                        labelColor = DarkPine
+                        containerColor = KhatmaDarkCard,
+                        labelColor = KhatmaDarkTextSecondary
                     ),
-                    border = BorderStroke(1.dp, if (filterMode == 0) DeepVibrantTeal else BorderTealGray)
+                    border = BorderStroke(1.dp, if (filterMode == 0) KhatmaDarkAccent else KhatmaDarkBorder)
                 )
                 FilterChip(
                     selected = filterMode == 1,
                     onClick = { filterMode = 1 },
                     label = { Text("Upcoming") },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DeepVibrantTeal,
+                        selectedContainerColor = KhatmaDarkAccent,
                         selectedLabelColor = Color.White,
-                        containerColor = SurfaceWhite,
-                        labelColor = DarkPine
+                        containerColor = KhatmaDarkCard,
+                        labelColor = KhatmaDarkTextSecondary
                     ),
-                    border = BorderStroke(1.dp, if (filterMode == 1) DeepVibrantTeal else BorderTealGray)
+                    border = BorderStroke(1.dp, if (filterMode == 1) KhatmaDarkAccent else KhatmaDarkBorder)
                 )
                 FilterChip(
                     selected = filterMode == 2,
                     onClick = { filterMode = 2 },
                     label = { Text("Completed") },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = DeepVibrantTeal,
+                        selectedContainerColor = KhatmaDarkAccent,
                         selectedLabelColor = Color.White,
-                        containerColor = SurfaceWhite,
-                        labelColor = DarkPine
+                        containerColor = KhatmaDarkCard,
+                        labelColor = KhatmaDarkTextSecondary
                     ),
-                    border = BorderStroke(1.dp, if (filterMode == 2) DeepVibrantTeal else BorderTealGray)
+                    border = BorderStroke(1.dp, if (filterMode == 2) KhatmaDarkAccent else KhatmaDarkBorder)
                 )
             }
         }
@@ -1505,13 +1506,13 @@ fun TimelineDayCard(
     val isCompleted = dayItem.isCompleted
 
     val containerBg = when {
-        isToday -> SoftTealTint
-        else -> SurfaceWhite
+        isToday -> KhatmaDarkAccentSoft
+        else -> KhatmaDarkCard
     }
 
     val borderColor = when {
-        isToday -> DeepVibrantTeal
-        else -> BorderTealGray
+        isToday -> KhatmaDarkAccent
+        else -> KhatmaDarkBorder
     }
 
     Card(
@@ -1536,11 +1537,11 @@ fun TimelineDayCard(
                 Surface(
                     shape = CircleShape,
                     color = when {
-                        isCompleted -> DeepVibrantTeal
-                        isToday -> DeepVibrantTeal.copy(alpha = 0.15f)
-                        else -> SurfaceElevated
+                        isCompleted -> KhatmaDarkAccent
+                        isToday -> KhatmaDarkAccent.copy(alpha = 0.2f)
+                        else -> KhatmaDarkElevated
                     },
-                    border = BorderStroke(1.dp, if (isToday) DeepVibrantTeal else BorderTealLight),
+                    border = BorderStroke(1.dp, if (isToday) KhatmaDarkAccent else KhatmaDarkBorderLight),
                     modifier = Modifier.size(36.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -1556,7 +1557,7 @@ fun TimelineDayCard(
                                 text = "${dayItem.dayNumber}",
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isToday) DeepVibrantTeal else SlateTealMuted
+                                    color = if (isToday) KhatmaDarkAccent else KhatmaDarkTextSecondary
                                 )
                             )
                         }
@@ -1570,16 +1571,16 @@ fun TimelineDayCard(
                     ) {
                         Text(
                             text = "Day ${dayItem.dayNumber}",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                         )
                         Text(
                             text = "• ${dayItem.dateFormatted}",
-                            style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                            style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                         )
                         if (isToday) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = DeepVibrantTeal
+                                color = KhatmaDarkAccent
                             ) {
                                 Text(
                                     text = "TODAY",
@@ -1597,7 +1598,7 @@ fun TimelineDayCard(
                     Text(
                         text = "${dayItem.startCoord.displayShort} → ${dayItem.endCoord.displayShort}",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = DarkPine,
+                            color = KhatmaDarkTextPrimary,
                             fontWeight = FontWeight.Medium
                         )
                     )
@@ -1605,7 +1606,7 @@ fun TimelineDayCard(
                     Text(
                         text = "${dayItem.targetAyahsCount} Ayahs • Juz ${dayItem.startCoord.juzNumber}",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = SlateTealMuted
+                            color = KhatmaDarkTextSecondary
                         )
                     )
                 }
@@ -1614,7 +1615,7 @@ fun TimelineDayCard(
             OutlinedButton(
                 onClick = onReadDayPortion,
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, BorderTealGray),
+                border = BorderStroke(1.dp, if (isCompleted) KhatmaDarkAccent.copy(alpha = 0.4f) else KhatmaDarkBorderLight),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                 modifier = Modifier.height(36.dp)
             ) {
@@ -1622,7 +1623,7 @@ fun TimelineDayCard(
                     text = if (isCompleted) "Review" else "Read",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = DeepVibrantTeal
+                    color = KhatmaDarkAccent
                 )
             }
         }
@@ -1636,27 +1637,27 @@ fun TimelineDayCard(
 fun PaceBadge(status: KhatmaPaceStatus, diff: Int) {
     val (bg, text, border, label) = when (status) {
         KhatmaPaceStatus.AHEAD -> Quadruple(
-            GoldBadgeBg,
-            MetallicGold,
-            MetallicGold.copy(alpha = 0.4f),
+            KhatmaDarkGoldBg,
+            KhatmaDarkGold,
+            KhatmaDarkGold.copy(alpha = 0.4f),
             "+$diff Ahead"
         )
         KhatmaPaceStatus.BEHIND -> Quadruple(
-            Color(0xFFFFEBEE),
-            Color(0xFFD32F2F),
-            Color(0xFFEF9A9A),
+            Color(0xFF3B1E22),
+            Color(0xFFEF5350),
+            Color(0xFFEF5350).copy(alpha = 0.5f),
             "$diff Behind"
         )
         KhatmaPaceStatus.ON_TRACK -> Quadruple(
-            SurfaceElevated,
-            DeepVibrantTeal,
-            BorderTealLight,
+            KhatmaDarkAccentSoft,
+            KhatmaDarkAccent,
+            KhatmaDarkAccent.copy(alpha = 0.4f),
             "On Track"
         )
         KhatmaPaceStatus.COMPLETED -> Quadruple(
-            DeepVibrantTeal,
+            KhatmaDarkAccent,
             Color.White,
-            DeepVibrantTeal,
+            KhatmaDarkAccent,
             "Completed"
         )
     }
@@ -1702,14 +1703,14 @@ fun KhatmaSettingsSheetContent(
     ) {
         Text(
             text = "Khatma Plan Settings",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
         )
 
         // Duration Adjustment
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = "Change Total Duration",
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, color = DarkPine)
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, color = KhatmaDarkTextPrimary)
             )
             val presets = listOf(7, 15, 30, 45, 60, 90)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1722,12 +1723,12 @@ fun KhatmaSettingsSheetContent(
                         },
                         label = { Text("$days Days") },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = DeepVibrantTeal,
+                            selectedContainerColor = KhatmaDarkAccent,
                             selectedLabelColor = Color.White,
-                            containerColor = SurfaceWhite,
-                            labelColor = DarkPine
+                            containerColor = KhatmaDarkElevated,
+                            labelColor = KhatmaDarkTextSecondary
                         ),
-                        border = BorderStroke(1.dp, if (selectedDays == days) DeepVibrantTeal else BorderTealGray)
+                        border = BorderStroke(1.dp, if (selectedDays == days) KhatmaDarkAccent else KhatmaDarkBorder)
                     )
                 }
             }
@@ -1742,11 +1743,11 @@ fun KhatmaSettingsSheetContent(
             Column {
                 Text(
                     text = "Daily Reminder",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, color = DarkPine)
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, color = KhatmaDarkTextPrimary)
                 )
                 Text(
                     text = if (reminderEnabled) "Reminder at $reminderTime" else "Disabled",
-                    style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                    style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                 )
             }
             Switch(
@@ -1757,9 +1758,9 @@ fun KhatmaSettingsSheetContent(
                 },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = DeepVibrantTeal,
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = BorderTealLight
+                    checkedTrackColor = KhatmaDarkAccent,
+                    uncheckedThumbColor = KhatmaDarkTextMuted,
+                    uncheckedTrackColor = KhatmaDarkBorder
                 )
             )
         }
@@ -1768,7 +1769,7 @@ fun KhatmaSettingsSheetContent(
         Button(
             onClick = onOpenPaceAdjust,
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal),
+            colors = ButtonDefaults.buttonColors(containerColor = KhatmaDarkAccent),
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Default.Speed, contentDescription = null, tint = Color.White)
@@ -1784,13 +1785,13 @@ fun KhatmaSettingsSheetContent(
         OutlinedButton(
             onClick = { showDeleteConfirm = true },
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
-            border = BorderStroke(1.dp, Color(0xFFEF9A9A)),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF5350)),
+            border = BorderStroke(1.dp, Color(0xFFEF5350).copy(alpha = 0.5f)),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFFD32F2F))
+            Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFFEF5350))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Reset Khatma Plan", color = Color(0xFFD32F2F), fontWeight = FontWeight.SemiBold)
+            Text("Reset Khatma Plan", color = Color(0xFFEF5350), fontWeight = FontWeight.SemiBold)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -1799,8 +1800,8 @@ fun KhatmaSettingsSheetContent(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Reset Khatma?", fontWeight = FontWeight.Bold, color = DarkPine) },
-            text = { Text("Are you sure you want to reset your current Khatma plan? You can start a new one anytime.", color = SlateTealMuted) },
+            title = { Text("Reset Khatma?", fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary) },
+            text = { Text("Are you sure you want to reset your current Khatma plan? You can start a new one anytime.", color = KhatmaDarkTextSecondary) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -1809,15 +1810,15 @@ fun KhatmaSettingsSheetContent(
                         onDismiss()
                     }
                 ) {
-                    Text("Reset Plan", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                    Text("Reset Plan", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancel", color = SlateTealMuted)
+                    Text("Cancel", color = KhatmaDarkTextSecondary)
                 }
             },
-            containerColor = SurfaceWhite
+            containerColor = KhatmaDarkCard
         )
     }
 }
@@ -1841,11 +1842,11 @@ fun KhatmaPaceAdjustmentSheetContent(
     ) {
         Text(
             text = "Smart Pace Adjuster",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
         )
         Text(
             text = "Reciting the Quran is a spiritual relationship built on devotion, not stress. Choose how you would like to comfortably adapt your reading goals:",
-            style = MaterialTheme.typography.bodyMedium.copy(color = SlateTealMuted)
+            style = MaterialTheme.typography.bodyMedium.copy(color = KhatmaDarkTextSecondary)
         )
 
         // Option 1: Spread evenly
@@ -1855,19 +1856,19 @@ fun KhatmaPaceAdjustmentSheetContent(
                 onDismiss()
             },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = SurfaceWhite),
-            border = BorderStroke(1.dp, BorderTealGray),
+            colors = CardDefaults.outlinedCardColors(containerColor = KhatmaDarkElevated),
+            border = BorderStroke(1.dp, KhatmaDarkBorder),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "1. Spread Evenly Across Remaining Days",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Recalculates the remaining ${KhatmaEngine.TOTAL_QURAN_AYAHS - state.readAyahsCount} Ayahs equally over the remaining ${state.daysRemaining} days.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                    style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                 )
             }
         }
@@ -1879,19 +1880,19 @@ fun KhatmaPaceAdjustmentSheetContent(
                 onDismiss()
             },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = SurfaceWhite),
-            border = BorderStroke(1.dp, BorderTealGray),
+            colors = CardDefaults.outlinedCardColors(containerColor = KhatmaDarkElevated),
+            border = BorderStroke(1.dp, KhatmaDarkBorder),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "2. Catch Up Gradually (+15 Ayahs / Day)",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Adds a small, manageable booster to your daily sessions until you are back on track.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                    style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                 )
             }
         }
@@ -1903,19 +1904,19 @@ fun KhatmaPaceAdjustmentSheetContent(
                 onDismiss()
             },
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.outlinedCardColors(containerColor = SurfaceWhite),
-            border = BorderStroke(1.dp, BorderTealGray),
+            colors = CardDefaults.outlinedCardColors(containerColor = KhatmaDarkElevated),
+            border = BorderStroke(1.dp, KhatmaDarkBorder),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "3. Extend Completion Deadline",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Maintains a calm, comfortable daily pace and smoothly pushes the target completion date outward.",
-                    style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                    style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                 )
             }
         }
@@ -1940,7 +1941,7 @@ fun KhatmaHistorySheetContent(
     ) {
         Text(
             text = "Completed Khatmas History",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
         )
 
         if (historyList.isEmpty()) {
@@ -1954,17 +1955,17 @@ fun KhatmaHistorySheetContent(
                     Icon(
                         imageVector = Icons.Default.AutoStories,
                         contentDescription = null,
-                        tint = SlateTealMuted.copy(alpha = 0.5f),
+                        tint = KhatmaDarkTextMuted.copy(alpha = 0.5f),
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "No completed Khatmas yet",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = DarkPine, fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.bodyMedium.copy(color = KhatmaDarkTextPrimary, fontWeight = FontWeight.SemiBold)
                     )
                     Text(
                         text = "Your completed Quran milestones will be preserved here.",
-                        style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                        style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                     )
                 }
             }
@@ -1976,10 +1977,8 @@ fun KhatmaHistorySheetContent(
                 items(historyList) { item ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = SurfaceWhite
-                        ),
-                        border = BorderStroke(1.dp, BorderTealGray),
+                        colors = CardDefaults.cardColors(containerColor = KhatmaDarkElevated),
+                        border = BorderStroke(1.dp, KhatmaDarkBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -1992,21 +1991,21 @@ fun KhatmaHistorySheetContent(
                             Column {
                                 Text(
                                     text = item.title,
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine)
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary)
                                 )
                                 Text(
                                     text = "Completed in ${item.daysTaken} days • ${item.completionDateFormatted}",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                                    style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary)
                                 )
                                 Text(
                                     text = "6,236 Ayahs • Full Quran",
-                                    style = MaterialTheme.typography.labelSmall.copy(color = DeepVibrantTeal, fontWeight = FontWeight.Bold)
+                                    style = MaterialTheme.typography.labelSmall.copy(color = KhatmaDarkAccent, fontWeight = FontWeight.Bold)
                                 )
                             }
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = DeepVibrantTeal,
+                                tint = KhatmaDarkAccent,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -2053,14 +2052,14 @@ fun KhatmaCompletionCelebrationDialog(
                     viewModel.isKhatmaSetupSheetOpen.value = true
                 },
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DeepVibrantTeal)
+                colors = ButtonDefaults.buttonColors(containerColor = KhatmaDarkAccent)
             ) {
                 Text("Start a New Khatma", color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = SlateTealMuted)
+                Text("Close", color = KhatmaDarkTextSecondary)
             }
         },
         title = {
@@ -2072,13 +2071,13 @@ fun KhatmaCompletionCelebrationDialog(
                     text = "الحمد لله رب العالمين 🤍",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = DeepVibrantTeal
+                        color = KhatmaDarkAccent
                     ),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Khatma Completed!",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DarkPine),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary),
                     textAlign = TextAlign.Center
                 )
             }
@@ -2091,7 +2090,7 @@ fun KhatmaCompletionCelebrationDialog(
                 item {
                     Text(
                         text = "May Allah accept your recitation, make the Quran a guiding light for your heart, and elevate your rank in Jannah.",
-                        style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted),
+                        style = MaterialTheme.typography.bodySmall.copy(color = KhatmaDarkTextSecondary),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -2099,8 +2098,8 @@ fun KhatmaCompletionCelebrationDialog(
                 item {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = SurfaceElevated,
-                        border = BorderStroke(1.dp, BorderTealGray),
+                        color = KhatmaDarkElevated,
+                        border = BorderStroke(1.dp, KhatmaDarkBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -2111,7 +2110,7 @@ fun KhatmaCompletionCelebrationDialog(
                                 text = "دعاء ختم القرآن الكريم",
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DeepVibrantTeal
+                                    color = KhatmaDarkAccent
                                 ),
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
@@ -2122,14 +2121,14 @@ fun KhatmaCompletionCelebrationDialog(
                                     fontWeight = FontWeight.Medium,
                                     lineHeight = 22.sp,
                                     textAlign = TextAlign.Right,
-                                    color = DarkPine
+                                    color = KhatmaDarkTextPrimary
                                 )
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = KhatmaEngine.DUA_KHATM_TRANSLATION,
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = SlateTealMuted,
+                                    color = KhatmaDarkTextSecondary,
                                     fontSize = 11.sp
                                 )
                             )
@@ -2138,7 +2137,7 @@ fun KhatmaCompletionCelebrationDialog(
                 }
             }
         },
-        containerColor = SurfaceWhite
+        containerColor = KhatmaDarkCard
     )
 }
 
@@ -2153,10 +2152,10 @@ fun QuickLogAyahsDialog(
     val options = listOf(5, 10, 20, 50)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Log Ayahs Read", fontWeight = FontWeight.Bold, color = DarkPine) },
+        title = { Text("Log Ayahs Read", fontWeight = FontWeight.Bold, color = KhatmaDarkTextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Select the number of Ayahs read to advance your Khatma progress:", color = SlateTealMuted)
+                Text("Select the number of Ayahs read to advance your Khatma progress:", color = KhatmaDarkTextSecondary)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -2165,10 +2164,10 @@ fun QuickLogAyahsDialog(
                         OutlinedButton(
                             onClick = { onAdd(count) },
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, BorderTealGray),
+                            border = BorderStroke(1.dp, KhatmaDarkBorderLight),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("+$count", color = DeepVibrantTeal, fontWeight = FontWeight.Bold)
+                            Text("+$count", color = KhatmaDarkAccent, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -2177,10 +2176,10 @@ fun QuickLogAyahsDialog(
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = SlateTealMuted)
+                Text("Cancel", color = KhatmaDarkTextSecondary)
             }
         },
-        containerColor = SurfaceWhite
+        containerColor = KhatmaDarkCard
     )
 }
 

@@ -130,29 +130,22 @@ fun NoorApp(
     val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
     val readingTheme = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
     val isSettingsOpen by viewModel.isSettingsModalOpen.collectAsStateWithLifecycle()
-    val isReadingScreenDark = readingTheme.isDark && (
-        currentDest != NoorDestination.HOME &&
-        currentDest != NoorDestination.SALAT &&
-        currentDest != NoorDestination.QIBLA
-    )
-
-    val isDarkBarActive = isReadingScreenDark || (isSettingsOpen && readingTheme.isDark)
+    val isDarkMode = readingTheme.isDark
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        val statusBarColor = when {
-            isDarkBarActive -> readingTheme.surface
-            currentDest == NoorDestination.HOME -> Color.White
-            else -> Color(0xFF133E32) // Matches top header gradient of NoorTopBar
-        }
-        val isLightStatusBar = currentDest == NoorDestination.HOME && !isDarkBarActive
-        val navBarColor = if (isDarkBarActive) readingTheme.background else Color.White
-        val isLightNavBar = !isDarkBarActive
+        val isLightStatusBar = currentDest == NoorDestination.HOME && !isDarkMode
+        val navBarColor = if (isDarkMode) readingTheme.surface else Color.White
+        val isLightNavBar = !isDarkMode
 
         SideEffect {
             val window = (view.context as? Activity)?.window
             if (window != null) {
-                window.statusBarColor = statusBarColor.toArgb()
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    window.isStatusBarContrastEnforced = false
+                    window.isNavigationBarContrastEnforced = false
+                }
+                window.statusBarColor = android.graphics.Color.TRANSPARENT
                 window.navigationBarColor = navBarColor.toArgb()
                 val controller = WindowCompat.getInsetsController(window, view)
                 controller.isAppearanceLightStatusBars = isLightStatusBar
@@ -161,12 +154,12 @@ fun NoorApp(
         }
     }
 
-    val bottomNavSurface = if (isReadingScreenDark) readingTheme.surface else SurfaceWhite
-    val bottomNavBorder = if (isReadingScreenDark) readingTheme.border else BorderTealGray
-    val bottomNavSelectedTint = if (isReadingScreenDark) readingTheme.accent else DeepVibrantTeal
-    val bottomNavUnselectedTint = if (isReadingScreenDark) readingTheme.translationText.copy(alpha = 0.7f) else SlateTealMuted.copy(alpha = 0.6f)
-    val bottomNavSelectedText = if (isReadingScreenDark) readingTheme.arabicText else DarkPine
-    val bottomNavUnselectedText = if (isReadingScreenDark) readingTheme.translationText.copy(alpha = 0.8f) else SlateTealMuted.copy(alpha = 0.7f)
+    val bottomNavSurface = if (isDarkMode) readingTheme.surface else SurfaceWhite
+    val bottomNavBorder = if (isDarkMode) readingTheme.border else BorderTealGray
+    val bottomNavSelectedTint = if (isDarkMode) readingTheme.accent else DeepVibrantTeal
+    val bottomNavUnselectedTint = if (isDarkMode) readingTheme.translationText.copy(alpha = 0.7f) else SlateTealMuted.copy(alpha = 0.6f)
+    val bottomNavSelectedText = if (isDarkMode) readingTheme.arabicText else DarkPine
+    val bottomNavUnselectedText = if (isDarkMode) readingTheme.translationText.copy(alpha = 0.8f) else SlateTealMuted.copy(alpha = 0.7f)
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(toastMsg) {
@@ -195,7 +188,7 @@ fun NoorApp(
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            containerColor = if (isReadingScreenDark) readingTheme.background else Color.White,
+            containerColor = if (isDarkMode) readingTheme.background else Color.White,
         bottomBar = {
             val isQuranFullscreen by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
             val isBottomBarVisible = currentDest != NoorDestination.QURAN_AUDIO_STREAM &&
@@ -212,7 +205,7 @@ fun NoorApp(
                         .fillMaxWidth()
                         .navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 6.dp)
-                        .shadow(12.dp, RoundedCornerShape(28.dp), ambientColor = if (isReadingScreenDark) Color.Black.copy(alpha = 0.4f) else DeepVibrantTeal.copy(alpha = 0.10f), spotColor = if (isReadingScreenDark) Color.Black.copy(alpha = 0.5f) else DeepVibrantTeal.copy(alpha = 0.16f))
+                        .shadow(12.dp, RoundedCornerShape(28.dp), ambientColor = if (isDarkMode) Color.Black.copy(alpha = 0.4f) else DeepVibrantTeal.copy(alpha = 0.10f), spotColor = if (isDarkMode) Color.Black.copy(alpha = 0.5f) else DeepVibrantTeal.copy(alpha = 0.16f))
                         .border(1.dp, bottomNavBorder, RoundedCornerShape(28.dp)),
                     shape = RoundedCornerShape(28.dp),
                     color = bottomNavSurface

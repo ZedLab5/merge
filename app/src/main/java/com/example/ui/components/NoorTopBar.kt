@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.sp
 
 import com.example.ui.theme.ReadingThemeColors
 
-val NoorTopBarGradient = Brush.linearGradient(
+val NoorTopBarGradient = Brush.verticalGradient(
     colors = listOf(
         Color(0xFF133E32), // Softened rich forest green
         Color(0xFF1A5544), // Serene pine & royal green
