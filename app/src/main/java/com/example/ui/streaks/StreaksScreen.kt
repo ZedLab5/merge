@@ -90,7 +90,6 @@ import com.example.ui.theme.GoldBadgeBg
 import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

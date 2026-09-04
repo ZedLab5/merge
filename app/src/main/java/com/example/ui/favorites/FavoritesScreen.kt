@@ -59,7 +59,6 @@ import com.example.ui.theme.GoldAccentGradient
 import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

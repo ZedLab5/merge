@@ -81,7 +81,6 @@ import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SuccessGreen
 import com.example.ui.theme.SuccessGreenLight
 import com.example.ui.theme.SurfaceElevated
-import com.example.ui.theme.SurfaceWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

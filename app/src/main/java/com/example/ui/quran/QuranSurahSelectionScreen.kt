@@ -87,7 +87,6 @@ import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,18 +65,19 @@ fun CustomizeHomeFeedSheet(
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = {
             Box(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 8.dp)
                     .size(width = 42.dp, height = 4.5.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(Color(0xFFD4E0DA))
+                    .background(if (isDark) MaterialTheme.colorScheme.outlineVariant else Color(0xFFD4E0DA))
             )
         },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -98,15 +100,15 @@ fun CustomizeHomeFeedSheet(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = Color(0xFFE2F1E9),
-                        border = BorderStroke(1.dp, Color(0xFFBDDEC9)),
+                        color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFE2F1E9),
+                        border = BorderStroke(1.dp, if (isDark) MaterialTheme.colorScheme.outline else Color(0xFFBDDEC9)),
                         modifier = Modifier.size(42.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.DashboardCustomize,
                                 contentDescription = null,
-                                tint = DeepVibrantTeal,
+                                tint = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -116,7 +118,7 @@ fun CustomizeHomeFeedSheet(
                         Text(
                             text = tr("home_customize_feed", viewModel),
                             style = MaterialTheme.typography.titleMedium.copy(
-                                color = DarkPine,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             )
@@ -124,7 +126,7 @@ fun CustomizeHomeFeedSheet(
                         Text(
                             text = tr("home_customize_feed_sub", viewModel),
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
                             )
                         )
@@ -135,13 +137,13 @@ fun CustomizeHomeFeedSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = SlateTealMuted
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFFE5EBE8))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(12.dp))
 
             // Reorder & Toggle List
@@ -156,10 +158,10 @@ fun CustomizeHomeFeedSheet(
 
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = if (isVisible) Color(0xFFF7FAF8) else Color(0xFFFAFBFA),
+                        color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else if (isVisible) Color(0xFFF7FAF8) else Color(0xFFFAFBFA),
                         border = BorderStroke(
                             1.dp,
-                            if (isVisible) Color(0xFFD3E7DC) else Color(0xFFE7ECE9)
+                            if (isDark) MaterialTheme.colorScheme.outline.copy(alpha = 0.4f) else if (isVisible) Color(0xFFD3E7DC) else Color(0xFFE7ECE9)
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -183,7 +185,7 @@ fun CustomizeHomeFeedSheet(
                                     Icon(
                                         imageVector = Icons.Default.ArrowUpward,
                                         contentDescription = tr("home_customize_move_up", viewModel),
-                                        tint = if (index > 0) DeepVibrantTeal else Color(0xFFCBD5E1),
+                                        tint = if (index > 0) (if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal) else (if (isDark) MaterialTheme.colorScheme.outline else Color(0xFFCBD5E1)),
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -196,7 +198,7 @@ fun CustomizeHomeFeedSheet(
                                     Icon(
                                         imageVector = Icons.Default.ArrowDownward,
                                         contentDescription = tr("home_customize_move_down", viewModel),
-                                        tint = if (index < widgetsOrder.lastIndex) DeepVibrantTeal else Color(0xFFCBD5E1),
+                                        tint = if (index < widgetsOrder.lastIndex) (if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal) else (if (isDark) MaterialTheme.colorScheme.outline else Color(0xFFCBD5E1)),
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -211,7 +213,7 @@ fun CustomizeHomeFeedSheet(
                                 Text(
                                     text = getLocalizedWidgetTitle(widget, viewModel),
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = if (isVisible) DarkPine else SlateTealMuted,
+                                        color = if (isVisible) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 14.sp
                                     )
@@ -219,7 +221,7 @@ fun CustomizeHomeFeedSheet(
                                 Text(
                                     text = getLocalizedWidgetDescription(widget, viewModel),
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = if (isVisible) SlateTealMuted else Color(0xFF94A3B8),
+                                        color = if (isVisible) MaterialTheme.colorScheme.onSurfaceVariant else (if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)),
                                         fontSize = 11.5.sp
                                     ),
                                     maxLines = 1
@@ -231,10 +233,10 @@ fun CustomizeHomeFeedSheet(
                                 checked = isVisible,
                                 onCheckedChange = { viewModel.toggleHomeWidgetVisibility(widget) },
                                 colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = DeepVibrantTeal,
-                                    uncheckedThumbColor = Color.White,
-                                    uncheckedTrackColor = Color(0xFFCBD5E1)
+                                    checkedThumbColor = if (isDark) MaterialTheme.colorScheme.onPrimary else Color.White,
+                                    checkedTrackColor = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal,
+                                    uncheckedThumbColor = if (isDark) MaterialTheme.colorScheme.outline else Color.White,
+                                    uncheckedTrackColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFCBD5E1)
                                 )
                             )
                         }
@@ -253,8 +255,8 @@ fun CustomizeHomeFeedSheet(
                     onClick = { viewModel.resetHomeWidgetsOrder() },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, DeepVibrantTeal.copy(alpha = 0.5f)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DeepVibrantTeal)
+                    border = BorderStroke(1.dp, if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else DeepVibrantTeal.copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -270,8 +272,8 @@ fun CustomizeHomeFeedSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DeepVibrantTeal,
-                        contentColor = Color.White
+                        containerColor = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal,
+                        contentColor = if (isDark) MaterialTheme.colorScheme.onPrimary else Color.White
                     )
                 ) {
                     Text(tr("home_more", viewModel), fontWeight = FontWeight.Bold)

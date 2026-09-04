@@ -58,6 +58,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -149,18 +150,19 @@ fun CustomizeQuickAccessSheet(
 
     val allTools = QuickAccessTool.entries
     val isDoneEnabled = selectedTools.size == 4
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = {
             Box(
                 modifier = Modifier
                     .padding(top = 12.dp, bottom = 8.dp)
                     .size(width = 42.dp, height = 4.5.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(Color(0xFFD4E0DA))
+                    .background(if (isDark) MaterialTheme.colorScheme.outlineVariant else Color(0xFFD4E0DA))
             )
         },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -183,14 +185,14 @@ fun CustomizeQuickAccessSheet(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = Color(0xFFF2F8F5),
+                        color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF2F8F5),
                         modifier = Modifier.size(42.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Widgets,
                                 contentDescription = null,
-                                tint = DeepVibrantTeal,
+                                tint = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -200,7 +202,7 @@ fun CustomizeQuickAccessSheet(
                         Text(
                             text = if (isArabic) "تخصيص الوصول السريع" else "Customize Quick Access",
                             style = MaterialTheme.typography.titleMedium.copy(
-                                color = DarkPine,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             )
@@ -208,7 +210,7 @@ fun CustomizeQuickAccessSheet(
                         Text(
                             text = if (isArabic) "اختر ٤ أدوات بترتيب النقر للشبكة الرئيسية" else "Select exactly 4 tools in your desired order",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
                             )
                         )
@@ -219,7 +221,7 @@ fun CustomizeQuickAccessSheet(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = SlateTealMuted
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -234,10 +236,18 @@ fun CustomizeQuickAccessSheet(
             ) {
                 Surface(
                     shape = RoundedCornerShape(100.dp),
-                    color = if (isDoneEnabled) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
+                    color = if (isDoneEnabled) {
+                        if (isDark) Color(0xFF1B3D22) else Color(0xFFE8F5E9)
+                    } else {
+                        if (isDark) Color(0xFF3E2723) else Color(0xFFFFF3E0)
+                    },
                     border = BorderStroke(
                         1.dp,
-                        if (isDoneEnabled) Color(0xFF81C784) else Color(0xFFFFB74D)
+                        if (isDoneEnabled) {
+                            if (isDark) Color(0xFF2E7D32) else Color(0xFF81C784)
+                        } else {
+                            if (isDark) Color(0xFFE65100) else Color(0xFFFFB74D)
+                        }
                     )
                 ) {
                     Text(
@@ -248,7 +258,11 @@ fun CustomizeQuickAccessSheet(
                         },
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = if (isDoneEnabled) Color(0xFF2E7D32) else Color(0xFFE65100),
+                            color = if (isDoneEnabled) {
+                                if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)
+                            } else {
+                                if (isDark) Color(0xFFFFB74D) else Color(0xFFE65100)
+                            },
                             fontSize = 11.5.sp
                         ),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
@@ -258,14 +272,14 @@ fun CustomizeQuickAccessSheet(
                 Text(
                     text = if (isArabic) "الترتيب يتبع أسبقية الاختيار" else "Numbered by selection order",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = SlateTealMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp
                     )
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color(0xFFE5EBE8))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(10.dp))
 
             // Tools List
@@ -279,12 +293,12 @@ fun CustomizeQuickAccessSheet(
                 itemsIndexed(allTools, key = { _, tool -> tool.id }) { _, tool ->
                     val isSelected = selectedTools.contains(tool)
                     val selectedIndex = selectedTools.indexOf(tool)
-                    val slotTier = if (isSelected) QuickAccessColorSystem.getSlotTier(selectedIndex) else null
+                    val slotTier = if (isSelected) QuickAccessColorSystem.getSlotTier(selectedIndex, isDark = isDark) else null
 
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, QuickAccessColorSystem.UNSELECTED_CARD_BORDER),
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, if (isDark) MaterialTheme.colorScheme.outline.copy(alpha = 0.4f) else QuickAccessColorSystem.UNSELECTED_CARD_BORDER),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
@@ -325,15 +339,15 @@ fun CustomizeQuickAccessSheet(
                                     modifier = Modifier
                                         .size(26.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFF1F5F9))
-                                        .border(1.dp, Color(0xFFCBD5E1), CircleShape),
+                                        .background(if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF1F5F9))
+                                        .border(1.dp, if (isDark) MaterialTheme.colorScheme.outline else Color(0xFFCBD5E1), CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .size(6.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0xFF94A3B8))
+                                            .background(if (isDark) MaterialTheme.colorScheme.outline else Color(0xFF94A3B8))
                                     )
                                 }
                             }
@@ -464,8 +478,8 @@ fun CustomizeQuickAccessSheet(
                     onClick = { viewModel.resetQuickAccessTools() },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, DeepVibrantTeal.copy(alpha = 0.5f)),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DeepVibrantTeal)
+                    border = BorderStroke(1.dp, if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else DeepVibrantTeal.copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -482,10 +496,10 @@ fun CustomizeQuickAccessSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DeepVibrantTeal,
-                        contentColor = Color.White,
-                        disabledContainerColor = Color(0xFFE2EBE6),
-                        disabledContentColor = Color(0xFF94A3B8)
+                        containerColor = if (isDark) MaterialTheme.colorScheme.primary else DeepVibrantTeal,
+                        contentColor = if (isDark) MaterialTheme.colorScheme.onPrimary else Color.White,
+                        disabledContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFE2EBE6),
+                        disabledContentColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f) else Color(0xFF94A3B8)
                     )
                 ) {
                     Text(

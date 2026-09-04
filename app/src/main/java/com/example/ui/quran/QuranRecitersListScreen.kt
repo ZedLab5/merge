@@ -68,7 +68,6 @@ import com.example.ui.theme.DeepVibrantTeal
 import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -198,7 +197,7 @@ fun QuranRecitersListScreen(
                             color = if (isSelected) {
                                 themeColors.accent
                             } else {
-                                if (themeColors.isDark) themeColors.surface else SurfaceWhite
+                                themeColors.surface
                             },
                             border = BorderStroke(
                                 1.dp,
@@ -285,7 +284,7 @@ fun QuranRecitersListScreen(
                 val cardBg = if (isSelected) {
                     if (themeColors.isDark) themeColors.surface else SoftTealTint.copy(alpha = 0.5f)
                 } else {
-                    if (themeColors.isDark) themeColors.surface else SurfaceWhite
+                    themeColors.surface
                 }
 
                 val cardBorder = if (isSelected) {

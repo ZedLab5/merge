@@ -92,7 +92,6 @@ import com.example.ui.theme.PrimaryTealGradient
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceElevated
-import com.example.ui.theme.SurfaceWhite
 
 import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.ReadingThemes
@@ -885,7 +884,7 @@ private fun SalatManualOffsetsCard(
                             Surface(
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(12.dp),
-                                color = if (themeColors.isDark) themeColors.background else SurfaceWhite,
+                                color = themeColors.background,
                                 border = BorderStroke(1.dp, themeColors.border)
                             ) {
                                 Row(

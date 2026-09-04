@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -59,16 +61,21 @@ fun KhatmaMilestoneCelebrationDialog(
     onContinueReading: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
         Card(
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0C201A)
+                containerColor = if (isDark) Color(0xFF0C201A) else MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(
                 width = 1.5.dp,
-                brush = Brush.linearGradient(
-                    listOf(Color(0xFF80E5D7), Color(0xFFF3D58C), Color(0xFF099382))
-                )
+                brush = if (isDark) {
+                    Brush.linearGradient(
+                        listOf(Color(0xFF80E5D7), Color(0xFFF3D58C), Color(0xFF099382))
+                    )
+                } else {
+                    SolidColor(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                }
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,7 +99,7 @@ fun KhatmaMilestoneCelebrationDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = Color(0xFFB0BEC5),
+                            tint = if (isDark) Color(0xFFB0BEC5) else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -112,15 +119,15 @@ fun KhatmaMilestoneCelebrationDialog(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = Color(0xFF1B3D34),
-                        border = BorderStroke(2.dp, Color(0xFFF3D58C)),
+                        color = if (isDark) Color(0xFF1B3D34) else MaterialTheme.colorScheme.primaryContainer,
+                        border = BorderStroke(2.dp, if (isDark) Color(0xFFF3D58C) else MaterialTheme.colorScheme.secondary),
                         modifier = Modifier.size(64.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.EmojiEvents,
                                 contentDescription = "Celebration",
-                                tint = Color(0xFFF3D58C),
+                                tint = if (isDark) Color(0xFFF3D58C) else MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
@@ -135,7 +142,7 @@ fun KhatmaMilestoneCelebrationDialog(
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = FontFamily.Default,
                         fontSize = 24.sp,
-                        color = Color(0xFFF3D58C),
+                        color = if (isDark) Color(0xFFF3D58C) else MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     ),
                     textAlign = TextAlign.Center
@@ -146,7 +153,7 @@ fun KhatmaMilestoneCelebrationDialog(
                 Text(
                     text = milestone.title,
                     style = MaterialTheme.typography.headlineSmall.copy(
-                        color = Color.White,
+                        color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 20.sp
                     ),
@@ -158,7 +165,7 @@ fun KhatmaMilestoneCelebrationDialog(
                 Text(
                     text = milestone.subtitle,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF80E5D7),
+                        color = if (isDark) Color(0xFF80E5D7) else MaterialTheme.colorScheme.secondary,
                         fontSize = 14.sp
                     ),
                     textAlign = TextAlign.Center
@@ -169,8 +176,8 @@ fun KhatmaMilestoneCelebrationDialog(
                 // Progress Bar Card
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFF132F27),
-                    border = BorderStroke(1.dp, Color(0xFF285448)),
+                    color = if (isDark) Color(0xFF132F27) else MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(1.dp, if (isDark) Color(0xFF285448) else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -185,14 +192,14 @@ fun KhatmaMilestoneCelebrationDialog(
                             Text(
                                 text = "Total Quran Progress",
                                 style = MaterialTheme.typography.labelMedium.copy(
-                                    color = Color(0xFFB0BEC5),
+                                    color = if (isDark) Color(0xFFB0BEC5) else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             )
                             Text(
                                 text = "${(milestone.percentage * 100).toInt()}%",
                                 style = MaterialTheme.typography.labelLarge.copy(
-                                    color = Color(0xFFF3D58C),
+                                    color = if (isDark) Color(0xFFF3D58C) else MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -204,8 +211,8 @@ fun KhatmaMilestoneCelebrationDialog(
                                 .fillMaxWidth()
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp)),
-                            color = Color(0xFF10B981),
-                            trackColor = Color(0xFF1C4237)
+                            color = if (isDark) Color(0xFF10B981) else MaterialTheme.colorScheme.primary,
+                            trackColor = if (isDark) Color(0xFF1C4237) else MaterialTheme.colorScheme.secondaryContainer
                         )
 
                         Row(
@@ -214,12 +221,12 @@ fun KhatmaMilestoneCelebrationDialog(
                         ) {
                             Text(
                                 text = "Completed Today: ${milestone.ayahsCompletedToday} Ayahs",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Color.White)
+                                style = MaterialTheme.typography.bodySmall.copy(color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface)
                             )
                             Text(
                                 text = "Juz ${milestone.currentJuz} / 30",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = Color(0xFF80E5D7),
+                                    color = if (isDark) Color(0xFF80E5D7) else MaterialTheme.colorScheme.secondary,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -232,8 +239,8 @@ fun KhatmaMilestoneCelebrationDialog(
                 // Reflection Ayah Quote
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = Color(0xFF0F261F),
-                    border = BorderStroke(0.7.dp, Color(0x44F3D58C)),
+                    color = if (isDark) Color(0xFF0F261F) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    border = BorderStroke(0.7.dp, if (isDark) Color(0x44F3D58C) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -244,7 +251,7 @@ fun KhatmaMilestoneCelebrationDialog(
                             text = milestone.reflectionAyahArabic,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontFamily = FontFamily.Default,
-                                color = Color(0xFFFFECB3),
+                                color = if (isDark) Color(0xFFFFECB3) else MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontSize = 18.sp
                             ),
                             textAlign = TextAlign.Center
@@ -253,7 +260,7 @@ fun KhatmaMilestoneCelebrationDialog(
                         Text(
                             text = milestone.reflectionAyahEnglish,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color(0xFFCFD8DC),
+                                color = if (isDark) Color(0xFFCFD8DC) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
                             ),
                             textAlign = TextAlign.Center
@@ -275,9 +282,9 @@ fun KhatmaMilestoneCelebrationDialog(
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, Color(0xFF80E5D7).copy(alpha = 0.6f)),
+                        border = BorderStroke(1.dp, if (isDark) Color(0xFF80E5D7).copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF80E5D7)
+                            contentColor = if (isDark) Color(0xFF80E5D7) else MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Icon(Icons.Default.Home, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -293,8 +300,8 @@ fun KhatmaMilestoneCelebrationDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF099382),
-                            contentColor = Color.White
+                            containerColor = if (isDark) Color(0xFF099382) else MaterialTheme.colorScheme.primary,
+                            contentColor = if (isDark) Color.White else MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))

@@ -129,7 +129,6 @@ import com.example.ui.theme.GoldBadgeBg
 import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 import com.example.ui.theme.ReadingThemes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay

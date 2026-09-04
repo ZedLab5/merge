@@ -36,7 +36,6 @@ import com.example.ui.theme.DeepVibrantTeal
 import com.example.ui.theme.GoldBadgeBg
 import com.example.ui.theme.LuminousCyan
 import com.example.ui.theme.MetallicGold
-import com.example.ui.theme.SurfaceWhite
 
 @Composable
 fun BentoCard(

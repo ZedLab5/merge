@@ -53,7 +53,6 @@ import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -86,7 +85,7 @@ fun UnifiedStreakHomeCard(
     )
 
     // Dynamic Theme Tokens
-    val cardBackground = if (isDark) themeColors.surface else SurfaceWhite
+    val cardBackground = themeColors.surface
     val cardBorder = if (isDark) themeColors.border else BorderTealGray
     val titleColor = if (isDark) themeColors.arabicText else DarkPine
     val subtitleColor = if (isDark) FireAmber else DeepVibrantTeal
@@ -417,8 +416,8 @@ fun UnifiedStreakHomeCard(
                                             .background(
                                                 when {
                                                     jewel.isCompleted -> if (isDark) FireAmber.copy(alpha = 0.2f) else Color(0xFFFFF4EB)
-                                                    jewel.isToday -> if (isDark) themeColors.surface else SurfaceWhite
-                                                    else -> if (isDark) themeColors.surface.copy(alpha = 0.5f) else SurfaceWhite
+                                                    jewel.isToday -> themeColors.surface
+                                                    else -> themeColors.surface.copy(alpha = 0.5f)
                                                 }
                                             )
                                             .border(

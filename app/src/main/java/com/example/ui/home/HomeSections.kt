@@ -138,7 +138,6 @@ import com.example.ui.theme.ReadingThemeColors
 import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
-import com.example.ui.theme.SurfaceWhite
 
 // Accent Colors: Exact Gradient between 099382 and 13A795 & Tasteful Gold Highlights
 private val NoorTealStart = Color(0xFF099382)

@@ -100,7 +100,6 @@ import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.ReadingThemeColors
-import com.example.ui.theme.SurfaceWhite
 
 import androidx.compose.ui.res.stringResource
 import com.example.R

@@ -102,7 +102,6 @@ import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SuccessGreen
-import com.example.ui.theme.SurfaceWhite
 import kotlinx.coroutines.flow.collectLatest
 import java.util.Locale
 import kotlin.math.abs
@@ -763,8 +762,8 @@ fun QiblaScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    color = SurfaceWhite,
-                    border = BorderStroke(1.dp, BorderTealLight)
+                    color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, if (isDark) MaterialTheme.colorScheme.outline.copy(alpha = 0.4f) else BorderTealLight)
                 ) {
                     Column(
                         modifier = Modifier
