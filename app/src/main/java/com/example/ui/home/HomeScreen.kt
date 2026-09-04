@@ -51,9 +51,8 @@ fun HomeScreen(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
-    val isDark = themeColors.isDark
+    val isDark by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val themeColors = remember(isDark) { if (isDark) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp }
 
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val location by viewModel.locationName.collectAsStateWithLifecycle()

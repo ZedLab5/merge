@@ -81,6 +81,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -88,6 +89,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -116,19 +118,71 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
 
-// Plan B Dark Theme Tokens for Quran Khatma Screen
-private val KhatmaDarkBg = Color(0xFF0F1418)
-private val KhatmaDarkCard = Color(0xFF182026)
-private val KhatmaDarkElevated = Color(0xFF222C34)
-private val KhatmaDarkBorder = Color(0xFF26333C)
-private val KhatmaDarkBorderLight = Color(0xFF33434F)
-private val KhatmaDarkTextPrimary = Color(0xFFF1F5F9)
-private val KhatmaDarkTextSecondary = Color(0xFF94A3B8)
-private val KhatmaDarkTextMuted = Color(0xFF64748B)
-private val KhatmaDarkAccent = Color(0xFF10B981) // Crisp Emerald Accent
-private val KhatmaDarkAccentSoft = Color(0xFF10B981).copy(alpha = 0.15f)
-private val KhatmaDarkGold = Color(0xFFE5C378)
-private val KhatmaDarkGoldBg = Color(0xFFE5C378).copy(alpha = 0.15f)
+data class KhatmaThemeColors(
+    val bg: Color,
+    val card: Color,
+    val elevated: Color,
+    val border: Color,
+    val borderLight: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val textMuted: Color,
+    val accent: Color,
+    val accentSoft: Color,
+    val gold: Color,
+    val goldBg: Color,
+    val isDark: Boolean
+)
+
+val KhatmaDarkColors = KhatmaThemeColors(
+    bg = Color(0xFF0F1418),
+    card = Color(0xFF182026),
+    elevated = Color(0xFF222C34),
+    border = Color(0xFF26333C),
+    borderLight = Color(0xFF33434F),
+    textPrimary = Color(0xFFF1F5F9),
+    textSecondary = Color(0xFF94A3B8),
+    textMuted = Color(0xFF64748B),
+    accent = Color(0xFF10B981), // Crisp Emerald Accent
+    accentSoft = Color(0xFF10B981).copy(alpha = 0.15f),
+    gold = Color(0xFFE5C378),
+    goldBg = Color(0xFFE5C378).copy(alpha = 0.15f),
+    isDark = true
+)
+
+val KhatmaLightColors = KhatmaThemeColors(
+    bg = Color(0xFFF4F7F6), // Clean mint-neutral light canvas matching Noor
+    card = Color(0xFFFFFFFF), // Crisp pure white cards
+    elevated = Color(0xFFEBF1EE), // Soft elevated light surface
+    border = Color(0xFFDFE6E3), // Clean card border
+    borderLight = Color(0xFFE8EFEA),
+    textPrimary = Color(0xFF14201D), // Dark slate-pine primary text
+    textSecondary = Color(0xFF4A5D57), // Balanced slate-pine secondary text
+    textMuted = Color(0xFF82948F), // Muted label text
+    accent = Color(0xFF0D9488), // Rich Islamic Teal/Emerald
+    accentSoft = Color(0xFF0D9488).copy(alpha = 0.12f),
+    gold = Color(0xFFB58014), // Elegant antique gold
+    goldBg = Color(0xFFB58014).copy(alpha = 0.12f),
+    isDark = false
+)
+
+val LocalKhatmaColors = staticCompositionLocalOf {
+    KhatmaLightColors
+}
+
+// Dynamic properties that automatically resolve according to active Light/Dark theme:
+private val KhatmaDarkBg: Color @Composable get() = LocalKhatmaColors.current.bg
+private val KhatmaDarkCard: Color @Composable get() = LocalKhatmaColors.current.card
+private val KhatmaDarkElevated: Color @Composable get() = LocalKhatmaColors.current.elevated
+private val KhatmaDarkBorder: Color @Composable get() = LocalKhatmaColors.current.border
+private val KhatmaDarkBorderLight: Color @Composable get() = LocalKhatmaColors.current.borderLight
+private val KhatmaDarkTextPrimary: Color @Composable get() = LocalKhatmaColors.current.textPrimary
+private val KhatmaDarkTextSecondary: Color @Composable get() = LocalKhatmaColors.current.textSecondary
+private val KhatmaDarkTextMuted: Color @Composable get() = LocalKhatmaColors.current.textMuted
+private val KhatmaDarkAccent: Color @Composable get() = LocalKhatmaColors.current.accent
+private val KhatmaDarkAccentSoft: Color @Composable get() = LocalKhatmaColors.current.accentSoft
+private val KhatmaDarkGold: Color @Composable get() = LocalKhatmaColors.current.gold
+private val KhatmaDarkGoldBg: Color @Composable get() = LocalKhatmaColors.current.goldBg
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,137 +197,143 @@ fun QuranKhatmaScreen(
     val isCompletionOpen by viewModel.isKhatmaCompletionCelebrationOpen.collectAsState()
     val isPaceAdjustOpen by viewModel.isKhatmaPaceAdjustSheetOpen.collectAsState()
     val historyList by viewModel.khatmaHistory.collectAsState()
+    val isSystemDark by viewModel.isDarkMode.collectAsState()
+
+    val khatmaColors = if (isSystemDark) KhatmaDarkColors else KhatmaLightColors
+    val readingThemeColors = if (isSystemDark) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp
 
     var showQuickAddDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            NoorTopBar(
-                title = "Quran Khatma",
-                eyebrow = "ختمة القرآن",
-                subtitle = "Completion Planner & Progress",
-                onBackClick = onNavigateBack,
-                backContentDescription = "Back",
-                isDark = true,
-                themeColors = ReadingThemes.ObsidianNight,
-                actions = {
-                    NoorGlassIconButton(
-                        onClick = { viewModel.isKhatmaHistorySheetOpen.value = true },
-                        icon = Icons.Default.History,
-                        contentDescription = "Khatma History"
-                    )
-                    if (dashboardState != null) {
+    CompositionLocalProvider(LocalKhatmaColors provides khatmaColors) {
+        Scaffold(
+            topBar = {
+                NoorTopBar(
+                    title = "Quran Khatma",
+                    eyebrow = "ختمة القرآن",
+                    subtitle = "Completion Planner & Progress",
+                    onBackClick = onNavigateBack,
+                    backContentDescription = "Back",
+                    isDark = isSystemDark,
+                    themeColors = readingThemeColors,
+                    actions = {
                         NoorGlassIconButton(
-                            onClick = { viewModel.isKhatmaSettingsSheetOpen.value = true },
-                            icon = Icons.Default.Settings,
-                            contentDescription = "Khatma Settings"
+                            onClick = { viewModel.isKhatmaHistorySheetOpen.value = true },
+                            icon = Icons.Default.History,
+                            contentDescription = "Khatma History"
                         )
+                        if (dashboardState != null) {
+                            NoorGlassIconButton(
+                                onClick = { viewModel.isKhatmaSettingsSheetOpen.value = true },
+                                icon = Icons.Default.Settings,
+                                contentDescription = "Khatma Settings"
+                            )
+                        }
                     }
-                }
-            )
-        },
-        containerColor = KhatmaDarkBg
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            val state = dashboardState
-            if (state == null || state.plan.isCompleted) {
-                // Empty or completed state -> Onboarding Setup
-                KhatmaSetupView(
-                    viewModel = viewModel,
-                    isExistingKhatmaCompleted = state?.plan?.isCompleted == true,
-                    onOpenHistory = { viewModel.isKhatmaHistorySheetOpen.value = true }
                 )
-            } else {
-                // Active Khatma Dashboard
-                KhatmaDashboardContent(
-                    state = state,
+            },
+            containerColor = KhatmaDarkBg
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                val state = dashboardState
+                if (state == null || state.plan.isCompleted) {
+                    // Empty or completed state -> Onboarding Setup
+                    KhatmaSetupView(
+                        viewModel = viewModel,
+                        isExistingKhatmaCompleted = state?.plan?.isCompleted == true,
+                        onOpenHistory = { viewModel.isKhatmaHistorySheetOpen.value = true }
+                    )
+                } else {
+                    // Active Khatma Dashboard
+                    KhatmaDashboardContent(
+                        state = state,
+                        viewModel = viewModel,
+                        onOpenSettings = { viewModel.isKhatmaSettingsSheetOpen.value = true },
+                        onOpenPaceAdjust = { viewModel.isKhatmaPaceAdjustSheetOpen.value = true },
+                        onQuickAdd = { showQuickAddDialog = true }
+                    )
+                }
+            }
+        }
+
+        // Modal Sheets & Dialogs
+        if (isSetupOpen) {
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.isKhatmaSetupSheetOpen.value = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = KhatmaDarkCard
+            ) {
+                KhatmaSetupSheetContent(
                     viewModel = viewModel,
-                    onOpenSettings = { viewModel.isKhatmaSettingsSheetOpen.value = true },
-                    onOpenPaceAdjust = { viewModel.isKhatmaPaceAdjustSheetOpen.value = true },
-                    onQuickAdd = { showQuickAddDialog = true }
+                    onDismiss = { viewModel.isKhatmaSetupSheetOpen.value = false }
                 )
             }
         }
-    }
 
-    // Modal Sheets & Dialogs
-    if (isSetupOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.isKhatmaSetupSheetOpen.value = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = KhatmaDarkCard
-        ) {
-            KhatmaSetupSheetContent(
+        if (isSettingsOpen) {
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.isKhatmaSettingsSheetOpen.value = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = KhatmaDarkCard
+            ) {
+                KhatmaSettingsSheetContent(
+                    viewModel = viewModel,
+                    state = dashboardState,
+                    onDismiss = { viewModel.isKhatmaSettingsSheetOpen.value = false },
+                    onOpenPaceAdjust = {
+                        viewModel.isKhatmaSettingsSheetOpen.value = false
+                        viewModel.isKhatmaPaceAdjustSheetOpen.value = true
+                    }
+                )
+            }
+        }
+
+        if (isPaceAdjustOpen) {
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.isKhatmaPaceAdjustSheetOpen.value = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = KhatmaDarkCard
+            ) {
+                KhatmaPaceAdjustmentSheetContent(
+                    viewModel = viewModel,
+                    state = dashboardState,
+                    onDismiss = { viewModel.isKhatmaPaceAdjustSheetOpen.value = false }
+                )
+            }
+        }
+
+        if (isHistoryOpen) {
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.isKhatmaHistorySheetOpen.value = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                containerColor = KhatmaDarkCard
+            ) {
+                KhatmaHistorySheetContent(
+                    historyList = historyList,
+                    onDismiss = { viewModel.isKhatmaHistorySheetOpen.value = false }
+                )
+            }
+        }
+
+        if (isCompletionOpen) {
+            KhatmaCompletionCelebrationDialog(
                 viewModel = viewModel,
-                onDismiss = { viewModel.isKhatmaSetupSheetOpen.value = false }
+                onDismiss = { viewModel.isKhatmaCompletionCelebrationOpen.value = false }
             )
         }
-    }
 
-    if (isSettingsOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.isKhatmaSettingsSheetOpen.value = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = KhatmaDarkCard
-        ) {
-            KhatmaSettingsSheetContent(
-                viewModel = viewModel,
-                state = dashboardState,
-                onDismiss = { viewModel.isKhatmaSettingsSheetOpen.value = false },
-                onOpenPaceAdjust = {
-                    viewModel.isKhatmaSettingsSheetOpen.value = false
-                    viewModel.isKhatmaPaceAdjustSheetOpen.value = true
+        if (showQuickAddDialog) {
+            QuickLogAyahsDialog(
+                onDismiss = { showQuickAddDialog = false },
+                onAdd = { count ->
+                    viewModel.advanceKhatmaByAyahs(count)
+                    showQuickAddDialog = false
                 }
             )
         }
-    }
-
-    if (isPaceAdjustOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.isKhatmaPaceAdjustSheetOpen.value = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = KhatmaDarkCard
-        ) {
-            KhatmaPaceAdjustmentSheetContent(
-                viewModel = viewModel,
-                state = dashboardState,
-                onDismiss = { viewModel.isKhatmaPaceAdjustSheetOpen.value = false }
-            )
-        }
-    }
-
-    if (isHistoryOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.isKhatmaHistorySheetOpen.value = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = KhatmaDarkCard
-        ) {
-            KhatmaHistorySheetContent(
-                historyList = historyList,
-                onDismiss = { viewModel.isKhatmaHistorySheetOpen.value = false }
-            )
-        }
-    }
-
-    if (isCompletionOpen) {
-        KhatmaCompletionCelebrationDialog(
-            viewModel = viewModel,
-            onDismiss = { viewModel.isKhatmaCompletionCelebrationOpen.value = false }
-        )
-    }
-
-    if (showQuickAddDialog) {
-        QuickLogAyahsDialog(
-            onDismiss = { showQuickAddDialog = false },
-            onAdd = { count ->
-                viewModel.advanceKhatmaByAyahs(count)
-                showQuickAddDialog = false
-            }
-        )
     }
 }
 
