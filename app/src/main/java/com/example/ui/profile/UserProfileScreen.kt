@@ -382,9 +382,9 @@ private fun UserProfileHeader(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = themeColors.surface,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, themeColors.border),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 0.dp
     ) {
         Row(
@@ -399,7 +399,7 @@ private fun UserProfileHeader(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(CircleShape)
-                    .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .clickable { onAvatarClick() }
             ) {
                 Image(
@@ -415,7 +415,7 @@ private fun UserProfileHeader(
                         .align(Alignment.BottomEnd)
                         .size(22.dp)
                         .clip(CircleShape)
-                        .background(themeColors.accent),
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -432,7 +432,7 @@ private fun UserProfileHeader(
                     text = if (isUserLoggedIn) userName else "Guest Mode",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = themeColors.arabicText,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 19.sp
                     )
                 )
@@ -442,7 +442,7 @@ private fun UserProfileHeader(
                 Text(
                     text = if (isUserLoggedIn && userEmail.isNotBlank()) userEmail else "Tap to connect account & sync data",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = themeColors.translationText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.5.sp
                     ),
                     modifier = Modifier.clickable { onEditClick() }
@@ -453,8 +453,8 @@ private fun UserProfileHeader(
                 // Status Pill
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = if (isUserLoggedIn) (if (themeColors.isDark) themeColors.border else NoorSoftGreenBg) else themeColors.background,
-                    border = BorderStroke(0.8.dp, if (isUserLoggedIn) (if (themeColors.isDark) themeColors.accent.copy(alpha = 0.4f) else NoorSoftGreenBorder) else themeColors.border)
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -464,14 +464,14 @@ private fun UserProfileHeader(
                         Icon(
                             imageVector = if (isUserLoggedIn) Icons.Default.CloudDone else Icons.Default.CloudOff,
                             contentDescription = null,
-                            tint = if (isUserLoggedIn) themeColors.accent else themeColors.translationText,
+                            tint = if (isUserLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(13.dp)
                         )
                         Text(
                             text = if (isUserLoggedIn) "Connected (Cloud Sync Active)" else "Guest Mode (Local Only)",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (isUserLoggedIn) themeColors.accent else themeColors.translationText,
+                                color = if (isUserLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp
                             )
                         )
@@ -503,7 +503,7 @@ private fun DataSyncSection(
             text = "DATA & SYNCHRONIZATION",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = themeColors.translationText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -513,8 +513,8 @@ private fun DataSyncSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = themeColors.surface,
-            border = BorderStroke(1.dp, themeColors.border)
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(
                 modifier = Modifier
@@ -531,7 +531,7 @@ private fun DataSyncSection(
                     themeColors = themeColors
                 )
 
-                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Cloud Sync Toggle
                 Row(
@@ -553,13 +553,13 @@ private fun DataSyncSection(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (themeColors.isDark) themeColors.border else NoorSoftGreenBg),
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CloudSync,
                                 contentDescription = null,
-                                tint = themeColors.accent,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -569,14 +569,14 @@ private fun DataSyncSection(
                                 text = "Cloud Synchronization",
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = themeColors.arabicText,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 14.sp
                                 )
                             )
                             Text(
                                 text = if (isUserLoggedIn && isCloudSync) "Active (Automatic cloud backup)" else "Off (Local device only)",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = themeColors.translationText,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.5.sp
                                 )
                             )
@@ -590,9 +590,9 @@ private fun DataSyncSection(
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = themeColors.accent,
-                            uncheckedThumbColor = themeColors.translationText,
-                            uncheckedTrackColor = themeColors.border
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.outline
                         )
                     )
                 }
@@ -621,7 +621,7 @@ private fun PreferencesSecuritySection(
             text = "ACCOUNT & SETTINGS",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = themeColors.translationText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -631,8 +631,8 @@ private fun PreferencesSecuritySection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = themeColors.surface,
-            border = BorderStroke(1.dp, themeColors.border)
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(
                 modifier = Modifier
@@ -648,7 +648,7 @@ private fun PreferencesSecuritySection(
                     themeColors = themeColors
                 )
 
-                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Edit Profile
                 SettingsRowItem(
@@ -659,7 +659,7 @@ private fun PreferencesSecuritySection(
                     themeColors = themeColors
                 )
 
-                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Change Password
                 SettingsRowItem(
@@ -692,7 +692,7 @@ private fun SupportLegalSection(
             text = "SUPPORT & LEGAL",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = themeColors.translationText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -702,8 +702,8 @@ private fun SupportLegalSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = themeColors.surface,
-            border = BorderStroke(1.dp, themeColors.border)
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(
                 modifier = Modifier
@@ -719,7 +719,7 @@ private fun SupportLegalSection(
                     themeColors = themeColors
                 )
 
-                HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                 // Contact Us
                 SettingsRowItem(
@@ -755,7 +755,7 @@ private fun AccountActionsSection(
             text = "ACCOUNT ACTIONS",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = themeColors.translationText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.5.sp,
                 letterSpacing = 0.5.sp
             ),
@@ -765,8 +765,8 @@ private fun AccountActionsSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = themeColors.surface,
-            border = BorderStroke(1.dp, themeColors.border)
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(
                 modifier = Modifier
@@ -791,7 +791,7 @@ private fun AccountActionsSection(
                         themeColors = themeColors
                     )
 
-                    HorizontalDivider(color = themeColors.border.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), modifier = Modifier.padding(horizontal = 16.dp))
 
                     SettingsRowItem(
                         icon = Icons.Default.Warning,
@@ -817,7 +817,7 @@ private fun SettingsRowItem(
     onClick: () -> Unit,
     themeColors: ReadingThemeColors = ReadingThemes.MadaniCrisp
 ) {
-    val actualTitleColor = if (titleColor == NoorDarkPine) themeColors.arabicText else titleColor
+    val actualTitleColor = if (titleColor == NoorDarkPine) MaterialTheme.colorScheme.onSurface else titleColor
 
     Row(
         modifier = Modifier
@@ -836,13 +836,13 @@ private fun SettingsRowItem(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(if (titleColor == NoorDarkPine) (if (themeColors.isDark) themeColors.border else NoorSoftGreenBg) else Color(0xFFFDEDEC)),
+                    .background(if (titleColor == NoorDarkPine) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFFDEDEC)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (titleColor == NoorDarkPine) themeColors.accent else titleColor,
+                    tint = if (titleColor == NoorDarkPine) MaterialTheme.colorScheme.primary else titleColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -863,17 +863,17 @@ private fun SettingsRowItem(
                     if (badge != null) {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = if (themeColors.isDark) themeColors.border else NoorSoftGreenBg,
-                            border = BorderStroke(0.8.dp, if (themeColors.isDark) themeColors.accent.copy(alpha = 0.3f) else NoorSoftGreenBorder)
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(0.6.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                         ) {
                             Text(
                                 text = badge,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = themeColors.accent
-                                )
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontSize = 10.sp
+                                ),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
                             )
                         }
                     }
@@ -881,7 +881,7 @@ private fun SettingsRowItem(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = themeColors.translationText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.5.sp
                     )
                 )
@@ -891,8 +891,8 @@ private fun SettingsRowItem(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
-            tint = themeColors.translationText,
-            modifier = Modifier.size(16.dp)
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(15.dp)
         )
     }
 }

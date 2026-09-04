@@ -156,7 +156,7 @@ fun DuasLibraryScreen(
                 }
             )
         },
-        containerColor = themeColors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) { paddingValues ->
         LazyColumn(
@@ -174,14 +174,14 @@ fun DuasLibraryScreen(
                     placeholder = {
                         Text(
                             text = "Search du'as by keyword, situation, Arabic...",
-                            style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search",
-                            tint = DeepVibrantTeal
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     },
                     trailingIcon = {
@@ -190,7 +190,7 @@ fun DuasLibraryScreen(
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Clear",
-                                    tint = SlateTealMuted
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -198,12 +198,12 @@ fun DuasLibraryScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = themeColors.surface,
-                        unfocusedContainerColor = themeColors.surface,
-                        focusedTextColor = themeColors.arabicText,
-                        unfocusedTextColor = themeColors.arabicText,
-                        focusedBorderColor = themeColors.accent,
-                        unfocusedBorderColor = themeColors.border
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -216,7 +216,7 @@ fun DuasLibraryScreen(
                         text = "Search Results (${searchResults.size})",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = themeColors.arabicText
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -226,8 +226,8 @@ fun DuasLibraryScreen(
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
-                            color = themeColors.surface,
-                            border = BorderStroke(1.dp, themeColors.border)
+                            color = MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                         ) {
                             Column(
                                 modifier = Modifier
@@ -239,20 +239,20 @@ fun DuasLibraryScreen(
                                 Icon(
                                     imageVector = Icons.Default.Search,
                                     contentDescription = null,
-                                    tint = themeColors.translationText,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(32.dp)
                                 )
                                 Text(
                                     text = "No Du'as found for \"$searchQuery\"",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = themeColors.arabicText
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                                 Text(
                                     text = "Try searching for morning, protection, travel, forgiveness, or peace",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = themeColors.translationText,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Center
                                     )
                                 )
@@ -301,14 +301,14 @@ fun DuasLibraryScreen(
                             text = "Authentic Azkar Collections",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = themeColors.arabicText,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp
                             )
                         )
                         Text(
                             text = "8 Categories",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = themeColors.accent,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.5.sp
                             )
@@ -381,8 +381,8 @@ fun DuaCategorySelectionCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
-        color = themeColors.surface,
-        border = BorderStroke(1.dp, themeColors.border)
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
@@ -401,14 +401,14 @@ fun DuaCategorySelectionCard(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(13.dp))
-                        .background(if (themeColors.isDark) themeColors.border else SoftTealTint)
-                        .border(1.dp, themeColors.border, RoundedCornerShape(13.dp)),
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(13.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = categoryIcon,
                         contentDescription = category.titleEnglish,
-                        tint = themeColors.accent,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -422,7 +422,7 @@ fun DuaCategorySelectionCard(
                             text = category.titleEnglish,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = themeColors.arabicText,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp
                             )
                         )
@@ -430,13 +430,13 @@ fun DuaCategorySelectionCard(
                         // Count Badge
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = if (themeColors.isDark) themeColors.border else SoftTealTint,
-                            border = BorderStroke(0.6.dp, themeColors.accent.copy(alpha = 0.3f))
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(0.6.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                         ) {
                             Text(
                                 text = "${category.itemCount} Du'as",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = themeColors.accent,
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.sp
                                 ),
@@ -450,7 +450,7 @@ fun DuaCategorySelectionCard(
                     Text(
                         text = category.description,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = themeColors.translationText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp
                         ),
                         maxLines = 1,
@@ -464,14 +464,14 @@ fun DuaCategorySelectionCard(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(if (themeColors.isDark) themeColors.border else SoftTealTint)
-                    .border(1.dp, themeColors.border, CircleShape),
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Open ${category.titleEnglish}",
-                    tint = themeColors.accent,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -657,8 +657,8 @@ fun SearchResultDuaCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = themeColors.surface,
-        border = BorderStroke(1.dp, themeColors.border)
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(
             modifier = Modifier
@@ -673,15 +673,15 @@ fun SearchResultDuaCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = if (themeColors.isDark) themeColors.border else SoftTealTint,
-                    border = BorderStroke(0.6.dp, themeColors.accent.copy(alpha = 0.3f)),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(0.6.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
                     modifier = Modifier.clickable(onClick = onOpenCategory)
                 ) {
                     Text(
                         text = dua.category,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = themeColors.accent,
+                            color = MaterialTheme.colorScheme.primary,
                             fontSize = 11.sp
                         ),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
@@ -696,7 +696,7 @@ fun SearchResultDuaCard(
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy",
-                            tint = themeColors.translationText,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(15.dp)
                         )
                     }
@@ -704,7 +704,7 @@ fun SearchResultDuaCard(
                         Icon(
                             imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (isBookmarked) MetallicGold else themeColors.translationText,
+                            tint = if (isBookmarked) MetallicGold else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -715,7 +715,7 @@ fun SearchResultDuaCard(
                 text = dua.title,
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = themeColors.arabicText,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 15.sp
                 )
             )
@@ -725,7 +725,7 @@ fun SearchResultDuaCard(
                 text = dua.translation,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Normal,
-                    color = themeColors.translationText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.5.sp,
                     lineHeight = 19.sp
                 )
@@ -737,7 +737,7 @@ fun SearchResultDuaCard(
                     text = dua.transliteration,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        color = themeColors.transliterationText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.5.sp,
                         lineHeight = 17.sp
                     )
@@ -751,7 +751,7 @@ fun SearchResultDuaCard(
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Normal,
                         fontFamily = FontFamily.Serif,
-                        color = themeColors.arabicText,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 19.sp,
                         lineHeight = 30.sp
                     ),
@@ -763,7 +763,7 @@ fun SearchResultDuaCard(
             Text(
                 text = "${dua.occasion} • ${dua.reference}",
                 style = MaterialTheme.typography.labelSmall.copy(
-                    color = themeColors.translationText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp
                 )
             )

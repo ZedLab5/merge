@@ -78,6 +78,23 @@ object ReadingThemes {
 
     val allThemes = listOf(MadaniCrisp, SepiaParchment, ObsidianNight)
 
+    fun fromColorScheme(
+        colorScheme: androidx.compose.material3.ColorScheme,
+        isDark: Boolean
+    ): ReadingThemeColors {
+        return ReadingThemeColors(
+            background = colorScheme.background,
+            surface = colorScheme.surface,
+            border = colorScheme.outline,
+            arabicText = colorScheme.onSurface,
+            translationText = colorScheme.onSurfaceVariant,
+            transliterationText = colorScheme.primary,
+            accent = colorScheme.primary,
+            name = if (isDark) "Obsidian Night" else "Madani Crisp",
+            isDark = isDark
+        )
+    }
+
     fun getThemeByName(name: String): ReadingThemeColors {
         return when (name) {
             "Sepia Parchment" -> SepiaParchment

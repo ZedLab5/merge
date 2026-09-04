@@ -796,6 +796,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isQuranSepiaMode = MutableStateFlow(false) // Independent Sepia Parchment Canvas exclusive to Quran Reader
     val sharedReadingTheme = MutableStateFlow("Madani Crisp") // App-wide theme: "Madani Crisp" (Light) or "Obsidian Night" (Dark)
     val quranReadingTheme = sharedReadingTheme // Maintained for backward compatibility
+    val isDarkMode: StateFlow<Boolean> = sharedReadingTheme
+        .map { it == "Obsidian Night" }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val quranSearchQuery = MutableStateFlow("")
     val quranFilterCategory = MutableStateFlow("All") // "All", "Meccan", "Medinan", "Popular", "Juz 'Amma"
     val hasSeenQuranOnboarding = MutableStateFlow(false)

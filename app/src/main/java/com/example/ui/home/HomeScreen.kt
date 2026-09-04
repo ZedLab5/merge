@@ -80,7 +80,7 @@ fun HomeScreen(
         }
     }
 
-    val screenBg = if (isDark) themeColors.background else Color.White
+    val screenBg = MaterialTheme.colorScheme.background
 
     Box(
         modifier = modifier

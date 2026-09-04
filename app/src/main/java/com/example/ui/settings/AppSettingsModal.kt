@@ -135,7 +135,7 @@ fun AppSettingsModal(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = themeColors.surface,
+        containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
         dragHandle = null,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -153,14 +153,14 @@ fun AppSettingsModal(
                     .padding(top = 4.dp, bottom = 12.dp)
                     .size(width = 42.dp, height = 4.5.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(themeColors.border)
+                    .background(MaterialTheme.colorScheme.outline)
             )
 
             // Header Bar
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = themeColors.surface,
-                border = BorderStroke(0.5.dp, themeColors.border)
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Row(
                     modifier = Modifier
@@ -193,7 +193,7 @@ fun AppSettingsModal(
                                 text = stringResource(R.string.settings_title),
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = themeColors.arabicText,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 20.sp
                                 )
                             )

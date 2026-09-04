@@ -65,18 +65,17 @@ class MainActivity : ComponentActivity() {
                 context.createConfigurationContext(config)
             }
 
-            val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-            val readingTheme = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+            val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
 
             CompositionLocalProvider(
                 LocalConfiguration provides localizedConfiguration,
                 LocalLayoutDirection provides layoutDirection,
                 LocalContext provides localizedContext
             ) {
-                NoorTheme(darkTheme = readingTheme.isDark) {
+                NoorTheme(darkTheme = isDarkMode) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = if (readingTheme.isDark) readingTheme.background else CanvasMint
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.background
                     ) {
                         NoorApp(viewModel = viewModel)
                     }

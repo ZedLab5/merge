@@ -187,7 +187,7 @@ fun AzkarReaderScreen(
                 }
             )
         },
-        containerColor = themeColors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) { paddingValues ->
         LazyColumn(
@@ -275,8 +275,8 @@ fun AzkarReaderScreen(
                         .fillMaxWidth()
                         .clickable { viewModel.navigateTo(NoorDestination.DUAS_LIBRARY) },
                     shape = RoundedCornerShape(16.dp),
-                    color = themeColors.surface,
-                    border = BorderStroke(1.dp, themeColors.border)
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Row(
                         modifier = Modifier
@@ -293,13 +293,13 @@ fun AzkarReaderScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(if (themeColors.isDark) themeColors.border else SoftTealTint),
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = null,
-                                    tint = themeColors.accent,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -308,13 +308,13 @@ fun AzkarReaderScreen(
                                     text = "All Du'a Categories",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = themeColors.arabicText
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 )
                                 Text(
                                     text = "Browse Hisn al-Muslim library",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = themeColors.translationText,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 12.sp
                                     )
                                 )
@@ -324,7 +324,7 @@ fun AzkarReaderScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = themeColors.accent,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -384,22 +384,12 @@ fun AzkarDailyCompletionCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = themeColors.surface,
-        border = BorderStroke(1.2.dp, themeColors.border)
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.outline)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    if (themeColors.isDark) Brush.linearGradient(listOf(themeColors.surface, themeColors.surface))
-                    else Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFFCFDFD),
-                            Color(0xFFF2FAF8),
-                            Color(0xFFFFFDF5)
-                        )
-                    )
-                )
                 .padding(18.dp)
         ) {
             Row(
@@ -416,14 +406,14 @@ fun AzkarDailyCompletionCard(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (themeColors.isDark) themeColors.border else GoldBadgeBg,
+                        color = GoldBadgeBg,
                         border = BorderStroke(1.dp, MetallicGold.copy(alpha = 0.35f))
                     ) {
                         Text(
                             text = "DAILY COMPLETION",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (themeColors.isDark) MetallicGold else Color(0xFF8A5F0C),
+                                color = MetallicGold,
                                 fontSize = 10.5.sp,
                                 letterSpacing = 0.8.sp
                             ),
@@ -435,7 +425,7 @@ fun AzkarDailyCompletionCard(
                         text = categoryName,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = themeColors.arabicText,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 17.5.sp
                         )
                     )
@@ -443,7 +433,7 @@ fun AzkarDailyCompletionCard(
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = themeColors.translationText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.5.sp,
                             lineHeight = 16.5.sp
                         ),
@@ -483,7 +473,7 @@ fun AzkarDailyCompletionCard(
                     CircularProgressIndicator(
                         progress = { 1f },
                         modifier = Modifier.size(76.dp),
-                        color = if (themeColors.isDark) themeColors.border else Color(0xFFFBEBC8),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         strokeWidth = 6.5.dp,
                         strokeCap = StrokeCap.Round
                     )
@@ -492,7 +482,7 @@ fun AzkarDailyCompletionCard(
                     CircularProgressIndicator(
                         progress = { animatedProgress },
                         modifier = Modifier.size(76.dp),
-                        color = themeColors.accent,
+                        color = MetallicGold,
                         strokeWidth = 6.5.dp,
                         strokeCap = StrokeCap.Round
                     )
@@ -505,7 +495,7 @@ fun AzkarDailyCompletionCard(
                             text = "${(progress * 100).toInt()}%",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
-                                color = if (themeColors.isDark) MetallicGold else Color(0xFF8A5F0C),
+                                color = MetallicGold,
                                 fontSize = 15.sp
                             )
                         )
@@ -513,7 +503,7 @@ fun AzkarDailyCompletionCard(
                             text = "$completed/$total",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = themeColors.translationText,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 10.sp
                             )
                         )
@@ -591,10 +581,10 @@ fun InteractiveAzkarCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        color = if (isCompleted) (if (themeColors.isDark) Color(0xFF0F2E23) else Color(0xFFF6FDFB)) else themeColors.surface,
+        color = if (isCompleted) (if (themeColors.isDark) Color(0xFF0F2E23) else Color(0xFFF6FDFB)) else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             if (isCompleted) 1.5.dp else 1.dp,
-            if (isCompleted) Color(0xFF22C55E).copy(alpha = 0.55f) else themeColors.border
+            if (isCompleted) Color(0xFF22C55E).copy(alpha = 0.55f) else MaterialTheme.colorScheme.outline
         )
     ) {
         Column(
@@ -614,14 +604,14 @@ fun InteractiveAzkarCard(
                         text = dua.title,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = themeColors.arabicText,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 16.sp
                         )
                     )
                     Text(
                         text = "${dua.occasion} • ${dua.reference}",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = themeColors.translationText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp
                         )
                     )
@@ -638,7 +628,7 @@ fun InteractiveAzkarCard(
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy Zikr",
-                            tint = themeColors.translationText,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -650,7 +640,7 @@ fun InteractiveAzkarCard(
                         Icon(
                             imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (isBookmarked) MetallicGold else themeColors.translationText,
+                            tint = if (isBookmarked) MetallicGold else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -664,15 +654,15 @@ fun InteractiveAzkarCard(
                 // ============================================================
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = if (themeColors.isDark) themeColors.background else CanvasMint,
-                    border = BorderStroke(1.dp, themeColors.border),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = dua.translation,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = themeColors.arabicText,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = translationSize,
                             lineHeight = translationLineHeight
                         ),
@@ -686,7 +676,7 @@ fun InteractiveAzkarCard(
                         text = dua.transliteration,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                            color = themeColors.transliterationText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = transliterationSize,
                             lineHeight = (transliterationSize.value * 1.45f).sp,
                             fontWeight = FontWeight.Medium
@@ -702,7 +692,7 @@ fun InteractiveAzkarCard(
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Normal,
                             fontFamily = FontFamily.Serif,
-                            color = themeColors.arabicText,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = arabicSize,
                             lineHeight = arabicLineHeight
                         ),
@@ -719,8 +709,8 @@ fun InteractiveAzkarCard(
                 // ============================================================
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = if (themeColors.isDark) themeColors.background else CanvasMint,
-                    border = BorderStroke(1.dp, themeColors.border),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -728,7 +718,7 @@ fun InteractiveAzkarCard(
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Serif,
-                            color = themeColors.arabicText,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = arabicSize,
                             lineHeight = arabicLineHeight
                         ),
@@ -743,7 +733,7 @@ fun InteractiveAzkarCard(
                         text = dua.transliteration,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                            color = themeColors.transliterationText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = transliterationSize,
                             lineHeight = (transliterationSize.value * 1.45f).sp,
                             fontWeight = FontWeight.Medium
@@ -758,7 +748,7 @@ fun InteractiveAzkarCard(
                         text = dua.translation,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Normal,
-                            color = themeColors.translationText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = translationSize,
                             lineHeight = translationLineHeight
                         ),

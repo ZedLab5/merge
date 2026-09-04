@@ -118,7 +118,7 @@ fun QuranRecitersListScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = themeColors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             NoorTopBar(
                 title = if (isArabic) "قراء القرآن الكريم" else "Quran Reciters",
@@ -148,7 +148,7 @@ fun QuranRecitersListScreen(
                         Text(
                             text = if (isArabic) "ابحث عن قارئ..." else "Search reciter or country...",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = themeColors.translationText.copy(alpha = 0.8f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                 fontSize = 14.sp
                             )
                         )
@@ -157,7 +157,7 @@ fun QuranRecitersListScreen(
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search",
-                            tint = if (searchQuery.isNotBlank()) themeColors.accent else themeColors.translationText
+                            tint = if (searchQuery.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
                     trailingIcon = {
@@ -166,20 +166,20 @@ fun QuranRecitersListScreen(
                                 Icon(
                                     imageVector = Icons.Default.Clear,
                                     contentDescription = "Clear",
-                                    tint = themeColors.translationText
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     },
                     shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = themeColors.arabicText,
-                        unfocusedTextColor = themeColors.arabicText,
-                        focusedContainerColor = if (themeColors.isDark) themeColors.surface else SurfaceWhite,
-                        unfocusedContainerColor = if (themeColors.isDark) themeColors.surface else SurfaceWhite,
-                        focusedBorderColor = themeColors.accent,
-                        unfocusedBorderColor = if (themeColors.isDark) themeColors.border else BorderTealGray,
-                        cursorColor = themeColors.accent
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
                     ),
                     singleLine = true
                 )

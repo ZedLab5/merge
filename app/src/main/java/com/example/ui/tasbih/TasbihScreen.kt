@@ -248,7 +248,7 @@ fun TasbihScreen(
                 }
             )
         },
-        containerColor = themeColors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) { paddingValues ->
         // Static layout with zero vertical scrolling
@@ -998,8 +998,8 @@ fun ActiveDhikrInfoCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = themeColors.surface,
-        border = BorderStroke(1.dp, themeColors.border),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 0.dp
     ) {
         Column(
@@ -1014,7 +1014,7 @@ fun ActiveDhikrInfoCard(
                 text = arabicText,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = themeColors.accent,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 28.sp
                 ),
                 textAlign = TextAlign.Center
@@ -1026,7 +1026,7 @@ fun ActiveDhikrInfoCard(
                     text = cleanTransliteration,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = themeColors.arabicText,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 15.sp
                     ),
                     textAlign = TextAlign.Center
@@ -1037,7 +1037,7 @@ fun ActiveDhikrInfoCard(
             Text(
                 text = meaning,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = themeColors.translationText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.5.sp
                 ),
                 textAlign = TextAlign.Center,
@@ -1057,7 +1057,7 @@ fun ActiveDhikrInfoCard(
                     text = "$count",
                     style = MaterialTheme.typography.displayMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = themeColors.arabicText,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 38.sp,
                         letterSpacing = (-1).sp
                     )
@@ -1066,7 +1066,7 @@ fun ActiveDhikrInfoCard(
                     text = " / $target",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = themeColors.translationText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 15.sp
                     ),
                     modifier = Modifier.padding(bottom = 5.dp, start = 4.dp)
@@ -1080,7 +1080,7 @@ fun ActiveDhikrInfoCard(
                     .fillMaxWidth(0.85f)
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(themeColors.border.copy(alpha = 0.5f))
+                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
             ) {
                 Box(
                     modifier = Modifier
@@ -1089,7 +1089,7 @@ fun ActiveDhikrInfoCard(
                         .clip(RoundedCornerShape(2.dp))
                         .background(
                             Brush.horizontalGradient(
-                                listOf(themeColors.accent, Color(0xFF22C55E))
+                                listOf(MaterialTheme.colorScheme.primary, Color(0xFF22C55E))
                             )
                         )
                 )

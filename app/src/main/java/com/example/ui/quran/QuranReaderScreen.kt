@@ -324,10 +324,16 @@ fun QuranReaderScreen(
         }
     }
 
-    // Determine current theme colors for Quran Reader: Sepia if toggled, otherwise app-wide theme
-    val themeColors = remember(isSepiaMode, sharedThemeName) {
-        if (isSepiaMode) ReadingThemes.SepiaParchment
-        else ReadingThemes.getThemeByName(sharedThemeName)
+    val colorScheme = MaterialTheme.colorScheme
+    val isSystemDark by viewModel.isDarkMode.collectAsStateWithLifecycle()
+
+    // Determine current theme colors for Quran Reader: Sepia if toggled/selected, otherwise app-wide MaterialTheme.colorScheme
+    val themeColors = remember(isSepiaMode, sharedThemeName, colorScheme, isSystemDark) {
+        if (isSepiaMode || sharedThemeName == "Sepia Parchment") {
+            ReadingThemes.SepiaParchment
+        } else {
+            ReadingThemes.fromColorScheme(colorScheme, isSystemDark)
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
