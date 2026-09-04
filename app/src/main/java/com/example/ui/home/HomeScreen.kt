@@ -44,12 +44,17 @@ import com.example.ui.MainViewModel
 import com.example.ui.NoorDestination
 import com.example.ui.components.KhatmaMilestoneCelebrationDialog
 import com.example.ui.theme.CanvasMint
+import com.example.ui.theme.ReadingThemes
 
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val location by viewModel.locationName.collectAsStateWithLifecycle()
     val nextPrayerName by viewModel.nextPrayerName.collectAsStateWithLifecycle()
@@ -75,10 +80,12 @@ fun HomeScreen(
         }
     }
 
+    val screenBg = if (isDark) themeColors.background else Color.White
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(screenBg)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

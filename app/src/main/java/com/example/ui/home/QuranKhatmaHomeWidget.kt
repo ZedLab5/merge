@@ -62,6 +62,10 @@ import com.example.ui.theme.PrimaryTealGradient
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 
+import androidx.compose.runtime.remember
+import com.example.ui.theme.ReadingThemes
+import com.example.ui.theme.ReadingThemeColors
+
 private val LocalNoorDarkPine = Color(0xFF10261F)
 private val LocalNoorSageSlate = Color(0xFF5A756C)
 private val LocalNoorSoftGreenBg = Color(0xFFF2F8F5)
@@ -77,6 +81,10 @@ fun QuranKhatmaHomeWidget(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val khatmaState by viewModel.khatmaDashboardState.collectAsStateWithLifecycle()
     val readingProgress by viewModel.readingProgress.collectAsStateWithLifecycle()
     val isArabic by viewModel.appLanguage.collectAsStateWithLifecycle()
@@ -120,13 +128,14 @@ fun QuranKhatmaHomeWidget(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(LocalNoorSoftGreenBg),
+                        .background(if (isDark) themeColors.surface else LocalNoorSoftGreenBg)
+                        .border(1.dp, if (isDark) themeColors.border else Color.Transparent, RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.MenuBook,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(17.dp)
                     )
                 }
@@ -136,7 +145,7 @@ fun QuranKhatmaHomeWidget(
                         text = if (isLangArabic) "القرآن الكريم والختمة" else "Holy Quran & Khatma",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = LocalNoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else LocalNoorDarkPine,
                             fontSize = 15.5.sp
                         )
                     )
@@ -147,7 +156,7 @@ fun QuranKhatmaHomeWidget(
                             if (isLangArabic) "الختمة المنظمة والتلاوة اليومية" else "Guided Khatma & daily recitation"
                         },
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = LocalNoorSageSlate,
+                            color = if (isDark) themeColors.translationText else LocalNoorSageSlate,
                             fontSize = 11.sp
                         )
                     )
@@ -171,13 +180,13 @@ fun QuranKhatmaHomeWidget(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal
+                            color = if (isDark) themeColors.accent else DeepVibrantTeal
                         )
                     )
                     Icon(
                         imageVector = if (isLangArabic) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(13.dp)
                     )
                 }
@@ -191,7 +200,8 @@ fun QuranKhatmaHomeWidget(
             viewModel = viewModel,
             state = state,
             isPlanActive = isPlanActive,
-            isLangArabic = isLangArabic
+            isLangArabic = isLangArabic,
+            themeColors = themeColors
         )
 
         // =====================================================
@@ -205,6 +215,7 @@ fun QuranKhatmaHomeWidget(
             ayahNum = ayahNum,
             totalAyahs = totalAyahs,
             isLangArabic = isLangArabic,
+            themeColors = themeColors,
             onResumeReading = onResumeReading
         )
     }
@@ -219,16 +230,21 @@ private fun QuranKhatmaMainCard(
     state: KhatmaFullDashboardState?,
     isPlanActive: Boolean,
     isLangArabic: Boolean,
+    themeColors: ReadingThemeColors,
     modifier: Modifier = Modifier
 ) {
+    val isDark = themeColors.isDark
+    val cardBackground = if (isDark) themeColors.surface else Color.White
+    val cardBorder = if (isDark) themeColors.border else BorderTealGray
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
-        color = Color.White,
+        color = cardBackground,
         shadowElevation = 0.dp,
-        border = BorderStroke(1.2.dp, BorderTealGray)
+        border = BorderStroke(1.2.dp, cardBorder)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             // Subtle Islamic ambient aura
@@ -239,7 +255,7 @@ private fun QuranKhatmaMainCard(
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                (if (isPlanActive) DeepVibrantTeal else MetallicGold).copy(alpha = 0.08f),
+                                (if (isPlanActive) (if (isDark) themeColors.accent else DeepVibrantTeal) else MetallicGold).copy(alpha = if (isDark) 0.05f else 0.08f),
                                 Color.Transparent
                             )
                         )
@@ -269,14 +285,14 @@ private fun QuranKhatmaMainCard(
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clip(RoundedCornerShape(13.dp))
-                                    .background(SoftTealTint)
-                                    .border(1.dp, BorderTealLight, RoundedCornerShape(13.dp)),
+                                    .background(if (isDark) themeColors.background else SoftTealTint)
+                                    .border(1.dp, if (isDark) themeColors.border else BorderTealLight, RoundedCornerShape(13.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.AutoStories,
                                     contentDescription = "Quran Khatma",
-                                    tint = DeepVibrantTeal,
+                                    tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                                     modifier = Modifier.size(21.dp)
                                 )
                             }
@@ -291,18 +307,18 @@ private fun QuranKhatmaMainCard(
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.5.sp,
-                                            color = DarkPine
+                                            color = if (isDark) themeColors.arabicText else DarkPine
                                         )
                                     )
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
-                                        color = SoftTealTint,
-                                        border = BorderStroke(0.5.dp, DeepVibrantTeal.copy(alpha = 0.4f))
+                                        color = if (isDark) themeColors.background else SoftTealTint,
+                                        border = BorderStroke(0.5.dp, if (isDark) themeColors.border else DeepVibrantTeal.copy(alpha = 0.4f))
                                     ) {
                                         Text(
                                             text = if (isLangArabic) "اليوم ${state.currentDayNumber}/${state.totalDays}" else "Day ${state.currentDayNumber}/${state.totalDays}",
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = DeepVibrantTeal,
+                                                color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 10.5.sp
                                             ),
@@ -319,7 +335,7 @@ private fun QuranKhatmaMainCard(
                                     },
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontSize = 11.5.sp,
-                                        color = SlateTealMuted
+                                        color = if (isDark) themeColors.translationText else SlateTealMuted
                                     )
                                 )
                             }
@@ -336,8 +352,21 @@ private fun QuranKhatmaMainCard(
 
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = if (isAheadOrOnTrack) Color(0xFFF0F7F4) else Color(0xFFFBF8EE),
-                            border = BorderStroke(1.dp, if (isAheadOrOnTrack) Color(0xFFCFE5DA) else Color(0xFFEADBBE))
+                            color = when {
+                                isDark && isAheadOrOnTrack -> themeColors.background
+                                isDark -> Color(0x33D4A340)
+                                isAheadOrOnTrack -> Color(0xFFF0F7F4)
+                                else -> Color(0xFFFBF8EE)
+                            },
+                            border = BorderStroke(
+                                1.dp,
+                                when {
+                                    isDark && isAheadOrOnTrack -> themeColors.border
+                                    isDark -> MetallicGold.copy(alpha = 0.5f)
+                                    isAheadOrOnTrack -> Color(0xFFCFE5DA)
+                                    else -> Color(0xFFEADBBE)
+                                }
+                            )
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -348,12 +377,18 @@ private fun QuranKhatmaMainCard(
                                     modifier = Modifier
                                         .size(6.dp)
                                         .clip(CircleShape)
-                                        .background(if (isAheadOrOnTrack) DeepVibrantTeal else MetallicGold)
+                                        .background(
+                                            if (isAheadOrOnTrack) {
+                                                if (isDark) themeColors.accent else DeepVibrantTeal
+                                            } else MetallicGold
+                                        )
                                 )
                                 Text(
                                     text = paceText,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = if (isAheadOrOnTrack) DeepVibrantTeal else MetallicGold,
+                                        color = if (isAheadOrOnTrack) {
+                                            if (isDark) themeColors.accent else DeepVibrantTeal
+                                        } else MetallicGold,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 11.sp
                                     )
@@ -367,8 +402,8 @@ private fun QuranKhatmaMainCard(
                     // Hero Recitation Stage Card with Authentic Arabic Calligraphy
                     Surface(
                         shape = RoundedCornerShape(18.dp),
-                        color = Color(0xFFF7FAF9),
-                        border = BorderStroke(1.dp, Color(0xFFDFEBE5)),
+                        color = if (isDark) themeColors.background else Color(0xFFF7FAF9),
+                        border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -386,21 +421,21 @@ private fun QuranKhatmaMainCard(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = SlateTealMuted,
+                                        color = if (isDark) themeColors.translationText else SlateTealMuted,
                                         letterSpacing = 0.5.sp
                                     )
                                 )
 
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
-                                    color = Color.White,
-                                    border = BorderStroke(1.dp, Color(0xFFDFEBE5))
+                                    color = if (isDark) themeColors.surface else Color.White,
+                                    border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5))
                                 ) {
                                     Text(
                                         text = if (isLangArabic) "آية ${state.nextReadingPosition.ayahNumber} • جزء ${state.nextReadingPosition.juzNumber}" else "Ayah ${state.nextReadingPosition.ayahNumber} • Juz ${state.nextReadingPosition.juzNumber}",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = DarkPine,
+                                            color = if (isDark) themeColors.arabicText else DarkPine,
                                             fontSize = 11.sp
                                         ),
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
@@ -422,7 +457,7 @@ private fun QuranKhatmaMainCard(
                                             fontFamily = AmiriQuranFontFamily,
                                             fontWeight = FontWeight.Normal,
                                             fontSize = 23.sp,
-                                            color = DarkPine,
+                                            color = if (isDark) themeColors.arabicText else DarkPine,
                                             lineHeight = 30.sp
                                         )
                                     )
@@ -431,15 +466,15 @@ private fun QuranKhatmaMainCard(
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 12.5.sp,
-                                            color = DeepVibrantTeal
+                                            color = if (isDark) themeColors.accent else DeepVibrantTeal
                                         )
                                     )
                                 }
 
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
-                                    color = Color.White,
-                                    border = BorderStroke(1.dp, Color(0xFFDFEBE5))
+                                    color = if (isDark) themeColors.surface else Color.White,
+                                    border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5))
                                 ) {
                                     Column(
                                         modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp),
@@ -449,14 +484,14 @@ private fun QuranKhatmaMainCard(
                                             text = "${state.progressPercentage}%",
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Black,
-                                                color = DeepVibrantTeal,
+                                                color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                                 fontSize = 16.5.sp
                                             )
                                         )
                                         Text(
                                             text = if (isLangArabic) "منجز" else "DONE",
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                color = SlateTealMuted,
+                                                color = if (isDark) themeColors.translationText else SlateTealMuted,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 8.5.sp,
                                                 letterSpacing = 0.5.sp
@@ -480,7 +515,7 @@ private fun QuranKhatmaMainCard(
                                         "Today: ${state.todayReadAyahs} of ${state.todayTargetAyahs} Ayahs"
                                     },
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = if (state.isTodayTargetAchieved) DeepVibrantTeal else DarkPine,
+                                        color = if (isDark) themeColors.arabicText else (if (state.isTodayTargetAchieved) DeepVibrantTeal else DarkPine),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -494,7 +529,7 @@ private fun QuranKhatmaMainCard(
                                     },
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = if (state.todayRemainingAyahs > 0) MetallicGold else DeepVibrantTeal,
+                                        color = if (state.todayRemainingAyahs > 0) MetallicGold else (if (isDark) themeColors.accent else DeepVibrantTeal),
                                         fontSize = 11.sp
                                     )
                                 )
@@ -507,7 +542,7 @@ private fun QuranKhatmaMainCard(
                                     .fillMaxWidth()
                                     .height(6.dp)
                                     .clip(RoundedCornerShape(3.dp))
-                                    .background(Color(0xFFE2EBE6))
+                                    .background(if (isDark) themeColors.border else Color(0xFFE2EBE6))
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -527,7 +562,7 @@ private fun QuranKhatmaMainCard(
                             // Tactile Primary CTA Button (Resume Khatma)
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = DeepVibrantTeal,
+                                color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
@@ -550,14 +585,14 @@ private fun QuranKhatmaMainCard(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.MenuBook,
                                         contentDescription = null,
-                                        tint = Color.White,
+                                        tint = if (isDark) Color(0xFF0F1418) else Color.White,
                                         modifier = Modifier.size(17.dp)
                                     )
                                     Spacer(modifier = Modifier.width(7.dp))
                                     Text(
                                         text = if (isLangArabic) "متابعة تلاوة الختمة (آية ${state.nextReadingPosition.ayahNumber})" else "Resume Khatma at Ayah ${state.nextReadingPosition.ayahNumber}",
                                         style = MaterialTheme.typography.labelLarge.copy(
-                                            color = Color.White,
+                                            color = if (isDark) Color(0xFF0F1418) else Color.White,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.5.sp
                                         )
@@ -566,7 +601,7 @@ private fun QuranKhatmaMainCard(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                         contentDescription = null,
-                                        tint = Color.White,
+                                        tint = if (isDark) Color(0xFF0F1418) else Color.White,
                                         modifier = Modifier.size(13.dp)
                                     )
                                 }
@@ -578,8 +613,8 @@ private fun QuranKhatmaMainCard(
                         Spacer(modifier = Modifier.height(10.dp))
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFFBF8EE),
-                            border = BorderStroke(1.dp, Color(0xFFEADBBE)),
+                            color = if (isDark) Color(0x33D4A340) else Color(0xFFFBF8EE),
+                            border = BorderStroke(1.dp, if (isDark) MetallicGold.copy(alpha = 0.5f) else Color(0xFFEADBBE)),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -598,7 +633,7 @@ private fun QuranKhatmaMainCard(
                                 Text(
                                     text = if (isLangArabic) "ما شاء الله! حققت ورد اليوم بنجاح (+${state.todayReadAyahs} آية)" else "Masha'Allah! Today's reading goal achieved (+${state.todayReadAyahs} Ayahs)",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = DarkPine,
+                                        color = if (isDark) Color(0xFFF0EBE1) else DarkPine,
                                         fontSize = 11.5.sp,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -617,8 +652,8 @@ private fun QuranKhatmaMainCard(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(9.dp),
-                            color = SoftTealTint,
-                            border = BorderStroke(1.dp, BorderTealLight),
+                            color = if (isDark) themeColors.background else SoftTealTint,
+                            border = BorderStroke(1.dp, if (isDark) themeColors.border else BorderTealLight),
                             modifier = Modifier
                                 .clip(RoundedCornerShape(9.dp))
                                 .clickable {
@@ -635,13 +670,13 @@ private fun QuranKhatmaMainCard(
                                 Icon(
                                     imageVector = Icons.Default.Headphones,
                                     contentDescription = null,
-                                    tint = DeepVibrantTeal,
+                                    tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Text(
                                     text = if (isLangArabic) "استماع للسورة" else "Listen Audio",
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = DeepVibrantTeal,
+                                        color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 11.sp
                                     )
@@ -660,7 +695,7 @@ private fun QuranKhatmaMainCard(
                             Text(
                                 text = if (isLangArabic) "عرض جدول الختمة والتفاصيل" else "Khatma Plan & Schedule",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    color = DeepVibrantTeal,
+                                    color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.5.sp
                                 )
@@ -668,7 +703,7 @@ private fun QuranKhatmaMainCard(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = null,
-                                tint = DeepVibrantTeal,
+                                tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                                 modifier = Modifier.size(11.dp)
                             )
                         }
@@ -688,8 +723,8 @@ private fun QuranKhatmaMainCard(
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clip(RoundedCornerShape(13.dp))
-                                    .background(GoldBadgeBg)
-                                    .border(1.dp, MetallicGold.copy(alpha = 0.35f), RoundedCornerShape(13.dp)),
+                                    .background(if (isDark) Color(0x33D4A340) else GoldBadgeBg)
+                                    .border(1.dp, if (isDark) MetallicGold.copy(alpha = 0.5f) else MetallicGold.copy(alpha = 0.35f), RoundedCornerShape(13.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -705,7 +740,7 @@ private fun QuranKhatmaMainCard(
                                     text = if (isLangArabic) "رحلة ختم القرآن الكريم" else "Noble Quran Khatma",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = DarkPine,
+                                        color = if (isDark) themeColors.arabicText else DarkPine,
                                         fontSize = 16.5.sp
                                     )
                                 )
@@ -713,7 +748,7 @@ private fun QuranKhatmaMainCard(
                                 Text(
                                     text = if (isLangArabic) "نظّم تلاوتك واختم كتاب الله بورد يومي ميسر" else "Organize daily reading and complete the Quran",
                                     style = MaterialTheme.typography.bodySmall.copy(
-                                        color = SlateTealMuted,
+                                        color = if (isDark) themeColors.translationText else SlateTealMuted,
                                         fontSize = 11.5.sp
                                     )
                                 )
@@ -723,7 +758,7 @@ private fun QuranKhatmaMainCard(
                         Text(
                             text = if (isLangArabic) "تخصيص" else "Custom",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = DeepVibrantTeal,
+                                color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.5.sp
                             ),
@@ -745,6 +780,7 @@ private fun QuranKhatmaMainCard(
                             title = if (isLangArabic) "٣٠ يوماً" else "30 Days",
                             subtitle = if (isLangArabic) "جزء يومياً" else "1 Juz/day",
                             isHighlighted = true,
+                            themeColors = themeColors,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 viewModel.createOrResetKhatma(
@@ -759,6 +795,7 @@ private fun QuranKhatmaMainCard(
                             title = if (isLangArabic) "٦٠ يوماً" else "60 Days",
                             subtitle = if (isLangArabic) "نصف جزء" else "10 pgs/day",
                             isHighlighted = false,
+                            themeColors = themeColors,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 viewModel.createOrResetKhatma(
@@ -773,6 +810,7 @@ private fun QuranKhatmaMainCard(
                             title = if (isLangArabic) "٩٠ يوماً" else "90 Days",
                             subtitle = if (isLangArabic) "ثلث جزء" else "1/3 Juz/day",
                             isHighlighted = false,
+                            themeColors = themeColors,
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 viewModel.createOrResetKhatma(
@@ -789,7 +827,7 @@ private fun QuranKhatmaMainCard(
                     // 1-Tap Start Khatma Button
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = DeepVibrantTeal,
+                        color = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
@@ -811,14 +849,14 @@ private fun QuranKhatmaMainCard(
                             Icon(
                                 imageVector = Icons.Default.AutoStories,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = if (isDark) Color(0xFF0F1418) else Color.White,
                                 modifier = Modifier.size(17.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = if (isLangArabic) "بدء مسيرة الختمة (خطة ٣٠ يوماً)" else "Begin 30-Day Khatma Plan",
                                 style = MaterialTheme.typography.labelLarge.copy(
-                                    color = Color.White,
+                                    color = if (isDark) Color(0xFF0F1418) else Color.White,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.5.sp
                                 )
@@ -827,7 +865,7 @@ private fun QuranKhatmaMainCard(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = if (isDark) Color(0xFF0F1418) else Color.White,
                                 modifier = Modifier.size(13.dp)
                             )
                         }
@@ -850,17 +888,22 @@ private fun QuranReadingCompanionCard(
     ayahNum: Int,
     totalAyahs: Int,
     isLangArabic: Boolean,
-    onResumeReading: () -> Unit,
+    themeColors: ReadingThemeColors,
+    onResumeReading: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val isDark = themeColors.isDark
+    val cardBackground = if (isDark) themeColors.surface else Color.White
+    val cardBorder = if (isDark) themeColors.border else LocalNoorCardBorder
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = cardBackground,
         shadowElevation = 0.dp,
-        border = BorderStroke(1.dp, LocalNoorCardBorder)
+        border = BorderStroke(1.dp, cardBorder)
     ) {
         Column(
             modifier = Modifier
@@ -881,14 +924,14 @@ private fun QuranReadingCompanionCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(SoftTealTint)
-                            .border(1.dp, BorderTealLight, RoundedCornerShape(10.dp)),
+                            .background(if (isDark) themeColors.background else SoftTealTint)
+                            .border(1.dp, if (isDark) themeColors.border else BorderTealLight, RoundedCornerShape(10.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.BookmarkBorder,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                             modifier = Modifier.size(19.dp)
                         )
                     }
@@ -902,7 +945,7 @@ private fun QuranReadingCompanionCard(
                             },
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = DarkPine,
+                                color = if (isDark) themeColors.arabicText else DarkPine,
                                 fontSize = 14.5.sp
                             )
                         )
@@ -914,7 +957,7 @@ private fun QuranReadingCompanionCard(
                                 if (isLangArabic) "تلاوة حرة من بداية المصحف" else "Free reading from the beginning"
                             },
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = SlateTealMuted,
+                                color = if (isDark) themeColors.translationText else SlateTealMuted,
                                 fontSize = 11.sp
                             )
                         )
@@ -928,8 +971,8 @@ private fun QuranReadingCompanionCard(
 
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = LocalNoorSoftGreenBg,
-                    border = BorderStroke(0.5.dp, Color(0xFFCFE5DA))
+                    color = if (isDark) themeColors.background else LocalNoorSoftGreenBg,
+                    border = BorderStroke(0.5.dp, if (isDark) themeColors.border else Color(0xFFCFE5DA))
                 ) {
                     Text(
                         text = if (hasBookmark) {
@@ -939,7 +982,7 @@ private fun QuranReadingCompanionCard(
                         },
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal,
+                            color = if (isDark) themeColors.accent else DeepVibrantTeal,
                             fontSize = 11.sp
                         ),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -952,8 +995,8 @@ private fun QuranReadingCompanionCard(
             // Surah Spotlight Card
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = Color(0xFFF7FAF9),
-                border = BorderStroke(1.dp, Color(0xFFDFEBE5)),
+                color = if (isDark) themeColors.background else Color(0xFFF7FAF9),
+                border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -972,7 +1015,7 @@ private fun QuranReadingCompanionCard(
                                 fontFamily = AmiriQuranFontFamily,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 21.sp,
-                                color = DarkPine,
+                                color = if (isDark) themeColors.arabicText else DarkPine,
                                 lineHeight = 28.sp
                             ),
                             maxLines = 1,
@@ -981,8 +1024,8 @@ private fun QuranReadingCompanionCard(
 
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = Color.White,
-                            border = BorderStroke(1.dp, Color(0xFFDFEBE5))
+                            color = if (isDark) themeColors.surface else Color.White,
+                            border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5))
                         ) {
                             Text(
                                 text = if (hasBookmark) {
@@ -992,7 +1035,7 @@ private fun QuranReadingCompanionCard(
                                 },
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DeepVibrantTeal,
+                                    color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                     fontSize = 11.sp
                                 ),
                                 modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
@@ -1012,7 +1055,7 @@ private fun QuranReadingCompanionCard(
                             .fillMaxWidth()
                             .height(5.dp)
                             .clip(RoundedCornerShape(2.5.dp))
-                            .background(Color(0xFFE2EBE6))
+                            .background(if (isDark) themeColors.border else Color(0xFFE2EBE6))
                     ) {
                         Box(
                             modifier = Modifier
@@ -1036,8 +1079,8 @@ private fun QuranReadingCompanionCard(
                 // Primary Continue / Start Button
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = SoftTealTint,
-                    border = BorderStroke(1.dp, DeepVibrantTeal.copy(alpha = 0.35f)),
+                    color = if (isDark) themeColors.accent else SoftTealTint,
+                    border = BorderStroke(1.dp, if (isDark) themeColors.accent else DeepVibrantTeal.copy(alpha = 0.35f)),
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(12.dp))
@@ -1053,7 +1096,7 @@ private fun QuranReadingCompanionCard(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = if (isDark) Color(0xFF0F1418) else DeepVibrantTeal,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -1064,7 +1107,7 @@ private fun QuranReadingCompanionCard(
                                 if (isLangArabic) "فتح المصحف" else "Open Mushaf"
                             },
                             style = MaterialTheme.typography.labelLarge.copy(
-                                color = DeepVibrantTeal,
+                                color = if (isDark) Color(0xFF0F1418) else DeepVibrantTeal,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
@@ -1073,7 +1116,7 @@ private fun QuranReadingCompanionCard(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = DeepVibrantTeal,
+                            tint = if (isDark) Color(0xFF0F1418) else DeepVibrantTeal,
                             modifier = Modifier.size(12.dp)
                         )
                     }
@@ -1082,8 +1125,8 @@ private fun QuranReadingCompanionCard(
                 // Secondary Surah Index Button
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFF4F8F6),
-                    border = BorderStroke(1.dp, Color(0xFFDFEBE5)),
+                    color = if (isDark) themeColors.surface else Color(0xFFF4F8F6),
+                    border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5)),
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
                         .clickable { viewModel.navigateTo(NoorDestination.QURAN_SURAH_LIST) }
@@ -1095,12 +1138,12 @@ private fun QuranReadingCompanionCard(
                     ) {
                         IslamicIconMushaf(
                             modifier = Modifier.size(15.dp),
-                            tint = DarkPine
+                            tint = if (isDark) themeColors.arabicText else DarkPine
                         )
                         Text(
                             text = if (isLangArabic) "السور" else "Surahs",
                             style = MaterialTheme.typography.labelMedium.copy(
-                                color = DarkPine,
+                                color = if (isDark) themeColors.arabicText else DarkPine,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
@@ -1120,19 +1163,43 @@ private fun KhatmaQuickPresetCard(
     title: String,
     subtitle: String,
     isHighlighted: Boolean,
+    themeColors: ReadingThemeColors,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val isDark = themeColors.isDark
+    val bg = when {
+        isHighlighted && isDark -> themeColors.accent
+        isHighlighted -> DeepVibrantTeal
+        isDark -> themeColors.background
+        else -> Color.White
+    }
+    val borderCol = when {
+        isHighlighted && isDark -> themeColors.accent
+        isHighlighted -> DeepVibrantTeal
+        isDark -> themeColors.border
+        else -> Color(0xFFDFEBE5)
+    }
+    val titleCol = when {
+        isHighlighted && isDark -> Color(0xFF0F1418)
+        isHighlighted -> Color.White
+        isDark -> themeColors.arabicText
+        else -> DarkPine
+    }
+    val subCol = when {
+        isHighlighted && isDark -> Color(0xFF0F1418).copy(alpha = 0.85f)
+        isHighlighted -> Color.White.copy(alpha = 0.85f)
+        isDark -> themeColors.translationText
+        else -> SlateTealMuted
+    }
+
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        color = if (isHighlighted) DeepVibrantTeal else Color.White,
-        border = BorderStroke(
-            1.dp,
-            if (isHighlighted) DeepVibrantTeal else Color(0xFFDFEBE5)
-        )
+        color = bg,
+        border = BorderStroke(1.dp, borderCol)
     ) {
         Column(
             modifier = Modifier
@@ -1144,7 +1211,7 @@ private fun KhatmaQuickPresetCard(
                 text = title,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = if (isHighlighted) Color.White else DarkPine,
+                    color = titleCol,
                     fontSize = 12.sp
                 )
             )
@@ -1152,7 +1219,7 @@ private fun KhatmaQuickPresetCard(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.labelSmall.copy(
-                    color = if (isHighlighted) Color.White.copy(alpha = 0.85f) else SlateTealMuted,
+                    color = subCol,
                     fontSize = 10.sp
                 )
             )

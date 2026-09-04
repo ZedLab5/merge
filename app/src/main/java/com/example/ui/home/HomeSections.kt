@@ -133,6 +133,8 @@ import com.example.ui.theme.DeepVibrantTeal
 import com.example.ui.theme.GoldBadgeBg
 import com.example.ui.theme.MetallicGold
 import com.example.ui.theme.PrimaryTealGradient
+import com.example.ui.theme.ReadingThemeColors
+import com.example.ui.theme.ReadingThemes
 import com.example.ui.theme.SlateTealMuted
 import com.example.ui.theme.SoftTealTint
 import com.example.ui.theme.SurfaceWhite
@@ -192,9 +194,13 @@ fun NoorSectionContainer(
     borderBrush: Brush? = null,
     borderWidth: Dp = 0.dp,
     hasBorder: Boolean = true,
+    isDark: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(18.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val actualBgColor = if (isDark && backgroundColor == Color.White) ReadingThemes.ObsidianNight.surface else backgroundColor
+    val actualBorderColor = if (isDark) ReadingThemes.ObsidianNight.border else NoorSoftGreenBorder
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -203,7 +209,7 @@ fun NoorSectionContainer(
                 if (backgroundBrush != null) {
                     Modifier.background(backgroundBrush)
                 } else {
-                    Modifier.background(backgroundColor)
+                    Modifier.background(actualBgColor)
                 }
             )
             .then(
@@ -211,7 +217,7 @@ fun NoorSectionContainer(
                     if (borderBrush != null) {
                         Modifier.border(if (borderWidth.value > 0f) borderWidth else 1.dp, borderBrush, containerShape)
                     } else {
-                        Modifier.border(if (borderWidth.value > 0f) borderWidth else 1.dp, NoorSoftGreenBorder, containerShape)
+                        Modifier.border(if (borderWidth.value > 0f) borderWidth else 1.dp, actualBorderColor, containerShape)
                     }
                 } else {
                     Modifier
@@ -223,93 +229,97 @@ fun NoorSectionContainer(
             modifier = Modifier.fillMaxWidth()
         ) {
             // Standard Header: Leading Badge + Title & Subtitle + Optional Trailing Action
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f, fill = false),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.weight(1f, fill = false),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    // Leading Icon Badge with clean minimalist styling matching settings
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(11.dp))
+                            .background(if (isDark) ReadingThemes.ObsidianNight.background else NoorSoftGreenBg)
+                            .then(
+                                if (isDark) Modifier.border(1.dp, ReadingThemes.ObsidianNight.border, RoundedCornerShape(11.dp)) else Modifier
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
-                        // Leading Icon Badge with clean minimalist styling matching settings
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(NoorSoftGreenBg),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (customIcon != null) {
-                                customIcon()
-                            } else if (icon != null) {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = null,
-                                    tint = NoorTealStart,
-                                    modifier = Modifier.size(19.dp)
-                                )
-                            }
-                        }
-
-                        Column {
-                            Text(
-                                text = title,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = NoorDarkPine,
-                                    letterSpacing = (-0.2).sp
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = subtitle,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = NoorSageSlate
-                                )
+                        if (customIcon != null) {
+                            customIcon()
+                        } else if (icon != null) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = if (isDark) ReadingThemes.ObsidianNight.accent else NoorTealStart,
+                                modifier = Modifier.size(19.dp)
                             )
                         }
                     }
 
-                    if (actionLabel != null) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = NoorGoldSoft,
-                            modifier = Modifier.clickable { onActionClick?.invoke() }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Text(
-                                    text = actionLabel,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = NoorGoldAccent
-                                    )
-                                )
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    tint = NoorGoldAccent,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                            }
-                        }
+                    Column {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine,
+                                letterSpacing = (-0.2).sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
+                            )
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Body Content
-                content()
+                if (actionLabel != null) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (isDark) MetallicGold.copy(alpha = 0.15f) else NoorGoldSoft,
+                        border = if (isDark) BorderStroke(1.dp, MetallicGold.copy(alpha = 0.4f)) else null,
+                        modifier = Modifier.clickable { onActionClick?.invoke() }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        ) {
+                            Text(
+                                text = actionLabel,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isDark) MetallicGold else NoorGoldAccent
+                                )
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = if (isDark) MetallicGold else NoorGoldAccent,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Body Content
+            content()
+        }
     }
 }
 
@@ -613,6 +623,10 @@ fun UserProfileRow(
     location: String,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
             appLanguage == "العربية" ||
@@ -638,7 +652,7 @@ fun UserProfileRow(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(if (isDark) themeColors.surface else Color.White)
                     .border(1.5.dp, NoorGoldAccent, CircleShape)
                     .padding(2.dp)
             ) {
@@ -672,7 +686,7 @@ fun UserProfileRow(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = NoorDarkPine
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine
                         )
                     )
                     Icon(
@@ -690,7 +704,7 @@ fun UserProfileRow(
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
-                        tint = NoorTealStart,
+                        tint = if (isDark) themeColors.accent else NoorTealStart,
                         modifier = Modifier.size(13.dp)
                     )
                     Text(
@@ -698,7 +712,7 @@ fun UserProfileRow(
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Medium,
-                            color = NoorSageSlate
+                            color = if (isDark) themeColors.translationText else NoorSageSlate
                         )
                     )
                 }
@@ -715,14 +729,14 @@ fun UserProfileRow(
                     .size(40.dp)
                     .clickable { viewModel.openCustomizeHomeSheet() },
                 shape = CircleShape,
-                color = Color.White,
-                border = BorderStroke(1.dp, NoorSoftGreenBorder)
+                color = if (isDark) themeColors.surface else Color.White,
+                border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorSoftGreenBorder)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.DashboardCustomize,
                         contentDescription = if (isArabic) "تخصيص" else "Customize",
-                        tint = NoorTealStart,
+                        tint = if (isDark) themeColors.accent else NoorTealStart,
                         modifier = Modifier.size(19.dp)
                     )
                 }
@@ -733,14 +747,14 @@ fun UserProfileRow(
                     .size(40.dp)
                     .clickable { viewModel.openSettingsModal() },
                 shape = CircleShape,
-                color = Color.White,
-                border = BorderStroke(1.dp, NoorSoftGreenBorder)
+                color = if (isDark) themeColors.surface else Color.White,
+                border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorSoftGreenBorder)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = if (isArabic) "الإعدادات" else "Settings",
-                        tint = NoorTealStart,
+                        tint = if (isDark) themeColors.accent else NoorTealStart,
                         modifier = Modifier.size(19.dp)
                     )
                 }
@@ -1024,6 +1038,10 @@ fun ChronologicalPrayerTracker(
     prayers: List<PrayerTime>,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val completedPrayers by viewModel.completedPrayers.collectAsStateWithLifecycle()
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
@@ -1041,21 +1059,31 @@ fun ChronologicalPrayerTracker(
         label = "pulse_scale"
     )
 
-    // Outer Green Container
+    // Outer Container
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF074E44),
-                        Color(0xFF0C8A79),
-                        Color(0xFF074E44)
+                if (isDark) {
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF0F2620),
+                            Color(0xFF16382F),
+                            Color(0xFF0F2620)
+                        )
                     )
-                )
+                } else {
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF074E44),
+                            Color(0xFF0C8A79),
+                            Color(0xFF074E44)
+                        )
+                    )
+                }
             )
-            .border(1.dp, NoorSoftGreenBorder, RoundedCornerShape(20.dp))
+            .border(1.dp, if (isDark) themeColors.border else NoorSoftGreenBorder, RoundedCornerShape(20.dp))
             .padding(10.dp)
     ) {
         Column(
@@ -1106,7 +1134,8 @@ fun ChronologicalPrayerTracker(
 
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = NoorGoldSoft,
+                    color = if (isDark) MetallicGold.copy(alpha = 0.18f) else NoorGoldSoft,
+                    border = if (isDark) BorderStroke(1.dp, MetallicGold.copy(alpha = 0.45f)) else null,
                     modifier = Modifier.clickable { viewModel.navigateToSalat(SalatTab.TIMES) }
                 ) {
                     Row(
@@ -1119,13 +1148,13 @@ fun ChronologicalPrayerTracker(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = NoorGoldAccent
+                                color = if (isDark) MetallicGold else NoorGoldAccent
                             )
                         )
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = NoorGoldAccent,
+                            tint = if (isDark) MetallicGold else NoorGoldAccent,
                             modifier = Modifier.size(12.dp)
                         )
                     }
@@ -1134,22 +1163,32 @@ fun ChronologicalPrayerTracker(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Inner White Container
+            // Inner Container
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                color = Color.Transparent
+                color = if (isDark) themeColors.surface else Color.Transparent,
+                border = if (isDark) BorderStroke(1.dp, themeColors.border) else null
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White,
-                                    Color(0xFFF8FAFC)
+                            if (isDark) {
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        themeColors.surface,
+                                        themeColors.surface
+                                    )
                                 )
-                            )
+                            } else {
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White,
+                                        Color(0xFFF8FAFC)
+                                    )
+                                )
+                            }
                         )
                         .padding(horizontal = 10.dp, vertical = 12.dp)
                 ) {
@@ -1169,7 +1208,7 @@ fun ChronologicalPrayerTracker(
                             val endX = size.width - (itemWidth / 2f)
                             val centerY = 17.dp.toPx()
                             drawLine(
-                                color = NoorSoftGreenBorder,
+                                color = if (isDark) themeColors.border else NoorSoftGreenBorder,
                                 start = Offset(startX, centerY),
                                 end = Offset(endX, centerY),
                                 strokeWidth = 2.dp.toPx(),
@@ -1223,16 +1262,17 @@ fun ChronologicalPrayerTracker(
                                             .clip(CircleShape)
                                             .background(
                                                 when {
-                                                    isChecked -> NoorTealStart
-                                                    else -> Color.White
+                                                    isChecked -> if (isDark) themeColors.accent else NoorTealStart
+                                                    isCurrent -> if (isDark) MetallicGold.copy(alpha = 0.15f) else Color.White
+                                                    else -> if (isDark) themeColors.background else Color.White
                                                 }
                                             )
                                             .border(
                                                 width = if (isChecked) 2.dp else if (isCurrent) 2.5.dp else 1.2.dp,
                                                 color = when {
-                                                    isChecked -> Color.White
-                                                    isCurrent -> NoorTealStart
-                                                    else -> NoorSoftGreenBorder
+                                                    isChecked -> if (isDark) themeColors.accent else Color.White
+                                                    isCurrent -> if (isDark) MetallicGold else NoorTealStart
+                                                    else -> if (isDark) themeColors.border else NoorSoftGreenBorder
                                                 },
                                                 shape = CircleShape
                                             ),
@@ -1251,7 +1291,7 @@ fun ChronologicalPrayerTracker(
                                                 Icon(
                                                     imageVector = Icons.Default.Check,
                                                     contentDescription = "Active Salat",
-                                                    tint = NoorTealStart,
+                                                    tint = if (isDark) MetallicGold else NoorTealStart,
                                                     modifier = Modifier.size(17.dp)
                                                 )
                                             }
@@ -1259,7 +1299,7 @@ fun ChronologicalPrayerTracker(
                                                 Icon(
                                                     imageVector = Icons.Default.Check,
                                                     contentDescription = "Not Yet Completed",
-                                                    tint = NoorSageSlate.copy(alpha = 0.5f),
+                                                    tint = if (isDark) themeColors.translationText.copy(alpha = 0.5f) else NoorSageSlate.copy(alpha = 0.5f),
                                                     modifier = Modifier.size(16.dp)
                                                 )
                                             }
@@ -1267,7 +1307,7 @@ fun ChronologicalPrayerTracker(
                                                 Icon(
                                                     imageVector = Icons.Default.Check,
                                                     contentDescription = "Upcoming",
-                                                    tint = NoorSageSlate.copy(alpha = 0.25f),
+                                                    tint = if (isDark) themeColors.translationText.copy(alpha = 0.25f) else NoorSageSlate.copy(alpha = 0.25f),
                                                     modifier = Modifier.size(15.dp)
                                                 )
                                             }
@@ -1282,9 +1322,9 @@ fun ChronologicalPrayerTracker(
                                             fontSize = 12.5.sp,
                                             fontWeight = if (isCurrent || isChecked) FontWeight.Bold else FontWeight.SemiBold,
                                             color = when {
-                                                isCurrent -> NoorTealStart
-                                                isChecked -> NoorTealStart
-                                                else -> NoorDarkPine
+                                                isCurrent -> if (isDark) MetallicGold else NoorTealStart
+                                                isChecked -> if (isDark) themeColors.accent else NoorTealStart
+                                                else -> if (isDark) themeColors.arabicText else NoorDarkPine
                                             }
                                         ),
                                         maxLines = 1,
@@ -1298,7 +1338,7 @@ fun ChronologicalPrayerTracker(
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontSize = 11.5.sp,
                                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isCurrent) NoorDarkPine else NoorSageSlate
+                                            color = if (isCurrent) (if (isDark) MetallicGold else NoorDarkPine) else (if (isDark) themeColors.translationText else NoorSageSlate)
                                         )
                                     )
                                 }
@@ -1317,15 +1357,22 @@ fun SpiritualEssentialCard(
     title: String,
     subtitle: String,
     icon: @Composable () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isDark: Boolean = false
 ) {
+    val cardBg = if (isDark) ReadingThemes.ObsidianNight.surface else Color.White
+    val cardBorder = if (isDark) ReadingThemes.ObsidianNight.border else NoorSoftGreenBorder
+    val iconBg = if (isDark) ReadingThemes.ObsidianNight.background else NoorSoftGreenBg
+    val titleColor = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine
+    val subtitleColor = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
+
     Surface(
         modifier = modifier
             .height(100.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, NoorSoftGreenBorder)
+        color = cardBg,
+        border = BorderStroke(1.dp, cardBorder)
     ) {
         Column(
             modifier = Modifier
@@ -1342,7 +1389,10 @@ fun SpiritualEssentialCard(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(NoorSoftGreenBg),
+                        .background(iconBg)
+                        .then(
+                            if (isDark) Modifier.border(1.dp, cardBorder, RoundedCornerShape(10.dp)) else Modifier
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     icon()
@@ -1351,7 +1401,7 @@ fun SpiritualEssentialCard(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = NoorSageSlate,
+                    tint = subtitleColor,
                     modifier = Modifier.size(14.dp)
                 )
             }
@@ -1364,7 +1414,7 @@ fun SpiritualEssentialCard(
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = NoorDarkPine
+                        color = titleColor
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -1374,7 +1424,7 @@ fun SpiritualEssentialCard(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 10.5.sp,
-                        color = NoorSageSlate
+                        color = subtitleColor
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -1408,16 +1458,22 @@ fun QuickAccessMiniCard(
     isArabic: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    slotIndex: Int = 0
+    slotIndex: Int = 0,
+    isDark: Boolean = false
 ) {
-    val slotTier = QuickAccessColorSystem.getSlotTier(slotIndex)
+    val slotTier = QuickAccessColorSystem.getSlotTier(slotIndex, isDark = isDark)
     val title = if (isArabic) tool.titleAr else tool.titleEn
     val subtitle = if (isArabic) tool.subtitleAr else tool.subtitleEn
+
+    val cardBg = if (isDark) ReadingThemes.ObsidianNight.surface else Color.White
+    val cardBorder = if (isDark) ReadingThemes.ObsidianNight.border else NoorCardBorder
+    val titleColor = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine
+    val subtitleColor = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
 
     Surface(
         modifier = modifier
             .shadow(
-                elevation = 3.dp,
+                elevation = if (isDark) 0.dp else 3.dp,
                 shape = RoundedCornerShape(16.dp),
                 spotColor = Color(0x18000000),
                 ambientColor = slotTier.stripeColor.copy(alpha = 0.12f)
@@ -1425,19 +1481,28 @@ fun QuickAccessMiniCard(
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, NoorCardBorder)
+        color = cardBg,
+        border = BorderStroke(1.dp, cardBorder)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White,
-                            Color(0xFFFAFCFA)
+                    if (isDark) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                cardBg,
+                                cardBg
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White,
+                                Color(0xFFFAFCFA)
+                            )
+                        )
+                    }
                 )
         ) {
             Row(
@@ -1447,12 +1512,15 @@ fun QuickAccessMiniCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Soft 3D layered icon box matching customize color system
+                // Soft layered icon box matching customize color system
                 Box(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(RoundedCornerShape(11.dp))
-                        .background(slotTier.iconBackground),
+                        .background(slotTier.iconBackground)
+                        .then(
+                            if (isDark) Modifier.border(1.dp, slotTier.stripeColor.copy(alpha = 0.3f), RoundedCornerShape(11.dp)) else Modifier
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     QuickAccessToolVisualIcon(
@@ -1467,7 +1535,7 @@ fun QuickAccessMiniCard(
                         text = title,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = NoorDarkPine,
+                            color = titleColor,
                             fontSize = 13.5.sp
                         ),
                         maxLines = 1,
@@ -1477,7 +1545,7 @@ fun QuickAccessMiniCard(
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = NoorSageSlate,
+                            color = subtitleColor,
                             fontSize = 11.sp
                         ),
                         maxLines = 1,
@@ -1486,7 +1554,7 @@ fun QuickAccessMiniCard(
                 }
             }
 
-            // Left-edge accent stripe curving seamlessly with rounded corners (matching Customize Quick Access tool)
+            // Left-edge accent stripe curving seamlessly with rounded corners
             Canvas(
                 modifier = Modifier.matchParentSize()
             ) {
@@ -1529,6 +1597,10 @@ fun SpiritualEssentialsGrid(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
             appLanguage == "العربية" ||
@@ -1554,13 +1626,16 @@ fun SpiritualEssentialsGrid(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(NoorSoftGreenBg),
+                        .background(if (isDark) themeColors.background else NoorSoftGreenBg)
+                        .then(
+                            if (isDark) Modifier.border(1.dp, themeColors.border, RoundedCornerShape(10.dp)) else Modifier
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.DashboardCustomize,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -1570,14 +1645,14 @@ fun SpiritualEssentialsGrid(
                         text = if (isArabic) "الوصول السريع" else "Quick Access",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             fontSize = 15.5.sp
                         )
                     )
                     Text(
                         text = if (isArabic) "أدواتك المفضلة والمختارة" else "Your essential spiritual tools",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = NoorSageSlate,
+                            color = if (isDark) themeColors.translationText else NoorSageSlate,
                             fontSize = 11.sp
                         )
                     )
@@ -1601,13 +1676,13 @@ fun SpiritualEssentialsGrid(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal
+                            color = if (isDark) themeColors.accent else DeepVibrantTeal
                         )
                     )
                     Icon(
                         imageVector = if (isArabic) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(13.dp)
                     )
                 }
@@ -1624,6 +1699,7 @@ fun SpiritualEssentialsGrid(
                     tool = displayTools[0],
                     isArabic = isArabic,
                     slotIndex = 0,
+                    isDark = isDark,
                     onClick = { navigateToQuickAccessTool(viewModel, displayTools[0]) },
                     modifier = Modifier.weight(1f)
                 )
@@ -1632,6 +1708,7 @@ fun SpiritualEssentialsGrid(
                         tool = displayTools[1],
                         isArabic = isArabic,
                         slotIndex = 1,
+                        isDark = isDark,
                         onClick = { navigateToQuickAccessTool(viewModel, displayTools[1]) },
                         modifier = Modifier.weight(1f)
                     )
@@ -1650,6 +1727,7 @@ fun SpiritualEssentialsGrid(
                     tool = displayTools[2],
                     isArabic = isArabic,
                     slotIndex = 2,
+                    isDark = isDark,
                     onClick = { navigateToQuickAccessTool(viewModel, displayTools[2]) },
                     modifier = Modifier.weight(1f)
                 )
@@ -1658,6 +1736,7 @@ fun SpiritualEssentialsGrid(
                         tool = displayTools[3],
                         isArabic = isArabic,
                         slotIndex = 3,
+                        isDark = isDark,
                         onClick = { navigateToQuickAccessTool(viewModel, displayTools[3]) },
                         modifier = Modifier.weight(1f)
                     )
@@ -1684,13 +1763,13 @@ fun SpiritualEssentialsGrid(
                 Icon(
                     imageVector = Icons.Default.Tune,
                     contentDescription = null,
-                    tint = Color(0xFF7A8B86),
+                    tint = if (isDark) themeColors.translationText else Color(0xFF7A8B86),
                     modifier = Modifier.size(15.dp)
                 )
                 Text(
                     text = if (isArabic) "تخصيص الوصول السريع" else "Customize Quick Access",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF7A8B86),
+                        color = if (isDark) themeColors.translationText else Color(0xFF7A8B86),
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp
                     )
@@ -1704,15 +1783,15 @@ fun SpiritualEssentialsGrid(
                 Text(
                     text = if (isArabic) "تعديل ٤ أدوات" else "Edit 4 tools",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color(0xFF9EABA7),
+                        color = if (isDark) themeColors.translationText.copy(alpha = 0.7f) else Color(0xFF9EABA7),
                         fontSize = 11.sp
                     )
                 )
                 Icon(
                     imageVector = if (isArabic) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = Color(0xFF9EABA7),
-                    modifier = Modifier.size(12.dp)
+                    tint = if (isDark) themeColors.translationText.copy(alpha = 0.7f) else Color(0xFF9EABA7),
+                    modifier = Modifier.size(13.dp)
                 )
             }
         }
@@ -1731,7 +1810,8 @@ fun HomeFavoritesCard(
     icon: @Composable () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isArabic: Boolean = false
+    isArabic: Boolean = false,
+    isDark: Boolean = false
 ) {
     val subtitleText = if (isArabic) {
         if (count == 1) "١ محفوظ" else "$count محفوظ"
@@ -1739,11 +1819,16 @@ fun HomeFavoritesCard(
         "$count bookmarked"
     }
 
+    val cardBg = if (isDark) ReadingThemes.ObsidianNight.surface else Color.White
+    val cardBorder = if (isDark) ReadingThemes.ObsidianNight.border else NoorCardBorder
+    val titleColor = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine
+    val subtitleColor = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
+
     Surface(
         modifier = modifier
             .width(140.dp)
             .shadow(
-                elevation = 3.dp,
+                elevation = if (isDark) 0.dp else 3.dp,
                 shape = RoundedCornerShape(16.dp),
                 spotColor = Color(0x18000000),
                 ambientColor = accentColor.copy(alpha = 0.14f)
@@ -1751,19 +1836,28 @@ fun HomeFavoritesCard(
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, NoorCardBorder)
+        color = cardBg,
+        border = BorderStroke(1.dp, cardBorder)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White,
-                            Color(0xFFFAFCFA)
+                    if (isDark) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                cardBg,
+                                cardBg
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White,
+                                Color(0xFFFAFCFA)
+                            )
+                        )
+                    }
                 )
         ) {
             Column(
@@ -1771,7 +1865,7 @@ fun HomeFavoritesCard(
                     .fillMaxWidth()
                     .padding(12.dp)
             ) {
-                // Soft 3D layered icon container
+                // Soft layered icon container
                 Box(
                     modifier = Modifier
                         .size(38.dp)
@@ -1779,12 +1873,12 @@ fun HomeFavoritesCard(
                         .background(
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    accentColor.copy(alpha = 0.16f),
-                                    accentColor.copy(alpha = 0.08f)
+                                    accentColor.copy(alpha = if (isDark) 0.25f else 0.16f),
+                                    accentColor.copy(alpha = if (isDark) 0.12f else 0.08f)
                                 )
                             )
                         )
-                        .border(1.dp, accentColor.copy(alpha = 0.2f), RoundedCornerShape(11.dp)),
+                        .border(1.dp, accentColor.copy(alpha = if (isDark) 0.35f else 0.2f), RoundedCornerShape(11.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     icon()
@@ -1796,7 +1890,7 @@ fun HomeFavoritesCard(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = NoorDarkPine,
+                        color = titleColor,
                         fontSize = 13.5.sp
                     ),
                     maxLines = 1,
@@ -1808,7 +1902,7 @@ fun HomeFavoritesCard(
                 Text(
                     text = subtitleText,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = NoorSageSlate,
+                        color = subtitleColor,
                         fontSize = 11.5.sp
                     ),
                     maxLines = 1,
@@ -1823,7 +1917,7 @@ fun HomeFavoritesCard(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(accentColor.copy(alpha = 0.08f))
+                        .background(accentColor.copy(alpha = if (isDark) 0.15f else 0.08f))
                         .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -1851,6 +1945,10 @@ fun HomeFavoritesCarousel(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
             appLanguage == "العربية" ||
@@ -1905,13 +2003,16 @@ fun HomeFavoritesCarousel(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(NoorSoftGreenBg),
+                        .background(if (isDark) themeColors.background else NoorSoftGreenBg)
+                        .then(
+                            if (isDark) Modifier.border(1.dp, themeColors.border, RoundedCornerShape(10.dp)) else Modifier
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(17.dp)
                     )
                 }
@@ -1921,7 +2022,7 @@ fun HomeFavoritesCarousel(
                         text = if (isArabic) "المفضلات والمحفوظات" else "Favorites",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             fontSize = 15.5.sp
                         )
                     )
@@ -1932,7 +2033,7 @@ fun HomeFavoritesCarousel(
                             if (isArabic) "الوصول السريع للأدعية، السور، والصوتيات" else "Quick access to saved duas, surahs & audio"
                         },
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = NoorSageSlate,
+                            color = if (isDark) themeColors.translationText else NoorSageSlate,
                             fontSize = 11.sp
                         )
                     )
@@ -1956,13 +2057,13 @@ fun HomeFavoritesCarousel(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DeepVibrantTeal
+                            color = if (isDark) themeColors.accent else DeepVibrantTeal
                         )
                     )
                     Icon(
                         imageVector = if (isArabic) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(13.dp)
                     )
                 }
@@ -1981,6 +2082,7 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "الأدعية المفضلة" else "Favorite Duas",
                     count = duasCount,
                     accentColor = Color(0xFFE06D53),
+                    isDark = isDark,
                     icon = {
                         IslamicIconDua(
                             modifier = Modifier.size(18.dp),
@@ -1997,11 +2099,12 @@ fun HomeFavoritesCarousel(
                 HomeFavoritesCard(
                     title = if (isArabic) "السور المفضلة" else "Favorite Surahs",
                     count = quranCount,
-                    accentColor = DeepVibrantTeal,
+                    accentColor = if (isDark) themeColors.accent else DeepVibrantTeal,
+                    isDark = isDark,
                     icon = {
                         IslamicIconMushaf(
                             modifier = Modifier.size(18.dp),
-                            tint = DeepVibrantTeal
+                            tint = if (isDark) themeColors.accent else DeepVibrantTeal
                         )
                     },
                     onClick = { viewModel.navigateTo(NoorDestination.FAVORITES) },
@@ -2015,6 +2118,7 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "الأذكار المفضلة" else "Favorite Azkar",
                     count = azkarCount,
                     accentColor = Color(0xFF16A34A),
+                    isDark = isDark,
                     icon = {
                         IslamicIconTasbeeh(
                             modifier = Modifier.size(18.dp),
@@ -2031,12 +2135,13 @@ fun HomeFavoritesCarousel(
                 HomeFavoritesCard(
                     title = if (isArabic) "التلاوات المفضلة" else "Favorite Audio",
                     count = audioCount,
-                    accentColor = Color(0xFF7C3AED),
+                    accentColor = Color(0xFF9F75FF),
+                    isDark = isDark,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Headphones,
                             contentDescription = null,
-                            tint = Color(0xFF7C3AED),
+                            tint = Color(0xFF9F75FF),
                             modifier = Modifier.size(18.dp)
                         )
                     },
@@ -2050,12 +2155,13 @@ fun HomeFavoritesCarousel(
                 HomeFavoritesCard(
                     title = if (isArabic) "الأحاديث المفضلة" else "Favorite Hadith",
                     count = hadithCount,
-                    accentColor = Color(0xFFD97706),
+                    accentColor = MetallicGold,
+                    isDark = isDark,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = Color(0xFFD97706),
+                            tint = MetallicGold,
                             modifier = Modifier.size(18.dp)
                         )
                     },
@@ -2069,12 +2175,13 @@ fun HomeFavoritesCarousel(
                 HomeFavoritesCard(
                     title = if (isArabic) "كل المحفوظات" else "All Bookmarks",
                     count = totalCount,
-                    accentColor = NoorDarkPine,
+                    accentColor = if (isDark) themeColors.accent else NoorDarkPine,
+                    isDark = isDark,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.BookmarkBorder,
                             contentDescription = null,
-                            tint = NoorDarkPine,
+                            tint = if (isDark) themeColors.accent else NoorDarkPine,
                             modifier = Modifier.size(18.dp)
                         )
                     },
@@ -2104,6 +2211,10 @@ fun QuranContinuationWidget(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val progressEntity by viewModel.readingProgress.collectAsStateWithLifecycle()
     val isArabic by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isLangArabic = isArabic.equals("Arabic", ignoreCase = true) || isArabic == "العربية"
@@ -2127,9 +2238,9 @@ fun QuranContinuationWidget(
             .clip(RoundedCornerShape(26.dp))
             .clickable(onClick = onAction),
         shape = RoundedCornerShape(26.dp),
-        color = Color.White,
+        color = if (isDark) themeColors.surface else Color.White,
         shadowElevation = 0.dp,
-        border = BorderStroke(1.dp, BorderTealGray)
+        border = BorderStroke(1.dp, if (isDark) themeColors.border else BorderTealGray)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -2139,7 +2250,7 @@ fun QuranContinuationWidget(
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                DeepVibrantTeal.copy(alpha = 0.06f),
+                                if (isDark) themeColors.accent.copy(alpha = 0.12f) else DeepVibrantTeal.copy(alpha = 0.06f),
                                 Color.Transparent
                             )
                         )
@@ -2165,14 +2276,14 @@ fun QuranContinuationWidget(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(SoftTealTint)
-                                .border(1.dp, BorderTealLight, RoundedCornerShape(14.dp)),
+                                .background(if (isDark) themeColors.background else SoftTealTint)
+                                .border(1.dp, if (isDark) themeColors.border else BorderTealLight, RoundedCornerShape(14.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.MenuBook,
                                 contentDescription = null,
-                                tint = DeepVibrantTeal,
+                                tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -2182,7 +2293,7 @@ fun QuranContinuationWidget(
                                 text = if (hasBookmark) stringResource(R.string.home_continue_reading) else stringResource(R.string.home_start_reading),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = DarkPine,
+                                    color = if (isDark) themeColors.arabicText else DarkPine,
                                     fontSize = 17.sp
                                 )
                             )
@@ -2194,7 +2305,7 @@ fun QuranContinuationWidget(
                                     if (isLangArabic) "ابدأ وردك القرآني اليومي" else "Begin your daily recitation"
                                 },
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = SlateTealMuted,
+                                    color = if (isDark) themeColors.translationText else SlateTealMuted,
                                     fontSize = 12.sp
                                 )
                             )
@@ -2203,13 +2314,13 @@ fun QuranContinuationWidget(
 
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = SoftTealTint,
-                        border = BorderStroke(1.dp, BorderTealLight)
+                        color = if (isDark) themeColors.background else SoftTealTint,
+                        border = BorderStroke(1.dp, if (isDark) themeColors.border else BorderTealLight)
                     ) {
                         Text(
                             text = if (hasBookmark) stringResource(R.string.action_continue) else stringResource(R.string.home_open_mushaf),
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = DeepVibrantTeal,
+                                color = if (isDark) themeColors.accent else DeepVibrantTeal,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.5.sp
                             ),
@@ -2223,8 +2334,8 @@ fun QuranContinuationWidget(
                 // Illuminated Mushaf Stage
                 Surface(
                     shape = RoundedCornerShape(18.dp),
-                    color = Color(0xFFF7FAF9),
-                    border = BorderStroke(1.dp, Color(0xFFDFEBE5)),
+                    color = if (isDark) themeColors.background else Color(0xFFF7FAF9),
+                    border = BorderStroke(1.dp, if (isDark) themeColors.border else Color(0xFFDFEBE5)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -2243,7 +2354,7 @@ fun QuranContinuationWidget(
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp,
-                                        color = DarkPine
+                                        color = if (isDark) themeColors.arabicText else DarkPine
                                     )
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
@@ -2254,7 +2365,7 @@ fun QuranContinuationWidget(
                                         if (isLangArabic) "مكية • ٧ آيات" else "Meccan • 7 Ayahs"
                                     },
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        color = SlateTealMuted,
+                                        color = if (isDark) themeColors.translationText else SlateTealMuted,
                                         fontSize = 12.sp
                                     )
                                 )
@@ -2262,8 +2373,8 @@ fun QuranContinuationWidget(
 
                             Surface(
                                 shape = RoundedCornerShape(10.dp),
-                                color = GoldBadgeBg,
-                                border = BorderStroke(1.dp, MetallicGold.copy(alpha = 0.35f))
+                                color = if (isDark) GoldBadgeBg.copy(alpha = 0.25f) else GoldBadgeBg,
+                                border = BorderStroke(1.dp, MetallicGold.copy(alpha = if (isDark) 0.5f else 0.35f))
                             ) {
                                 Text(
                                     text = if (hasBookmark) stringResource(R.string.home_ayah_counter, ayahNum, totalAyahs) else stringResource(R.string.home_surah_1),
@@ -2285,14 +2396,25 @@ fun QuranContinuationWidget(
                                 .fillMaxWidth()
                                 .height(6.dp)
                                 .clip(RoundedCornerShape(3.dp))
-                                .background(Color(0xFFE2EBE6))
+                                .background(if (isDark) Color(0xFF1E2825) else Color(0xFFE2EBE6))
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth(progress)
                                     .fillMaxHeight()
                                     .clip(RoundedCornerShape(3.dp))
-                                    .background(PrimaryTealGradient)
+                                    .background(
+                                        if (isDark) {
+                                            Brush.horizontalGradient(
+                                                listOf(
+                                                    themeColors.accent,
+                                                    MetallicGold
+                                                )
+                                            )
+                                        } else {
+                                            PrimaryTealGradient
+                                        }
+                                    )
                             )
                         }
                     }
@@ -2316,6 +2438,10 @@ fun DailyAyahAndDuaShowcase(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val dailyAyah = DuaData.dailyAyah
     val dailyDua = DuaData.dailyDua
     val showArabicSecondary by viewModel.showArabicSecondaryText.collectAsStateWithLifecycle()
@@ -2328,7 +2454,7 @@ fun DailyAyahAndDuaShowcase(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Section Header Row: Leading Icon Badge (no border) + Title & Subtitle + Action Button
+        // Section Header Row: Leading Icon Badge + Title & Subtitle + Action Button
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -2342,13 +2468,16 @@ fun DailyAyahAndDuaShowcase(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(NoorSoftGreenBg),
+                        .background(if (isDark) themeColors.background else NoorSoftGreenBg)
+                        .then(
+                            if (isDark) Modifier.border(1.dp, themeColors.border, RoundedCornerShape(10.dp)) else Modifier
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.BookmarkBorder,
                         contentDescription = null,
-                        tint = DeepVibrantTeal,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -2358,14 +2487,14 @@ fun DailyAyahAndDuaShowcase(
                         text = stringResource(R.string.home_daily_revelation),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             fontSize = 15.5.sp
                         )
                     )
                     Text(
                         text = stringResource(R.string.home_daily_revelation_sub),
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = NoorSageSlate,
+                            color = if (isDark) themeColors.translationText else NoorSageSlate,
                             fontSize = 11.sp
                         )
                     )
@@ -2374,8 +2503,8 @@ fun DailyAyahAndDuaShowcase(
 
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = NoorSurfaceSoft,
-                border = BorderStroke(1.dp, NoorCardBorder),
+                color = if (isDark) themeColors.surface else NoorSurfaceSoft,
+                border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorCardBorder),
                 modifier = Modifier.clickable {
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val textToCopy = if (isArabicPrimary) {
@@ -2396,14 +2525,14 @@ fun DailyAyahAndDuaShowcase(
                     Icon(
                         imageVector = Icons.Default.Share,
                         contentDescription = null,
-                        tint = NoorSageSlate,
+                        tint = if (isDark) themeColors.translationText else NoorSageSlate,
                         modifier = Modifier.size(13.dp)
                     )
                     Text(
                         text = stringResource(R.string.action_copy),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             fontSize = 11.5.sp
                         )
                     )
@@ -2416,19 +2545,28 @@ fun DailyAyahAndDuaShowcase(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             color = Color.Transparent,
-            border = BorderStroke(1.2.dp, NoorGoldAccent.copy(alpha = 0.55f))
+            border = BorderStroke(1.2.dp, MetallicGold.copy(alpha = if (isDark) 0.45f else 0.55f))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFFFFFDF5),
-                                Color(0xFFFFF9EE),
-                                Color(0xFFFFF4E0)
+                        if (isDark) {
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    themeColors.surface,
+                                    themeColors.surface
+                                )
                             )
-                        )
+                        } else {
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFFFFFDF5),
+                                    Color(0xFFFFF9EE),
+                                    Color(0xFFFFF4E0)
+                                )
+                            )
+                        }
                     )
                     .padding(18.dp)
             ) {
@@ -2440,8 +2578,8 @@ fun DailyAyahAndDuaShowcase(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFFAF0D7),
-                            border = BorderStroke(1.dp, Color(0xFFE8D2A0))
+                            color = if (isDark) GoldBadgeBg.copy(alpha = 0.25f) else Color(0xFFFAF0D7),
+                            border = BorderStroke(1.dp, if (isDark) MetallicGold.copy(alpha = 0.4f) else Color(0xFFE8D2A0))
                         ) {
                             Text(
                                 text = stringResource(R.string.home_ayah_of_the_day),
@@ -2450,7 +2588,7 @@ fun DailyAyahAndDuaShowcase(
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.sp,
-                                    color = NoorGoldAccent
+                                    color = MetallicGold
                                 )
                             )
                         }
@@ -2460,7 +2598,7 @@ fun DailyAyahAndDuaShowcase(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = NoorDarkPine
+                                color = if (isDark) themeColors.arabicText else NoorDarkPine
                             )
                         )
                     }
@@ -2475,7 +2613,7 @@ fun DailyAyahAndDuaShowcase(
                                 fontFamily = FontFamily.Serif,
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Normal,
-                                color = NoorDarkPine,
+                                color = if (isDark) themeColors.arabicText else NoorDarkPine,
                                 textAlign = TextAlign.Start,
                                 lineHeight = 38.sp
                             ),
@@ -2488,7 +2626,7 @@ fun DailyAyahAndDuaShowcase(
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 15.5.sp,
-                                color = NoorDarkPine,
+                                color = if (isDark) themeColors.arabicText else NoorDarkPine,
                                 lineHeight = 24.sp
                             )
                         )
@@ -2501,7 +2639,7 @@ fun DailyAyahAndDuaShowcase(
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                     fontSize = 13.5.sp,
-                                    color = NoorSageSlate,
+                                    color = if (isDark) themeColors.translationText else NoorSageSlate,
                                     lineHeight = 20.sp
                                 )
                             )
@@ -2510,7 +2648,7 @@ fun DailyAyahAndDuaShowcase(
                         // 3. TERTIARY LAYER: Traditional Arabic Script (Subject to global toggle, Regular weight)
                         if (showArabicSecondary && dailyAyah.arabicText.isNotBlank()) {
                             Spacer(modifier = Modifier.height(14.dp))
-                            HorizontalDivider(color = NoorGoldBorder.copy(alpha = 0.4f))
+                            HorizontalDivider(color = if (isDark) themeColors.border else NoorGoldBorder.copy(alpha = 0.4f))
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = dailyAyah.arabicText,
@@ -2518,7 +2656,7 @@ fun DailyAyahAndDuaShowcase(
                                     fontFamily = FontFamily.Serif,
                                     fontSize = 21.sp,
                                     fontWeight = FontWeight.Normal,
-                                    color = NoorDarkPine.copy(alpha = 0.9f),
+                                    color = if (isDark) themeColors.arabicText.copy(alpha = 0.9f) else NoorDarkPine.copy(alpha = 0.9f),
                                     textAlign = TextAlign.End,
                                     lineHeight = 36.sp
                                 ),
@@ -2538,8 +2676,8 @@ fun DailyAyahAndDuaShowcase(
                 .fillMaxWidth()
                 .clickable { viewModel.navigateTo(NoorDestination.DUAS_LIBRARY) },
             shape = RoundedCornerShape(18.dp),
-            color = Color.White,
-            border = BorderStroke(1.dp, NoorGoldBorder.copy(alpha = 0.6f))
+            color = if (isDark) themeColors.surface else Color.White,
+            border = BorderStroke(1.dp, if (isDark) MetallicGold.copy(alpha = 0.35f) else NoorGoldBorder.copy(alpha = 0.6f))
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -2553,14 +2691,14 @@ fun DailyAyahAndDuaShowcase(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        IslamicIconDua(modifier = Modifier.size(20.dp), tint = NoorGoldAccent)
+                        IslamicIconDua(modifier = Modifier.size(20.dp), tint = MetallicGold)
                         Text(
                             text = if (isArabicPrimary) dailyDua.categoryAr.ifBlank { "دعاء اليوم" } else dailyDua.category.uppercase(),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp,
-                                color = NoorGoldAccent
+                                color = MetallicGold
                             )
                         )
                     }
@@ -2570,7 +2708,7 @@ fun DailyAyahAndDuaShowcase(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = NoorSageSlate
+                            color = if (isDark) themeColors.translationText else NoorSageSlate
                         )
                     )
                 }
@@ -2585,7 +2723,7 @@ fun DailyAyahAndDuaShowcase(
                             fontFamily = FontFamily.Serif,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Normal,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             textAlign = TextAlign.Start,
                             lineHeight = 30.sp
                         ),
@@ -2598,7 +2736,7 @@ fun DailyAyahAndDuaShowcase(
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Normal,
                             fontSize = 14.sp,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             lineHeight = 21.sp
                         )
                     )
@@ -2611,7 +2749,7 @@ fun DailyAyahAndDuaShowcase(
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                 fontSize = 12.5.sp,
-                                color = NoorSageSlate,
+                                color = if (isDark) themeColors.translationText else NoorSageSlate,
                                 lineHeight = 18.sp
                             )
                         )
@@ -2620,7 +2758,7 @@ fun DailyAyahAndDuaShowcase(
                     // 3. Tertiary Layer: Arabic Script (Regular weight)
                     if (showArabicSecondary && dailyDua.arabicText.isNotBlank()) {
                         Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = NoorGoldBorder.copy(alpha = 0.4f))
+                        HorizontalDivider(color = if (isDark) themeColors.border else NoorGoldBorder.copy(alpha = 0.4f))
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = dailyDua.arabicText,
@@ -2628,7 +2766,7 @@ fun DailyAyahAndDuaShowcase(
                                 fontFamily = FontFamily.Serif,
                                 fontSize = 17.5.sp,
                                 fontWeight = FontWeight.Normal,
-                                color = NoorDarkPine.copy(alpha = 0.85f),
+                                color = if (isDark) themeColors.arabicText.copy(alpha = 0.85f) else NoorDarkPine.copy(alpha = 0.85f),
                                 textAlign = TextAlign.End,
                                 lineHeight = 28.sp
                             ),

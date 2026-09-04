@@ -86,13 +86,52 @@ object QuickAccessColorSystem {
         )
     )
 
+    private val DARK_PRESET_SLOT_TIERS = listOf(
+        // Slot 0 (1st): Turquoise / Mint
+        QuickAccessSlotTier(
+            slotIndex = 0,
+            iconTint = Color(0xFF2DD4BF),
+            iconBackground = Color(0x282DD4BF),
+            stripeColor = Color(0xFF2DD4BF),
+            cardBackground = Color(0xFF182026),
+            cardBorder = Color(0xFF26333C)
+        ),
+        // Slot 1 (2nd): Soft Rosewood / Coral
+        QuickAccessSlotTier(
+            slotIndex = 1,
+            iconTint = Color(0xFFFB7185),
+            iconBackground = Color(0x28FB7185),
+            stripeColor = Color(0xFFFB7185),
+            cardBackground = Color(0xFF182026),
+            cardBorder = Color(0xFF26333C)
+        ),
+        // Slot 2 (3rd): Sage / Emerald Green
+        QuickAccessSlotTier(
+            slotIndex = 2,
+            iconTint = Color(0xFF34D399),
+            iconBackground = Color(0x2834D399),
+            stripeColor = Color(0xFF34D399),
+            cardBackground = Color(0xFF182026),
+            cardBorder = Color(0xFF26333C)
+        ),
+        // Slot 3 (4th): Indigo / Sky Blue / Lavender
+        QuickAccessSlotTier(
+            slotIndex = 3,
+            iconTint = Color(0xFF818CF8),
+            iconBackground = Color(0x28818CF8),
+            stripeColor = Color(0xFF818CF8),
+            cardBackground = Color(0xFF182026),
+            cardBorder = Color(0xFF26333C)
+        )
+    )
+
     /**
      * Derives or retrieves the 3-tier color system for a slot index (0..3).
      * Guaranteed high visibility and clear separation between:
      * Icon Tint -> Icon Container -> Right-Edge Accent Stripe.
      */
-    fun getSlotTier(slotIndex: Int): QuickAccessSlotTier {
+    fun getSlotTier(slotIndex: Int, isDark: Boolean = false): QuickAccessSlotTier {
         val safeIndex = (slotIndex.coerceAtLeast(0)) % PRESET_SLOT_TIERS.size
-        return PRESET_SLOT_TIERS[safeIndex]
+        return if (isDark) DARK_PRESET_SLOT_TIERS[safeIndex] else PRESET_SLOT_TIERS[safeIndex]
     }
 }
