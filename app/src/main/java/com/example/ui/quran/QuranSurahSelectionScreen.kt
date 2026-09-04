@@ -99,8 +99,8 @@ fun QuranSurahSelectionScreen(
     val currentPlayingSurah by viewModel.currentPlayingSurah.collectAsStateWithLifecycle()
     val khatmaState by viewModel.khatmaDashboardState.collectAsStateWithLifecycle()
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val themeColors = remember(isDarkMode) { if (isDarkMode) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp }
 
     var selectedTab by remember { mutableStateOf("All") } // "All", "Juz", "Favorites"
     var selectedJuzNumber by remember { mutableIntStateOf(1) } // 1..30

@@ -205,8 +205,8 @@ fun TasbihScreen(
     val lapsCompleted by viewModel.tasbihLapsCompleted.collectAsStateWithLifecycle()
     val currentTheme by viewModel.tasbihVisualTheme.collectAsStateWithLifecycle()
 
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val themeColors = remember(isDarkMode) { if (isDarkMode) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp }
 
     var isTasbihBeadsVisible by remember { mutableStateOf(true) }
     var showCustomDhikrDialog by remember { mutableStateOf(false) }
@@ -533,7 +533,7 @@ fun TasbihScreen(
                 HorizontalDivider(color = themeColors.border)
 
                 ReadingThemeSection(
-                    selectedThemeName = readingThemeName,
+                    selectedThemeName = if (isDarkMode) "Obsidian Night" else "Madani Crisp",
                     onThemeSelect = { viewModel.setSharedReadingTheme(it) },
                     activeTheme = themeColors
                 )

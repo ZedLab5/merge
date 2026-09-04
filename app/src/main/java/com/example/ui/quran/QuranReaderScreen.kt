@@ -112,6 +112,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.data.model.QuranArabicFont
 import com.example.data.model.Surah
 import com.example.data.model.Verse
 import com.example.data.quran.KhatmaEngine
@@ -169,6 +170,7 @@ fun QuranReaderScreen(
     val targetAyahToScrollTo by viewModel.targetAyahToScrollTo.collectAsStateWithLifecycle()
     val khatmaState by viewModel.khatmaDashboardState.collectAsStateWithLifecycle()
     val isMushafFlowMode by viewModel.isMushafFlowMode.collectAsStateWithLifecycle()
+    val selectedArabicFont by viewModel.selectedArabicFont.collectAsStateWithLifecycle()
     val isFullscreenMode by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -326,9 +328,11 @@ fun QuranReaderScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isSystemDark by viewModel.isDarkMode.collectAsStateWithLifecycle()
 
-    // Determine current theme colors for Quran Reader: Sepia if toggled/selected, otherwise app-wide MaterialTheme.colorScheme
-    val themeColors = remember(isSepiaMode, sharedThemeName, colorScheme, isSystemDark) {
-        if (isSepiaMode || sharedThemeName == "Sepia Parchment") {
+    // Determine current theme colors for Quran Reader: Sepia if toggled, Obsidian if dark mode, otherwise app-wide MaterialTheme.colorScheme
+    val themeColors = remember(isSepiaMode, colorScheme, isSystemDark) {
+        if (isSystemDark) {
+            ReadingThemes.ObsidianNight
+        } else if (isSepiaMode) {
             ReadingThemes.SepiaParchment
         } else {
             ReadingThemes.fromColorScheme(colorScheme, isSystemDark)
@@ -395,6 +399,7 @@ fun QuranReaderScreen(
                 MushafFlowView(
                     surah = currentSurah,
                     fontSizeSp = fontSizeSp,
+                    arabicFont = selectedArabicFont,
                     themeColors = themeColors,
                     isPlaying = isCurrentSurahPlaying && isAyahAudioMode,
                     currentPlayingVerse = currentPlayingVerse,
@@ -446,6 +451,7 @@ fun QuranReaderScreen(
                         item(key = "bismillah_card") {
                             BismillahBannerCard(
                                 themeColors = themeColors,
+                                arabicFont = selectedArabicFont,
                                 isActive = isCurrentSurahPlaying && isAyahAudioMode && currentPlayingVerse == 0
                             )
                         }
@@ -485,6 +491,7 @@ fun QuranReaderScreen(
                                 verse = verse,
                                 surah = currentSurah,
                                 fontSizeSp = fontSizeSp,
+                                arabicFont = selectedArabicFont,
                                 showTransliteration = showTransliteration,
                                 showTranslation = showTranslation,
                                 isActive = isVerseActive && isAyahAudioMode,
@@ -579,7 +586,190 @@ fun QuranReaderScreen(
                             }
                         }
 
-                        // 1. Arabic Font Size Controls (Straightforward Predefined Options: Small, Medium, Large)
+                        // 1. Reading Display Mode (Part 1 - Two Option Picker)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Reading Display Mode",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = themeColors.arabicText
+                                )
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                // Option A: Mixed Reading
+                                val isMixedSelected = !isMushafFlowMode
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { viewModel.setReadingDisplayMode(false) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (isMixedSelected) themeColors.accent.copy(alpha = 0.08f) else themeColors.background,
+                                    border = BorderStroke(
+                                        if (isMixedSelected) 1.5.dp else 1.dp,
+                                        if (isMixedSelected) themeColors.accent else themeColors.border.copy(alpha = 0.6f)
+                                    )
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(if (themeColors.isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
+                                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text(
+                                                text = "الْحَمْدُ لِلَّهِ",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontFamily = selectedArabicFont.fontFamily,
+                                                    color = themeColors.arabicText
+                                                ),
+                                                textAlign = TextAlign.End,
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                            Text(
+                                                text = "All praise is to Allah",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 8.5.sp,
+                                                    color = themeColors.translationText
+                                                ),
+                                                maxLines = 1
+                                            )
+                                        }
+                                        Text(
+                                            text = "Mixed Reading",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = if (isMixedSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isMixedSelected) themeColors.accent else themeColors.arabicText,
+                                                fontSize = 13.sp
+                                            )
+                                        )
+                                    }
+                                }
+
+                                // Option B: Arabic Only (Continuous Mushaf Flow)
+                                val isArabicOnlySelected = isMushafFlowMode
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { viewModel.setReadingDisplayMode(true) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (isArabicOnlySelected) themeColors.accent.copy(alpha = 0.08f) else themeColors.background,
+                                    border = BorderStroke(
+                                        if (isArabicOnlySelected) 1.5.dp else 1.dp,
+                                        if (isArabicOnlySelected) themeColors.accent else themeColors.border.copy(alpha = 0.6f)
+                                    )
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(if (themeColors.isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9))
+                                                .padding(horizontal = 8.dp, vertical = 11.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ۝",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontFamily = selectedArabicFont.fontFamily,
+                                                    color = themeColors.arabicText
+                                                ),
+                                                textAlign = TextAlign.Center,
+                                                maxLines = 1
+                                            )
+                                        }
+                                        Text(
+                                            text = "Arabic Only",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = if (isArabicOnlySelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isArabicOnlySelected) themeColors.accent else themeColors.arabicText,
+                                                fontSize = 13.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // 2. Arabic Calligraphy Style (Part 2 - 3 Horizontal Rows)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Arabic Calligraphy Style",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = themeColors.arabicText
+                                )
+                            )
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                QuranArabicFont.values().forEach { fontOption ->
+                                    val isSelected = selectedArabicFont == fontOption
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { viewModel.setSelectedArabicFont(fontOption) },
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = if (isSelected) themeColors.accent.copy(alpha = 0.08f) else themeColors.background,
+                                        border = BorderStroke(
+                                            if (isSelected) 1.5.dp else 1.dp,
+                                            if (isSelected) themeColors.accent else themeColors.border.copy(alpha = 0.5f)
+                                        )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = fontOption.displayName,
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isSelected) themeColors.accent else themeColors.arabicText,
+                                                    fontSize = 13.5.sp
+                                                )
+                                            )
+                                            Text(
+                                                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ",
+                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                    fontFamily = fontOption.fontFamily,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 16.sp,
+                                                    color = if (isSelected) themeColors.accent else themeColors.arabicText
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // 3. Arabic Font Size Controls (Small, Medium, Large)
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -658,7 +848,7 @@ fun QuranReaderScreen(
                             }
                         }
 
-                        // 2. Reading Canvas Sepia Parchment Toggle (Exclusive to Quran Reader)
+                        // 4. Reading Canvas Sepia Parchment Toggle (Exclusive to Quran Reader)
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -723,137 +913,109 @@ fun QuranReaderScreen(
                             }
                         }
 
-                        // 3. Translation & Transliteration Toggles
-                        Column(
+                        // 5. Translation & Transliteration Toggles (Only relevant in Mixed Reading mode)
+                        if (!isMushafFlowMode) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "English Translation",
+                                            style = MaterialTheme.typography.titleSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = themeColors.arabicText
+                                            )
+                                        )
+                                        Text(
+                                            text = "Clear Sahih International translation",
+                                            style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
+                                        )
+                                    }
+                                    Switch(
+                                        checked = showTranslation,
+                                        onCheckedChange = { viewModel.showTranslation.value = it },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.White,
+                                            checkedTrackColor = themeColors.accent
+                                        )
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "Phonetic Transliteration",
+                                            style = MaterialTheme.typography.titleSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = themeColors.arabicText
+                                            )
+                                        )
+                                        Text(
+                                            text = "Helps non-Arabic readers pronounce correctly",
+                                            style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
+                                        )
+                                    }
+                                    Switch(
+                                        checked = showTransliteration,
+                                        onCheckedChange = { viewModel.showTransliteration.value = it },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.White,
+                                            checkedTrackColor = themeColors.accent
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
+
+                        // 6. Fullscreen Reading Mode Toggle
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "English Translation",
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = themeColors.arabicText
-                                        )
-                                    )
-                                    Text(
-                                        text = "Clear Sahih International translation",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
-                                    )
-                                }
-                                Switch(
-                                    checked = showTranslation,
-                                    onCheckedChange = { viewModel.showTranslation.value = it },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = themeColors.accent
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Fullscreen Reading Mode",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = themeColors.arabicText
                                     )
                                 )
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Phonetic Transliteration",
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = themeColors.arabicText
-                                        )
-                                    )
-                                    Text(
-                                        text = "Helps non-Arabic readers pronounce correctly",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
-                                    )
-                                }
-                                Switch(
-                                    checked = showTransliteration,
-                                    onCheckedChange = { viewModel.showTransliteration.value = it },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = themeColors.accent
-                                    )
+                                Text(
+                                    text = "Hides top and bottom bars for an uninterrupted reading canvas",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
                                 )
                             }
-
-                            HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
-
-                            // Mushaf Flow Mode Toggle
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Distraction-Free Mushaf Flow",
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = themeColors.arabicText
-                                        )
-                                    )
-                                    Text(
-                                        text = "Continuous Arabic calligraphy with inline verse markers",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
-                                    )
-                                }
-                                Switch(
-                                    checked = isMushafFlowMode,
-                                    onCheckedChange = { viewModel.toggleMushafFlowMode() },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = themeColors.accent
-                                    )
-                                )
-                            }
-
-                            HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
-
-                            // Fullscreen Reading Mode Toggle
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Fullscreen Reading Mode",
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = themeColors.arabicText
-                                        )
-                                    )
-                                    Text(
-                                        text = "Hides top and bottom bars for an uninterrupted reading canvas",
-                                        style = MaterialTheme.typography.bodySmall.copy(color = themeColors.translationText)
-                                    )
-                                }
-                                Switch(
-                                    checked = isFullscreenMode,
-                                    onCheckedChange = { checked ->
-                                        viewModel.setQuranReaderFullscreen(checked)
-                                        if (checked) {
-                                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                                showSettingsSheet = false
-                                            }
+                            Switch(
+                                checked = isFullscreenMode,
+                                onCheckedChange = { checked ->
+                                    viewModel.setQuranReaderFullscreen(checked)
+                                    if (checked) {
+                                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                            showSettingsSheet = false
                                         }
-                                    },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = themeColors.accent
-                                    )
+                                    }
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = themeColors.accent
                                 )
-                            }
+                            )
+                        }
 
-                            HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
+                        HorizontalDivider(color = themeColors.border.copy(alpha = 0.5f))
 
                             // Auto-Scroll Section with Preset Speed Controls
                             Column(
@@ -958,7 +1120,6 @@ fun QuranReaderScreen(
                                     }
                                 }
                             }
-                        }
 
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -1273,6 +1434,7 @@ fun SurahHeaderBanner(
                         text = "سُورَةُ ${surah.nameArabic}",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold,
+                            fontFamily = QuranArabicFont.AMIRI.fontFamily,
                             color = Color.White,
                             fontSize = 25.sp
                         ),
@@ -1414,6 +1576,7 @@ fun QuranEmptyVersesCard(
 @Composable
 fun BismillahBannerCard(
     themeColors: QuranReadingThemeColors,
+    arabicFont: QuranArabicFont = QuranArabicFont.AMIRI,
     isActive: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -1434,9 +1597,10 @@ fun BismillahBannerCard(
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontSize = 24.sp,
+                    fontFamily = arabicFont.fontFamily,
                     fontWeight = FontWeight.Bold,
                     color = themeColors.arabicText
                 ),
@@ -1459,6 +1623,7 @@ fun VerseCardItem(
     verse: Verse,
     surah: Surah,
     fontSizeSp: Int,
+    arabicFont: QuranArabicFont = QuranArabicFont.AMIRI,
     showTransliteration: Boolean,
     showTranslation: Boolean,
     isActive: Boolean,
@@ -1649,6 +1814,7 @@ fun VerseCardItem(
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontSize = fontSizeSp.sp,
                     lineHeight = (fontSizeSp * 1.75).sp,
+                    fontFamily = arabicFont.fontFamily,
                     fontWeight = FontWeight.Bold,
                     color = themeColors.arabicText
                 ),

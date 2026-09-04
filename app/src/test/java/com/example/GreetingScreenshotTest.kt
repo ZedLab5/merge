@@ -5,6 +5,7 @@ import androidx.compose.ui.test.onRoot
 import com.example.data.model.Surah
 import com.example.ui.quran.SurahListItemCard
 import com.example.ui.theme.NoorTheme
+import com.example.ui.theme.ReadingThemes
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule
@@ -37,6 +38,7 @@ class GreetingScreenshotTest {
             surah = sampleSurah,
             isAudioPlaying = false,
             isFavorite = false,
+            themeColors = ReadingThemes.MadaniCrisp,
             onClick = {},
             onPlayAudio = {},
             onToggleFavorite = {}

@@ -29,6 +29,7 @@ import com.example.data.model.HomeWidgetType
 import com.example.data.model.KhatmaMilestoneData
 import com.example.data.model.PrayerTime
 import com.example.data.model.PrayerZone
+import com.example.data.model.QuranArabicFont
 import com.example.data.model.QuickAccessTool
 import com.example.data.model.Reciter
 import com.example.data.model.StreakActivityType
@@ -788,6 +789,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val selectedSurahForReading = MutableStateFlow(QuranData.surahs.first())
     val targetAyahToScrollTo = MutableStateFlow(0)
     val arabicFontSizeSp = MutableStateFlow(24)
+    val selectedArabicFont = MutableStateFlow(QuranArabicFont.AMIRI)
     val showTransliteration = MutableStateFlow(true)
     val showTranslation = MutableStateFlow(true)
     val isMushafFlowMode = MutableStateFlow(false) // Distraction-Free Pure Reading Flow
@@ -889,6 +891,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         showAzkarTransliteration.value = sharedPrefs.getBoolean("azkar_transliteration", true)
         showAzkarBenefits.value = sharedPrefs.getBoolean("azkar_benefits", true)
         isMushafFlowMode.value = sharedPrefs.getBoolean("is_mushaf_flow_mode", false)
+        val savedFontId = sharedPrefs.getString("quran_arabic_font", QuranArabicFont.AMIRI.id)
+        selectedArabicFont.value = QuranArabicFont.fromId(savedFontId)
         isTajweedHighlightsEnabled.value = sharedPrefs.getBoolean("is_tajweed_highlights", false)
         isQuranSepiaMode.value = sharedPrefs.getBoolean("is_quran_sepia_mode", false)
         val savedSharedTheme = sharedPrefs.getString("shared_reading_theme", "Madani Crisp") ?: "Madani Crisp"
@@ -1867,6 +1871,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             showToast("You are at the final Surah (An-Nas)")
         }
+    }
+
+    fun setReadingDisplayMode(isArabicOnly: Boolean) {
+        if (isMushafFlowMode.value != isArabicOnly) {
+            isMushafFlowMode.value = isArabicOnly
+            sharedPrefs.edit().putBoolean("is_mushaf_flow_mode", isArabicOnly).apply()
+            triggerHaptic()
+            showToast(if (isArabicOnly) "Switched to Arabic Only reading mode" else "Switched to Mixed Reading mode")
+        }
+    }
+
+    fun setSelectedArabicFont(font: QuranArabicFont) {
+        selectedArabicFont.value = font
+        sharedPrefs.edit().putString("quran_arabic_font", font.id).apply()
+        triggerHaptic()
+        showToast("Calligraphy: ${font.displayName}")
     }
 
     fun toggleMushafFlowMode(enabled: Boolean? = null) {

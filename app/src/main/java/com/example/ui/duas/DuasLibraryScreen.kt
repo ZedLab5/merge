@@ -99,8 +99,8 @@ fun DuasLibraryScreen(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val themeColors = remember(isDarkMode) { if (isDarkMode) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp }
 
     val searchQuery by viewModel.duasSearchQuery.collectAsStateWithLifecycle()
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
@@ -331,7 +331,7 @@ fun DuasLibraryScreen(
 
     if (showSettingsSheet) {
         AzkarSettingsBottomSheet(
-            selectedThemeName = readingThemeName,
+            selectedThemeName = if (isDarkMode) "Obsidian Night" else "Madani Crisp",
             onThemeSelect = { viewModel.setSharedReadingTheme(it) },
             themeColors = themeColors,
             showArabic = showArabicInCards,

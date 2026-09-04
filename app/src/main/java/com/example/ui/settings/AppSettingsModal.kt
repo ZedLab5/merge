@@ -110,9 +110,8 @@ fun AppSettingsModal(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
 
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
-    val isDarkMode = themeColors.isDark
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val themeColors = remember(isDarkMode) { if (isDarkMode) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp }
 
     val showArabicSecondary by viewModel.showArabicSecondaryText.collectAsStateWithLifecycle()
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()

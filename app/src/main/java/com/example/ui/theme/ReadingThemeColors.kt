@@ -116,7 +116,6 @@ fun ReadingThemePickerRow(
 ) {
     val themes = listOf(
         "Madani Crisp" to Color(0xFFF2FBF9),
-        "Sepia Parchment" to Color(0xFFF9F4E8),
         "Obsidian Night" to Color(0xFF0F1418)
     )
 

@@ -120,8 +120,8 @@ fun AzkarReaderScreen(
     val azkarCountsMap by viewModel.azkarRemainingCounts.collectAsStateWithLifecycle()
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
 
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
+    val themeColors = remember(isDarkMode) { if (isDarkMode) ReadingThemes.ObsidianNight else ReadingThemes.MadaniCrisp }
 
     // Settings preferences from ViewModel
     val showArabicInCards by viewModel.showArabicInAzkarCards.collectAsStateWithLifecycle()
@@ -335,7 +335,7 @@ fun AzkarReaderScreen(
     // Azkar Settings Modal Bottom Sheet
     if (showSettingsSheet) {
         AzkarSettingsBottomSheet(
-            selectedThemeName = readingThemeName,
+            selectedThemeName = if (isDarkMode) "Obsidian Night" else "Madani Crisp",
             onThemeSelect = { viewModel.setSharedReadingTheme(it) },
             themeColors = themeColors,
             showArabic = showArabicInCards,
