@@ -42,8 +42,8 @@ import com.example.ui.theme.SurfaceWhite
 fun BentoCard(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(24.dp),
-    backgroundColor: Color = SurfaceWhite,
-    borderColor: Color = BorderTealGray,
+    backgroundColor: Color = Color.Unspecified,
+    borderColor: Color = Color.Unspecified,
     borderWidth: Dp = 1.dp,
     elevation: Dp = 2.dp,
     hasGlow: Boolean = false,
@@ -52,6 +52,10 @@ fun BentoCard(
     contentPadding: PaddingValues = PaddingValues(18.dp),
     content: @Composable BoxScope.() -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    val resolvedBgColor = if (backgroundColor == Color.Unspecified) colorScheme.surface else backgroundColor
+    val resolvedBorderColor = if (borderColor == Color.Unspecified) colorScheme.outline else borderColor
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -62,7 +66,7 @@ fun BentoCard(
     val borderModifier = if (hasGlow) {
         Modifier.border(2.dp, glowBrush, shape)
     } else {
-        Modifier.border(borderWidth, borderColor, shape)
+        Modifier.border(borderWidth, resolvedBorderColor, shape)
     }
 
     Box(
@@ -75,7 +79,7 @@ fun BentoCard(
                 spotColor = DeepVibrantTeal.copy(alpha = 0.12f)
             )
             .clip(shape)
-            .background(backgroundColor)
+            .background(resolvedBgColor)
             .then(borderModifier)
             .then(
                 if (onClick != null) {

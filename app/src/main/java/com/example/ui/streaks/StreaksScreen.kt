@@ -248,7 +248,7 @@ fun StreaksScreen(
         ModalBottomSheet(
             onDismissRequest = { selectedDayForDetail = null },
             sheetState = sheetState,
-            containerColor = SurfaceWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             DayDetailSheetContent(
                 day = selectedDayForDetail!!,
@@ -450,8 +450,8 @@ private fun StreakCalendarHeatmapCard(
 ) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = SurfaceWhite,
-        border = BorderStroke(1.2.dp, BorderTealGray),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -610,8 +610,8 @@ private fun StreakActivityDetailCard(
 ) {
     Surface(
         shape = RoundedCornerShape(18.dp),
-        color = SurfaceWhite,
-        border = BorderStroke(1.2.dp, if (isCompletedToday) DeepVibrantTeal.copy(alpha = 0.5f) else BorderTealGray),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.2.dp, if (isCompletedToday) DeepVibrantTeal.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -868,8 +868,8 @@ private fun StreakFreezeProtectionCard(
 private fun SpiritualConsistencyQuoteCard() {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = SurfaceWhite,
-        border = BorderStroke(1.dp, BorderTealGray),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(

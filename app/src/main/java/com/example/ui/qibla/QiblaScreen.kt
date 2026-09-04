@@ -77,6 +77,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -203,6 +204,9 @@ fun QiblaScreen(
         label = "borderColor"
     )
 
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.surface.luminance() < 0.5f
+
     Scaffold(
         topBar = {
             val declinationSign = if (activeDeclination >= 0) "+" else ""
@@ -215,6 +219,7 @@ fun QiblaScreen(
                 } else {
                     "True North • Declination ($declinationFormatted)"
                 },
+                isDark = isDark,
                 onBackClick = { viewModel.navigateBack() },
                 backContentDescription = "Back",
                 actions = {
@@ -232,7 +237,7 @@ fun QiblaScreen(
                 }
             )
         },
-        containerColor = CanvasMint,
+        containerColor = colorScheme.background,
         modifier = modifier
     ) { paddingValues ->
         Column(
@@ -249,8 +254,8 @@ fun QiblaScreen(
             // Location & Target Bearing Banner with Declination Offset
             BentoCard(
                 modifier = Modifier.fillMaxWidth(),
-                backgroundColor = SurfaceWhite,
-                borderColor = if (isAligned) SuccessGreen.copy(alpha = 0.5f) else BorderTealGray
+                backgroundColor = colorScheme.surface,
+                borderColor = if (isAligned) SuccessGreen.copy(alpha = 0.5f) else colorScheme.outline
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -270,16 +275,19 @@ fun QiblaScreen(
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = "Location",
-                                    tint = DeepVibrantTeal,
+                                    tint = if (isDark) Color(0xFF2DD4BF) else DeepVibrantTeal,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Text(
                                     text = "${selectedZone.name}, ${selectedZone.country}",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = colorScheme.onSurface
+                                    )
                                 )
                                 Text(
                                     text = "▾",
-                                    color = DeepVibrantTeal,
+                                    color = if (isDark) Color(0xFF2DD4BF) else DeepVibrantTeal,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -315,20 +323,20 @@ fun QiblaScreen(
                             } else {
                                 "Kaaba Bearing: ${String.format(Locale.US, "%.1f", qiblaInfo.azimuthDegrees)}° ($directionLabel) • Decl: $declinationText"
                             },
-                            style = MaterialTheme.typography.bodySmall.copy(color = SlateTealMuted)
+                            style = MaterialTheme.typography.bodySmall.copy(color = colorScheme.onSurfaceVariant)
                         )
                     }
 
                     Surface(
                         shape = RoundedCornerShape(100.dp),
-                        color = SoftTealTint,
-                        border = BorderStroke(1.dp, BorderTealLight)
+                        color = colorScheme.surfaceVariant,
+                        border = BorderStroke(1.dp, colorScheme.outline)
                     ) {
                         Text(
                             text = String.format(Locale.US, "%,.0f km", qiblaInfo.distanceKm),
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = DeepVibrantTeal,
+                                color = colorScheme.onSurface,
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -499,7 +507,7 @@ fun QiblaScreen(
                         spotColor = if (isAligned) SuccessGreen.copy(alpha = 0.45f) else DeepVibrantTeal.copy(alpha = 0.25f)
                     )
                     .clip(CircleShape)
-                    .background(SurfaceWhite)
+                    .background(colorScheme.surface)
                     .border(3.5.dp, dialBorderColor, CircleShape)
                     .pointerInput(Unit) {
                         if (isManualMode) {
@@ -547,7 +555,7 @@ fun QiblaScreen(
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        drawCompassDial(isAligned = isAligned, isLowAccuracy = isLowAccuracy)
+                        drawCompassDial(isAligned = isAligned, isLowAccuracy = isLowAccuracy, isDark = isDark)
                     }
 
                     // Kaaba Needle Marker located at Kaaba azimuth on the dial
@@ -698,8 +706,8 @@ fun QiblaScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                color = Color(0xFFFFF1F0), // Soft rose / salmon background
-                border = BorderStroke(1.dp, Color(0xFFFCA5A5).copy(alpha = 0.6f))
+                color = if (isDark) Color(0xFF3F1515) else Color(0xFFFFF1F0), // Soft rose / salmon background
+                border = BorderStroke(1.dp, if (isDark) Color(0xFF7F1D1D) else Color(0xFFFCA5A5).copy(alpha = 0.6f))
             ) {
                 Row(
                     modifier = Modifier
@@ -718,7 +726,7 @@ fun QiblaScreen(
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "Interference Notice",
-                            tint = Color(0xFFB91C1C),
+                            tint = if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -731,7 +739,7 @@ fun QiblaScreen(
                             text = if (isArabic) "تنبيه التداخل المغناطيسي" else "Compass Accuracy & Interference Notice",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF7F1D1D)
+                                color = if (isDark) Color(0xFFFCA5A5) else Color(0xFF7F1D1D)
                             )
                         )
                         Text(
@@ -741,7 +749,7 @@ fun QiblaScreen(
                                 "For accurate results, move away from metal objects (car bodies, steel furniture, rebar), magnetic phone cases or mounts, speakers/headphones or devices with magnets, and nearby electronics or power cables, then calibrate by moving your phone in a figure-8 motion."
                             },
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color(0xFF881337),
+                                color = if (isDark) Color(0xFFFECDD3) else Color(0xFF881337),
                                 fontSize = 11.8.sp,
                                 lineHeight = 16.5.sp
                             )
@@ -888,7 +896,7 @@ fun QiblaScreen(
     }
 }
 
-private fun DrawScope.drawCompassDial(isAligned: Boolean, isLowAccuracy: Boolean = false) {
+private fun DrawScope.drawCompassDial(isAligned: Boolean, isLowAccuracy: Boolean = false, isDark: Boolean = false) {
     val center = Offset(size.width / 2f, size.height / 2f)
     val radius = size.minDimension / 2f
 
@@ -911,10 +919,10 @@ private fun DrawScope.drawCompassDial(isAligned: Boolean, isLowAccuracy: Boolean
 
         val tickColor = when {
             isLowAccuracy -> Color(0xFF9E9E9E).copy(alpha = if (isCardinal) 0.8f else 0.4f)
-            i == 0 -> Color(0xFFE53935) // North is Red
-            isCardinal -> DeepVibrantTeal
-            isMajor -> SlateTealMuted
-            else -> SlateTealMuted.copy(alpha = 0.35f)
+            i == 0 -> Color(0xFFEF4444) // North is Red
+            isCardinal -> if (isDark) Color(0xFF2DD4BF) else DeepVibrantTeal
+            isMajor -> if (isDark) Color(0xFF94A3B8) else SlateTealMuted
+            else -> if (isDark) Color(0xFF64748B) else SlateTealMuted.copy(alpha = 0.35f)
         }
 
         val strokeW = when {

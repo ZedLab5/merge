@@ -54,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -89,6 +90,7 @@ fun HabitTrackerScreen(
     modifier: Modifier = Modifier
 ) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     var showAddDialog by remember { mutableStateOf(false) }
     var habitTitle by remember { mutableStateOf("") }
     var habitTarget by remember { mutableStateOf("10") }
@@ -137,9 +139,7 @@ fun HabitTrackerScreen(
         ) {
             // Overall Progress Summary Bento Card
             BentoCard(
-                modifier = Modifier.fillMaxWidth(),
-                backgroundColor = SurfaceWhite,
-                borderColor = BorderTealGray
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -189,10 +189,18 @@ fun HabitTrackerScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
                             .clickable { viewModel.incrementHabit(habit) },
-                        color = if (habit.isCompleted) SuccessGreenLight else SurfaceWhite,
+                        color = if (habit.isCompleted) {
+                            if (isDark) Color(0xFF0F2E22) else SuccessGreenLight
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        },
                         border = BorderStroke(
                             1.dp,
-                            if (habit.isCompleted) SuccessGreen.copy(alpha = 0.5f) else BorderTealGray
+                            if (habit.isCompleted) {
+                                if (isDark) Color(0xFF10B981) else SuccessGreen.copy(alpha = 0.5f)
+                            } else {
+                                MaterialTheme.colorScheme.outline
+                            }
                         ),
                         shape = RoundedCornerShape(16.dp)
                     ) {

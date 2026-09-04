@@ -74,6 +74,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -1172,9 +1173,9 @@ private fun NotificationToggleRow(
 private fun PaletteSwatch(
     color: Color,
     name: String,
-    modifier: Modifier = Modifier,
-    isDark: Boolean = false
+    modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     Surface(
         shape = RoundedCornerShape(8.dp),
         color = color,

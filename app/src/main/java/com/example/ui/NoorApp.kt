@@ -127,15 +127,20 @@ fun NoorApp(
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) ||
             appLanguage == "العربية" ||
             appLanguage.startsWith("ar", ignoreCase = true)
-    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
-    val readingTheme = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDarkMode by viewModel.isDarkMode.collectAsStateWithLifecycle()
     val isSettingsOpen by viewModel.isSettingsModalOpen.collectAsStateWithLifecycle()
-    val isDarkMode = readingTheme.isDark
+
+    val navSurface = MaterialTheme.colorScheme.surface
+    val navBorder = MaterialTheme.colorScheme.outline
+    val navSelectedTint = MaterialTheme.colorScheme.primary
+    val navUnselectedTint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+    val navSelectedText = MaterialTheme.colorScheme.onSurface
+    val navUnselectedText = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        val isLightStatusBar = currentDest == NoorDestination.HOME && !isDarkMode
-        val navBarColor = if (isDarkMode) readingTheme.surface else Color.White
+        val isLightStatusBar = !isDarkMode
+        val navBarColor = navSurface
         val isLightNavBar = !isDarkMode
 
         SideEffect {
@@ -154,12 +159,6 @@ fun NoorApp(
         }
     }
 
-    val bottomNavSurface = if (isDarkMode) readingTheme.surface else SurfaceWhite
-    val bottomNavBorder = if (isDarkMode) readingTheme.border else BorderTealGray
-    val bottomNavSelectedTint = if (isDarkMode) readingTheme.accent else DeepVibrantTeal
-    val bottomNavUnselectedTint = if (isDarkMode) readingTheme.translationText.copy(alpha = 0.7f) else SlateTealMuted.copy(alpha = 0.6f)
-    val bottomNavSelectedText = if (isDarkMode) readingTheme.arabicText else DarkPine
-    val bottomNavUnselectedText = if (isDarkMode) readingTheme.translationText.copy(alpha = 0.8f) else SlateTealMuted.copy(alpha = 0.7f)
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(toastMsg) {
@@ -188,7 +187,7 @@ fun NoorApp(
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            containerColor = if (isDarkMode) readingTheme.background else Color.White,
+            containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             val isQuranFullscreen by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
             val isBottomBarVisible = currentDest != NoorDestination.QURAN_AUDIO_STREAM &&
@@ -206,9 +205,9 @@ fun NoorApp(
                         .navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                         .shadow(12.dp, RoundedCornerShape(28.dp), ambientColor = if (isDarkMode) Color.Black.copy(alpha = 0.4f) else DeepVibrantTeal.copy(alpha = 0.10f), spotColor = if (isDarkMode) Color.Black.copy(alpha = 0.5f) else DeepVibrantTeal.copy(alpha = 0.16f))
-                        .border(1.dp, bottomNavBorder, RoundedCornerShape(28.dp)),
+                        .border(1.dp, navBorder, RoundedCornerShape(28.dp)),
                     shape = RoundedCornerShape(28.dp),
-                    color = bottomNavSurface
+                    color = navSurface
                 ) {
                     Row(
                         modifier = Modifier
@@ -243,7 +242,7 @@ fun NoorApp(
                                 Icon(
                                     imageVector = item.icon,
                                     contentDescription = itemLabel,
-                                    tint = if (isSelected) bottomNavSelectedTint else bottomNavUnselectedTint,
+                                    tint = if (isSelected) navSelectedTint else navUnselectedTint,
                                     modifier = Modifier.size(22.dp)
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
@@ -251,7 +250,7 @@ fun NoorApp(
                                     text = itemLabel,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) bottomNavSelectedText else bottomNavUnselectedText,
+                                        color = if (isSelected) navSelectedText else navUnselectedText,
                                         fontSize = 10.5.sp
                                     )
                                 )

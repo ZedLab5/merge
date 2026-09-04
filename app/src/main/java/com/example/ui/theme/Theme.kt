@@ -44,14 +44,14 @@ private val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = GoldHighlight,
     tertiary = DeepVibrantTeal,
     onTertiary = Color.White,
-    background = DarkPine,
-    onBackground = CanvasMint,
-    surface = Color(0xFF152F27),
-    onSurface = CanvasMint,
-    surfaceVariant = Color(0xFF1B3D33),
-    onSurfaceVariant = Color(0xFFA2C7BC),
-    outline = Color(0xFF264F43),
-    outlineVariant = Color(0xFF1F4339)
+    background = Color(0xFF0F1418),
+    onBackground = Color(0xFFE2E8F0),
+    surface = Color(0xFF182026),
+    onSurface = Color(0xFFE2E8F0),
+    surfaceVariant = Color(0xFF222C35),
+    onSurfaceVariant = Color(0xFF94A3B8),
+    outline = Color(0xFF26333C),
+    outlineVariant = Color(0xFF1F2932)
 )
 
 @Composable

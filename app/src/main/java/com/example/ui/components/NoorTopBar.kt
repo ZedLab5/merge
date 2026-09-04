@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -130,10 +131,33 @@ fun NoorTopBar(
     titleContent: (@Composable () -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit) = {}
 ) {
-    val bgBrush = if (isDark && themeColors != null) Brush.linearGradient(listOf(themeColors.surface, themeColors.surface)) else NoorTopBarGradient
-    val borderCol = if (isDark && themeColors != null) themeColors.border else NoorTopBarHairlineBorder
-    val titleCol = if (isDark && themeColors != null) themeColors.arabicText else Color.White
-    val subCol = if (isDark && themeColors != null) themeColors.translationText else Color.White.copy(alpha = 0.82f)
+    val colorScheme = MaterialTheme.colorScheme
+    val isSystemDark = isDark || colorScheme.surface.luminance() < 0.5f
+
+    val bgBrush = if (isSystemDark) {
+        val surfaceColor = themeColors?.surface ?: colorScheme.surface
+        Brush.linearGradient(listOf(surfaceColor, surfaceColor))
+    } else {
+        NoorTopBarGradient
+    }
+
+    val borderCol = if (isSystemDark) {
+        themeColors?.border ?: colorScheme.outline
+    } else {
+        NoorTopBarHairlineBorder
+    }
+
+    val titleCol = if (isSystemDark) {
+        themeColors?.arabicText ?: colorScheme.onSurface
+    } else {
+        Color.White
+    }
+
+    val subCol = if (isSystemDark) {
+        themeColors?.translationText ?: colorScheme.onSurfaceVariant
+    } else {
+        Color.White.copy(alpha = 0.82f)
+    }
 
     Box(
         modifier = modifier

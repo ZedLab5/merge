@@ -128,9 +128,7 @@ fun FavoritesScreen(
             ) {
                 items(favorites, key = { it.id }) { item ->
                     BentoCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        backgroundColor = SurfaceWhite,
-                        borderColor = BorderTealGray
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(

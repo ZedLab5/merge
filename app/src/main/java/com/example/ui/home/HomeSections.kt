@@ -93,6 +93,7 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
@@ -190,16 +191,16 @@ fun NoorSectionContainer(
     modifier: Modifier = Modifier,
     containerShape: RoundedCornerShape = RoundedCornerShape(24.dp),
     backgroundBrush: Brush? = null,
-    backgroundColor: Color = Color.White,
     borderBrush: Brush? = null,
     borderWidth: Dp = 0.dp,
     hasBorder: Boolean = true,
-    isDark: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(18.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val actualBgColor = if (isDark && backgroundColor == Color.White) ReadingThemes.ObsidianNight.surface else backgroundColor
-    val actualBorderColor = if (isDark) ReadingThemes.ObsidianNight.border else NoorSoftGreenBorder
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.surface.luminance() < 0.5f
+    val actualBgColor = colorScheme.surface
+    val actualBorderColor = colorScheme.outline
 
     Box(
         modifier = modifier
@@ -1357,14 +1358,15 @@ fun SpiritualEssentialCard(
     title: String,
     subtitle: String,
     icon: @Composable () -> Unit,
-    onClick: () -> Unit,
-    isDark: Boolean = false
+    onClick: () -> Unit
 ) {
-    val cardBg = if (isDark) ReadingThemes.ObsidianNight.surface else Color.White
-    val cardBorder = if (isDark) ReadingThemes.ObsidianNight.border else NoorSoftGreenBorder
-    val iconBg = if (isDark) ReadingThemes.ObsidianNight.background else NoorSoftGreenBg
-    val titleColor = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine
-    val subtitleColor = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.surface.luminance() < 0.5f
+    val cardBg = colorScheme.surface
+    val cardBorder = colorScheme.outline
+    val iconBg = colorScheme.surfaceVariant
+    val titleColor = colorScheme.onSurface
+    val subtitleColor = colorScheme.onSurfaceVariant
 
     Surface(
         modifier = modifier
@@ -1458,17 +1460,18 @@ fun QuickAccessMiniCard(
     isArabic: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    slotIndex: Int = 0,
-    isDark: Boolean = false
+    slotIndex: Int = 0
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.surface.luminance() < 0.5f
     val slotTier = QuickAccessColorSystem.getSlotTier(slotIndex, isDark = isDark)
     val title = if (isArabic) tool.titleAr else tool.titleEn
     val subtitle = if (isArabic) tool.subtitleAr else tool.subtitleEn
 
-    val cardBg = if (isDark) ReadingThemes.ObsidianNight.surface else Color.White
-    val cardBorder = if (isDark) ReadingThemes.ObsidianNight.border else NoorCardBorder
-    val titleColor = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine
-    val subtitleColor = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
+    val cardBg = colorScheme.surface
+    val cardBorder = colorScheme.outline
+    val titleColor = colorScheme.onSurface
+    val subtitleColor = colorScheme.onSurfaceVariant
 
     Surface(
         modifier = modifier
@@ -1699,7 +1702,6 @@ fun SpiritualEssentialsGrid(
                     tool = displayTools[0],
                     isArabic = isArabic,
                     slotIndex = 0,
-                    isDark = isDark,
                     onClick = { navigateToQuickAccessTool(viewModel, displayTools[0]) },
                     modifier = Modifier.weight(1f)
                 )
@@ -1708,7 +1710,6 @@ fun SpiritualEssentialsGrid(
                         tool = displayTools[1],
                         isArabic = isArabic,
                         slotIndex = 1,
-                        isDark = isDark,
                         onClick = { navigateToQuickAccessTool(viewModel, displayTools[1]) },
                         modifier = Modifier.weight(1f)
                     )
@@ -1727,7 +1728,6 @@ fun SpiritualEssentialsGrid(
                     tool = displayTools[2],
                     isArabic = isArabic,
                     slotIndex = 2,
-                    isDark = isDark,
                     onClick = { navigateToQuickAccessTool(viewModel, displayTools[2]) },
                     modifier = Modifier.weight(1f)
                 )
@@ -1736,7 +1736,6 @@ fun SpiritualEssentialsGrid(
                         tool = displayTools[3],
                         isArabic = isArabic,
                         slotIndex = 3,
-                        isDark = isDark,
                         onClick = { navigateToQuickAccessTool(viewModel, displayTools[3]) },
                         modifier = Modifier.weight(1f)
                     )
@@ -1810,8 +1809,7 @@ fun HomeFavoritesCard(
     icon: @Composable () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isArabic: Boolean = false,
-    isDark: Boolean = false
+    isArabic: Boolean = false
 ) {
     val subtitleText = if (isArabic) {
         if (count == 1) "١ محفوظ" else "$count محفوظ"
@@ -1819,10 +1817,12 @@ fun HomeFavoritesCard(
         "$count bookmarked"
     }
 
-    val cardBg = if (isDark) ReadingThemes.ObsidianNight.surface else Color.White
-    val cardBorder = if (isDark) ReadingThemes.ObsidianNight.border else NoorCardBorder
-    val titleColor = if (isDark) ReadingThemes.ObsidianNight.arabicText else NoorDarkPine
-    val subtitleColor = if (isDark) ReadingThemes.ObsidianNight.translationText else NoorSageSlate
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.surface.luminance() < 0.5f
+    val cardBg = colorScheme.surface
+    val cardBorder = colorScheme.outline
+    val titleColor = colorScheme.onSurface
+    val subtitleColor = colorScheme.onSurfaceVariant
 
     Surface(
         modifier = modifier
@@ -2082,7 +2082,6 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "الأدعية المفضلة" else "Favorite Duas",
                     count = duasCount,
                     accentColor = Color(0xFFE06D53),
-                    isDark = isDark,
                     icon = {
                         IslamicIconDua(
                             modifier = Modifier.size(18.dp),
@@ -2100,7 +2099,6 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "السور المفضلة" else "Favorite Surahs",
                     count = quranCount,
                     accentColor = if (isDark) themeColors.accent else DeepVibrantTeal,
-                    isDark = isDark,
                     icon = {
                         IslamicIconMushaf(
                             modifier = Modifier.size(18.dp),
@@ -2118,7 +2116,6 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "الأذكار المفضلة" else "Favorite Azkar",
                     count = azkarCount,
                     accentColor = Color(0xFF16A34A),
-                    isDark = isDark,
                     icon = {
                         IslamicIconTasbeeh(
                             modifier = Modifier.size(18.dp),
@@ -2136,7 +2133,6 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "التلاوات المفضلة" else "Favorite Audio",
                     count = audioCount,
                     accentColor = Color(0xFF9F75FF),
-                    isDark = isDark,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Headphones,
@@ -2156,7 +2152,6 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "الأحاديث المفضلة" else "Favorite Hadith",
                     count = hadithCount,
                     accentColor = MetallicGold,
-                    isDark = isDark,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
@@ -2176,7 +2171,6 @@ fun HomeFavoritesCarousel(
                     title = if (isArabic) "كل المحفوظات" else "All Bookmarks",
                     count = totalCount,
                     accentColor = if (isDark) themeColors.accent else NoorDarkPine,
-                    isDark = isDark,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.BookmarkBorder,
@@ -2790,6 +2784,10 @@ fun DailyMoodWisdomSection(
     isIslamic: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val moods = listOf(
         "Anxious" to stringResource(R.string.mood_anxious),
@@ -2815,8 +2813,8 @@ fun DailyMoodWisdomSection(
                 val isSelected = selectedMood.equals(moodKey, ignoreCase = true)
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = if (isSelected) NoorTealStart else NoorSurfaceSoft,
-                    border = BorderStroke(1.dp, if (isSelected) NoorTealStart else NoorCardBorder),
+                    color = if (isSelected) NoorTealStart else (if (isDark) themeColors.surface else NoorSurfaceSoft),
+                    border = BorderStroke(1.dp, if (isSelected) NoorTealStart else (if (isDark) themeColors.border else NoorCardBorder)),
                     modifier = Modifier.clickable {
                         viewModel.selectMood(moodKey)
                     }
@@ -2827,7 +2825,7 @@ fun DailyMoodWisdomSection(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 13.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else NoorDarkPine
+                            color = if (isSelected) Color.White else (if (isDark) themeColors.arabicText else NoorDarkPine)
                         )
                     )
                 }
@@ -2840,8 +2838,8 @@ fun DailyMoodWisdomSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = NoorSurfaceSoft,
-            border = BorderStroke(1.dp, NoorCardBorder)
+            color = if (isDark) themeColors.surface else NoorSurfaceSoft,
+            border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorCardBorder)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -2885,7 +2883,7 @@ fun DailyMoodWisdomSection(
                             fontFamily = FontFamily.Serif,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Normal,
-                            color = NoorDarkPine,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             textAlign = TextAlign.End,
                             lineHeight = 30.sp
                         ),
@@ -2902,7 +2900,7 @@ fun DailyMoodWisdomSection(
                     },
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 13.5.sp,
-                        color = NoorDarkPine,
+                        color = if (isDark) themeColors.translationText else NoorDarkPine,
                         lineHeight = 22.sp
                     )
                 )
@@ -3160,6 +3158,10 @@ fun QuranRecitersShowcase(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val readingThemeName by viewModel.sharedReadingTheme.collectAsStateWithLifecycle()
+    val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
+    val isDark = themeColors.isDark
+
     val reciters = QuranData.reciters
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val isArabic = appLanguage.equals("Arabic", ignoreCase = true) || appLanguage == "العربية" || appLanguage.startsWith("ar", ignoreCase = true)
@@ -3188,8 +3190,8 @@ fun QuranRecitersShowcase(
                             viewModel.playSurahAudio(QuranData.surahs.first(), openPlayer = true)
                         },
                     shape = RoundedCornerShape(18.dp),
-                    color = NoorSurfaceSoft,
-                    border = BorderStroke(1.dp, NoorCardBorder)
+                    color = if (isDark) themeColors.surface else NoorSurfaceSoft,
+                    border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorCardBorder)
                 ) {
                     Column(
                         modifier = Modifier.padding(14.dp),
@@ -3217,7 +3219,7 @@ fun QuranRecitersShowcase(
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = NoorDarkPine,
+                                color = if (isDark) themeColors.arabicText else NoorDarkPine,
                                 textAlign = TextAlign.Center
                             ),
                             maxLines = 1,
@@ -3230,7 +3232,7 @@ fun QuranRecitersShowcase(
                             text = reciterStyle,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontSize = 12.sp,
-                                color = NoorSageSlate
+                                color = if (isDark) themeColors.translationText else NoorSageSlate
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
