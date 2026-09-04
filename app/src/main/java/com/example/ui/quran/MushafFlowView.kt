@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -102,36 +103,53 @@ fun AyahEndMarkerBadge(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // Enforce strict square geometry so the circle is always 100% round and uniform
+        // Enforce strict square geometry with a slight vertical downward offset for optical alignment
         Box(
             modifier = Modifier
-                .size(circleDiameterDp),
+                .size(circleDiameterDp)
+                .offset(y = 1.3.dp),
             contentAlignment = Alignment.Center
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                val radius = (size.minDimension / 2f) - 1.2.dp.toPx()
                 val center = Offset(size.width / 2f, size.height / 2f)
+                val outerRadius = (size.minDimension / 2f) - 1.2.dp.toPx()
 
-                // 1. Subtle tinted background fill
+                // 1. Subtle warm background glow
                 drawCircle(
                     color = themeColors.accent.copy(alpha = 0.09f),
-                    radius = radius,
+                    radius = outerRadius,
                     center = center
                 )
-                // 2. Outer crisp metallic circle ring
+
+                // 2. Outer ornate circle ring
                 drawCircle(
                     color = themeColors.accent.copy(alpha = 0.85f),
-                    radius = radius,
+                    radius = outerRadius,
                     center = center,
                     style = Stroke(width = 1.2.dp.toPx())
                 )
-                // 3. Inner decorative ring
-                val innerRadius = (radius - 2.2.dp.toPx()).coerceAtLeast(1f)
+
+                // 3. Ornate 8-point geometric cardinal & diagonal accent points
+                val markerRadius = outerRadius * 0.96f
+                for (i in 0 until 8) {
+                    val angleRad = (i * 45.0 * Math.PI / 180.0).toFloat()
+                    val px = center.x + markerRadius * kotlin.math.cos(angleRad)
+                    val py = center.y + markerRadius * kotlin.math.sin(angleRad)
+                    val dotSize = if (i % 2 == 0) 1.2.dp.toPx() else 0.8.dp.toPx()
+                    drawCircle(
+                        color = themeColors.accent,
+                        radius = dotSize,
+                        center = Offset(px, py)
+                    )
+                }
+
+                // 4. Inner delicate framing ring
+                val innerRadius = (outerRadius - 2.4.dp.toPx()).coerceAtLeast(1f)
                 drawCircle(
-                    color = themeColors.accent.copy(alpha = 0.35f),
+                    color = themeColors.accent.copy(alpha = 0.40f),
                     radius = innerRadius,
                     center = center,
-                    style = Stroke(width = 0.65.dp.toPx())
+                    style = Stroke(width = 0.7.dp.toPx())
                 )
             }
 
@@ -343,7 +361,7 @@ fun MushafFlowView(
                         lineHeight = (fontSizeSp * 2.1).sp, // Natural, balanced line-height for Arabic diacritics
                         fontWeight = FontWeight.Normal,
                         color = themeColors.arabicText,
-                        textAlign = TextAlign.Start,
+                        textAlign = TextAlign.Center,
                         textDirection = TextDirection.Rtl
                     ),
                     modifier = Modifier.fillMaxWidth()

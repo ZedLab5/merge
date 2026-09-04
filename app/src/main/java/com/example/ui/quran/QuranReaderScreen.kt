@@ -328,12 +328,21 @@ fun QuranReaderScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isSystemDark by viewModel.isDarkMode.collectAsStateWithLifecycle()
 
-    // Determine current theme colors for Quran Reader: Sepia if toggled, Obsidian if dark mode, otherwise app-wide MaterialTheme.colorScheme
+    // Determine current theme colors for Quran Reader canvas: Sepia if toggled (overriding dark/light), Obsidian if dark mode, otherwise app-wide Light theme
     val themeColors = remember(isSepiaMode, colorScheme, isSystemDark) {
+        if (isSepiaMode) {
+            ReadingThemes.SepiaParchment
+        } else if (isSystemDark) {
+            ReadingThemes.ObsidianNight
+        } else {
+            ReadingThemes.fromColorScheme(colorScheme, isSystemDark)
+        }
+    }
+
+    // Modal bottom sheet / settings theme colors: follows app-wide Dark/Light theme, NOT Sepia
+    val sheetThemeColors = remember(colorScheme, isSystemDark) {
         if (isSystemDark) {
             ReadingThemes.ObsidianNight
-        } else if (isSepiaMode) {
-            ReadingThemes.SepiaParchment
         } else {
             ReadingThemes.fromColorScheme(colorScheme, isSystemDark)
         }
@@ -546,11 +555,13 @@ fun QuranReaderScreen(
 
         // Reading Settings Modal Bottom Sheet
         if (showSettingsSheet) {
+            val sheetColors = sheetThemeColors
             ModalBottomSheet(
                 onDismissRequest = { showSettingsSheet = false },
                 sheetState = sheetState,
-                containerColor = themeColors.surface
+                containerColor = sheetColors.surface
             ) {
+                val themeColors = sheetColors
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier
