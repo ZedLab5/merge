@@ -57,6 +57,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DashboardCustomize
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.LocationOn
@@ -69,6 +71,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.ui.text.style.TextDirection
+import com.example.data.model.QuranArabicFont
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -79,7 +83,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -2603,11 +2609,12 @@ fun DailyAyahAndDuaShowcase(
                         Text(
                             text = dailyAyah.arabicText,
                             style = MaterialTheme.typography.headlineSmall.copy(
-                                fontFamily = FontFamily.Serif,
+                                fontFamily = QuranArabicFont.AMIRI.fontFamily,
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = if (isDark) themeColors.arabicText else NoorDarkPine,
                                 textAlign = TextAlign.Start,
+                                textDirection = TextDirection.Rtl,
                                 lineHeight = 38.sp
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -2646,11 +2653,12 @@ fun DailyAyahAndDuaShowcase(
                             Text(
                                 text = dailyAyah.arabicText,
                                 style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontFamily = FontFamily.Serif,
+                                    fontFamily = QuranArabicFont.AMIRI.fontFamily,
                                     fontSize = 21.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = if (isDark) themeColors.arabicText.copy(alpha = 0.9f) else NoorDarkPine.copy(alpha = 0.9f),
-                                    textAlign = TextAlign.End,
+                                    textAlign = TextAlign.Start,
+                                    textDirection = TextDirection.Rtl,
                                     lineHeight = 36.sp
                                 ),
                                 modifier = Modifier.fillMaxWidth()
@@ -2713,11 +2721,12 @@ fun DailyAyahAndDuaShowcase(
                     Text(
                         text = dailyDua.arabicText,
                         style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = FontFamily.Serif,
+                            fontFamily = QuranArabicFont.AMIRI.fontFamily,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Normal,
                             color = if (isDark) themeColors.arabicText else NoorDarkPine,
                             textAlign = TextAlign.Start,
+                            textDirection = TextDirection.Rtl,
                             lineHeight = 30.sp
                         ),
                         modifier = Modifier.fillMaxWidth()
@@ -2756,11 +2765,12 @@ fun DailyAyahAndDuaShowcase(
                         Text(
                             text = dailyDua.arabicText,
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                fontFamily = FontFamily.Serif,
+                                fontFamily = QuranArabicFont.AMIRI.fontFamily,
                                 fontSize = 17.5.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = if (isDark) themeColors.arabicText.copy(alpha = 0.85f) else NoorDarkPine.copy(alpha = 0.85f),
-                                textAlign = TextAlign.End,
+                                textAlign = TextAlign.Start,
+                                textDirection = TextDirection.Rtl,
                                 lineHeight = 28.sp
                             ),
                             modifier = Modifier.fillMaxWidth()
@@ -2772,6 +2782,7 @@ fun DailyAyahAndDuaShowcase(
     }
 }
 
+// ============================================================
 // ============================================================
 // 6. HEART & SOUL: MOOD & AI WISDOM REFLECTION
 // ============================================================
@@ -2787,7 +2798,13 @@ fun DailyMoodWisdomSection(
     val themeColors = remember(readingThemeName) { ReadingThemes.getThemeByName(readingThemeName) }
     val isDark = themeColors.isDark
 
+    val showArabicSecondary by viewModel.showArabicSecondaryText.collectAsStateWithLifecycle()
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val isArabicPrimary = appLanguage.equals("Arabic", ignoreCase = true) || appLanguage == "العربية" || appLanguage.startsWith("ar", ignoreCase = true)
+
+    var isExpanded by remember { mutableStateOf(false) }
+
     val moods = listOf(
         "Anxious" to stringResource(R.string.mood_anxious),
         "Grateful" to stringResource(R.string.mood_grateful),
@@ -2797,32 +2814,117 @@ fun DailyMoodWisdomSection(
         "Peaceful" to stringResource(R.string.mood_peaceful)
     )
 
-    NoorSectionContainer(
-        icon = Icons.Default.Psychology,
-        title = stringResource(R.string.home_spiritual_mood),
-        subtitle = stringResource(R.string.home_how_is_heart_today),
-        modifier = modifier
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Horizontal Mood Pills with subtle inner border
+        // Section Header Row: Leading Icon Badge + Title & Subtitle + Action Button (Lays on background)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (isDark) themeColors.background else NoorSoftGreenBg)
+                        .then(
+                            if (isDark) Modifier.border(1.dp, themeColors.border, RoundedCornerShape(10.dp)) else Modifier
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Psychology,
+                        contentDescription = null,
+                        tint = if (isDark) themeColors.accent else DeepVibrantTeal,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                Column {
+                    Text(
+                        text = stringResource(R.string.home_spiritual_mood),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
+                            fontSize = 15.5.sp
+                        )
+                    )
+                    Text(
+                        text = stringResource(R.string.home_how_is_heart_today),
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = if (isDark) themeColors.translationText else NoorSageSlate,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = if (isDark) themeColors.surface else NoorSurfaceSoft,
+                border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorCardBorder),
+                modifier = Modifier.clickable {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val wisdom = viewModel.getCurrentMoodWisdom()
+                    val textToCopy = if (isArabicPrimary) {
+                        "${wisdom.arabicText}\n${wisdom.explanationAr.ifBlank { wisdom.explanation }}\n(${wisdom.sourceAr.ifBlank { wisdom.source }})"
+                    } else {
+                        "${wisdom.translation}\n${wisdom.explanation}\n(${wisdom.source})${if (showArabicSecondary && wisdom.arabicText.isNotBlank()) "\n" + wisdom.arabicText else ""}"
+                    }
+                    val clip = ClipData.newPlainText("Spiritual Mood Reflection", textToCopy)
+                    clipboard.setPrimaryClip(clip)
+                    viewModel.showToast(context.getString(R.string.home_ayah_copied))
+                }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null,
+                        tint = if (isDark) themeColors.translationText else NoorSageSlate,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.action_copy),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
+                            fontSize = 11.5.sp
+                        )
+                    )
+                }
+            }
+        }
+
+        // Horizontal Mood Pills (Scrollable, laying on background)
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(bottom = 4.dp)
+            contentPadding = PaddingValues(vertical = 2.dp)
         ) {
             items(moods) { (moodKey, moodLabel) ->
                 val isSelected = selectedMood.equals(moodKey, ignoreCase = true)
                 Surface(
                     shape = RoundedCornerShape(14.dp),
-                    color = if (isSelected) NoorTealStart else (if (isDark) themeColors.surface else NoorSurfaceSoft),
-                    border = BorderStroke(1.dp, if (isSelected) NoorTealStart else (if (isDark) themeColors.border else NoorCardBorder)),
+                    color = if (isSelected) (if (isDark) themeColors.accent else NoorTealStart) else (if (isDark) themeColors.surface else NoorSurfaceSoft),
+                    border = BorderStroke(1.dp, if (isSelected) (if (isDark) themeColors.accent else NoorTealStart) else (if (isDark) themeColors.border else NoorCardBorder)),
                     modifier = Modifier.clickable {
                         viewModel.selectMood(moodKey)
                     }
                 ) {
                     Text(
                         text = moodLabel,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 13.sp,
+                            fontSize = 12.5.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             color = if (isSelected) Color.White else (if (isDark) themeColors.arabicText else NoorDarkPine)
                         )
@@ -2831,78 +2933,184 @@ fun DailyMoodWisdomSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        // Wisdom Text Container (Wrapped in Soft Green Card, sole container in section)
+        val wisdom = viewModel.getCurrentMoodWisdom()
 
-        // Wisdom Response Box with subtle inner border
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            color = if (isDark) themeColors.surface else NoorSurfaceSoft,
-            border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorCardBorder)
+            color = Color.Transparent,
+            border = BorderStroke(1.2.dp, if (isDark) NoorSoftGreenBorder.copy(alpha = 0.45f) else NoorSoftGreenBorder)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
+            Box(
+                modifier = Modifier
+                    .animateContentSize()
+                    .fillMaxWidth()
+                    .background(
+                        if (isDark) {
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    themeColors.surface,
+                                    Color(0xFF0C211A)
+                                )
+                            )
+                        } else {
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFFF4FAF7),
+                                    Color(0xFFEBF5F0),
+                                    Color(0xFFE2F0EA)
+                                )
+                            )
+                        }
+                    )
+                    .padding(18.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Column {
+                    // Reference Row (Labels removed, reference in soft black/grey)
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = NoorGoldAccent,
-                            modifier = Modifier.size(18.dp)
-                        )
                         Text(
-                            text = stringResource(R.string.home_daily_reflection_wisdom),
+                            text = if (isArabicPrimary) wisdom.sourceAr.ifBlank { wisdom.source } else wisdom.source,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp,
-                                color = NoorGoldAccent
+                                fontWeight = FontWeight.Medium,
+                                color = if (isDark) themeColors.translationText else NoorSageSlate
                             )
                         )
                     }
-                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                val wisdom = viewModel.getCurrentMoodWisdom()
-                val isArabicPrimary = appLanguage.equals("Arabic", ignoreCase = true) || appLanguage == "العربية" || appLanguage.startsWith("ar", ignoreCase = true)
-
-                if (wisdom.arabicText.isNotBlank()) {
-                    Text(
-                        text = wisdom.arabicText,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = if (isDark) themeColors.arabicText else NoorDarkPine,
-                            textAlign = TextAlign.End,
-                            lineHeight = 30.sp
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                Text(
-                    text = if (isArabicPrimary) {
-                        "${wisdom.explanationAr.ifBlank { wisdom.explanation }} — ${wisdom.sourceAr.ifBlank { wisdom.source }}"
+                    if (isArabicPrimary) {
+                        // In Arabic mode
+                        if (wisdom.arabicText.isNotBlank()) {
+                            Text(
+                                text = wisdom.arabicText,
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontFamily = QuranArabicFont.AMIRI.fontFamily,
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (isDark) themeColors.arabicText else NoorDarkPine,
+                                    textAlign = TextAlign.Start,
+                                    textDirection = TextDirection.Rtl,
+                                    lineHeight = 38.sp
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                        Text(
+                            text = wisdom.explanationAr.ifBlank { wisdom.explanation },
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 15.5.sp,
+                                color = if (isDark) themeColors.arabicText else NoorDarkPine,
+                                lineHeight = 24.sp
+                            ),
+                            maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     } else {
-                        "${wisdom.translation} — ${wisdom.source}"
-                    },
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.5.sp,
-                        color = if (isDark) themeColors.translationText else NoorDarkPine,
-                        lineHeight = 22.sp
-                    )
-                )
+                        // 1. Primary Translation
+                        Text(
+                            text = wisdom.translation,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 15.5.sp,
+                                color = if (isDark) themeColors.arabicText else NoorDarkPine,
+                                lineHeight = 24.sp
+                            ),
+                            maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        // 2. Detailed Spiritual Explanation
+                        if (isExpanded && wisdom.explanation.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = if (isDark) themeColors.accent else DeepVibrantTeal,
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .offset(y = 2.dp)
+                                )
+                                Text(
+                                    text = wisdom.explanation,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 13.5.sp,
+                                        color = if (isDark) themeColors.translationText else NoorSageSlate,
+                                        lineHeight = 21.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        // 3. Arabic Script Text (Subject to global toggle / secondary display)
+                        if (isExpanded && showArabicSecondary && wisdom.arabicText.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(14.dp))
+                            HorizontalDivider(color = if (isDark) themeColors.border else NoorSoftGreenBorder.copy(alpha = 0.6f))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = wisdom.arabicText,
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontFamily = QuranArabicFont.AMIRI.fontFamily,
+                                    fontSize = 21.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (isDark) themeColors.arabicText else NoorDarkPine,
+                                    textAlign = TextAlign.Start,
+                                    textDirection = TextDirection.Rtl,
+                                    lineHeight = 36.sp
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    // Read More / Read Less button in bottom right
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isDark) themeColors.surface else Color.White,
+                            border = BorderStroke(1.dp, if (isDark) themeColors.border else NoorSoftGreenBorder),
+                            modifier = Modifier.clickable { isExpanded = !isExpanded }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = if (isExpanded) "Read Less" else "Read More",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDark) themeColors.accent else DeepVibrantTeal,
+                                        fontSize = 11.5.sp
+                                    )
+                                )
+                                Icon(
+                                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = null,
+                                    tint = if (isDark) themeColors.accent else DeepVibrantTeal,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

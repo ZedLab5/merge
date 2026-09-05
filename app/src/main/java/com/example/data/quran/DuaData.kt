@@ -36,132 +36,154 @@ object DuaData {
             DailyMoodWisdom(
                 mood = "Anxious",
                 isIslamic = true,
-                arabicText = "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ",
-                translation = "Allah is sufficient for us, and He is the best Disposer of affairs.",
-                source = "Surah Ali 'Imran (3:173)",
-                explanation = "A profound divine fortress spoken by Ibrahim (AS) when cast into fire and Prophet Muhammad (PBUH) during imminent danger, transforming distress into unshakeable tranquility.",
-                sourceAr = "سورة آل عمران: ١٧٣",
-                explanationAr = "حصن رباني عظيم قاله إبراهيم عليه السلام حين ألقي في النار، وقاله النبي ﷺ يوم الأحزاب، فتنقلب به المخاوف إلى سكينة وطمأنينة."
+                arabicText = "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ",
+                translation = "O Allah, I seek refuge in You from anxiety and grief, incapacity and laziness, cowardice and avarice, the burden of debt and being overpowered by men.",
+                source = "Sahih Al-Bukhari 6369",
+                explanation = "Anxiety often stems from feeling that we must carry the weight of the unknown alone. The Prophet (PBUH) taught this powerful supplication to release heavy emotional burdens and anchor the heart in divine trust.",
+                sourceAr = "صحيح البخاري: ٦٣٦٩",
+                explanationAr = "علمنا النبي ﷺ هذا الدعاء المبارك لتفريغ الهموم الثقيلة وإلقاء الحمل كله على وكيل الله سبحانه وتعالى."
             ),
             DailyMoodWisdom(
                 mood = "Anxious",
                 isIslamic = false,
-                arabicText = "كُن كَالْمَاءِ، لَا يَشُقُّ عَلَيْهِ أَيُّ مَسَارٍ",
-                translation = "Present moment mindfulness: Breath is your anchor; peace is not the absence of storm, but stillness within.",
+                arabicText = "كُن كَالْمَاءِ، لَا يَشُقُّ عَلَيْهِ أَيُّ مَسَارٍ • الِاسْتِقْرَارُ مَنْبَعُهُ الدَّاخِلُ",
+                translation = "Present moment mindfulness: Breath is your anchor; peace is not the absence of storm, but stillness within. Recognize that your current worry is a transient cognitive wave rather than a permanent reality.",
                 source = "Mindful Contemplation",
-                explanation = "Recognize that your current worry is a transient cognitive wave. Anchor your awareness to the slow rhythm of conscious breath.",
+                explanation = "Anchor your awareness to the slow rhythm of conscious breath. When thoughts begin to spiral into scenarios of tomorrow, gently return your attention to the grounded reality of right now.",
                 sourceAr = "تأمل وهدوء النفس",
-                explanationAr = "اعلم أن القلق عابر كالغيوم، واستحضر هدوء اللحظة الحاضرة والسكينة الداخلية."
+                explanationAr = "اعلم أن القلق عابر كالغيوم، واستحضر هدوء اللحظة الحاضرة والسكينة الداخلية التي تنبع من التقبل والرضا."
             )
         ),
         "Grateful" to Pair(
             DailyMoodWisdom(
                 mood = "Grateful",
                 isIslamic = true,
-                arabicText = "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ",
-                translation = "If you are grateful, I will surely increase you [in favor].",
-                source = "Surah Ibrahim (14:7)",
-                explanation = "Gratitude (Shukr) is an active spiritual multiplier. When the heart acknowledges divine blessings, divine abundance and inner peace expand.",
-                sourceAr = "سورة إبراهيم: ٧",
-                explanationAr = "الشكر مفتاح المزيد وقيد النعم، فحين يستشعر القلب فضل الله تتسع الأرزاق والسكينة."
+                arabicText = "اللَّهُمَّ أَعِنِّى عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",
+                translation = "O Allah, assist me in remembering You, in thanking You, and in worshipping You in the best manner.",
+                source = "Sunan Abi Dawud 1522",
+                explanation = "Gratitude (Shukr) is an active spiritual multiplier. When the heart acknowledges divine blessings through remembrance, inner peace and abundance expand.",
+                sourceAr = "سنن أبي داود: ١٥٢٢",
+                explanationAr = "الشكر ليس مجرد كلمة باللسان، بل استعانة بالله لدوام ذكره وحسن عبادته في كل حين."
             ),
             DailyMoodWisdom(
                 mood = "Grateful",
                 isIslamic = false,
-                arabicText = "الامْتِنَانُ رَبِيعُ الرُّوحِ الدَّائِمُ",
-                translation = "Gratitude turns what we have into enough, illuminating the hidden abundance of ordinary moments.",
+                arabicText = "الامْتِنَانُ رَبِيعُ الرُّوحِ الدَّائِمُ • يُحَوِّلُ الْقَلِيلَ إِلَى كِفَايَةٍ",
+                translation = "Gratitude turns what we have into enough, illuminating the hidden abundance of ordinary moments. Cultivating gratitude rewires neural pathways, fostering emotional resilience and profound contentment with every breath.",
                 source = "Universal Wisdom",
-                explanation = "Cultivating gratitude rewires neural pathways, fostering emotional resilience and profound contentment.",
+                explanation = "Pause to notice the subtle gifts around you—the warmth of light, the comfort of shelter, the miracle of breath. Gratitude is the quiet art of recognizing that wealth resides in a peaceful mind.",
                 sourceAr = "حكمة الامتنان",
-                explanationAr = "الامتنان يحول القليل إلى كفاية، وينير تفاصيل الحياة بالرضا والبهجة."
+                explanationAr = "الامتنان يحول القليل إلى كفاية، وينير تفاصيل الحياة بالرضا والبهجة ويدرّب الروح على الاستبشار."
             )
         ),
-        "Seeking Guidance" to Pair(
+        "Tired" to Pair(
             DailyMoodWisdom(
-                mood = "Seeking Guidance",
+                mood = "Tired",
                 isIslamic = true,
-                arabicText = "رَبِّ إِنِّي لِمَا أَنزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِيرٌ",
-                translation = "My Lord, indeed I am, for whatever good You would send down to me, in need.",
-                source = "Surah Al-Qasas (28:24)",
-                explanation = "The supplication of Musa (AS) at his moment of absolute vulnerability, which opened immediate doors of sanctuary, family, and honor.",
-                sourceAr = "سورة القصص: ٢٤",
-                explanationAr = "دعاء موسى عليه السلام في ذروة الافتقار إلى الله، ففتحت له أبواب الخير والأمان والبركة."
+                arabicText = "يَا حَيُّ يَا قَيُّومُ، بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لي شَأْنِي كُلَّهُ، وَلاَ تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ",
+                translation = "O Ever-Living, O Self-Sustaining, by Your mercy I seek relief; rectify for me all of my affairs and do not leave me to myself even for the blink of an eye.",
+                source = "Sunan An-Nasa'i & Al-Albani Sahih",
+                explanation = "When physical and emotional exhaustion weigh heavily, turning to Al-Hayy Al-Qayyum restores spiritual vigor and renews your strength from the source of all life.",
+                sourceAr = "سنن النسائي وصحيح الألباني",
+                explanationAr = "حين تشعر بالإرهاق، التجئ إلى الحي القيوم الذي بيده ملكوت كل شيء ليستقيم أمرك وتتجدد طاقتك."
             ),
             DailyMoodWisdom(
-                mood = "Seeking Guidance",
+                mood = "Tired",
                 isIslamic = false,
-                arabicText = "الصَّمْتُ يَفْتَحُ أَبْوَابَ الْبَصِيرَةِ",
-                translation = "Clarity does not arrive from turbulent striving, but from quiet listening to your deepest moral compass.",
-                source = "Philosophical Insight",
-                explanation = "Allow your mind to settle like clear water; the path forward becomes evident when inner noise subsides.",
-                sourceAr = "بصيرة وهداية",
-                explanationAr = "الوضوح ينبع من سكون القلب والتأمل الصادق حين تهدأ ضوضاء التردد."
+                arabicText = "الرَّاحَةُ لَيْسَتْ اسْتِسْلَامًا، بَلْ هِيَ اسْتِعَادَةٌ لِلْقُوَّةِ",
+                translation = "Rest is not a luxury or a sign of weakness; it is a vital act of self-preservation and restoration. Honor your body's signals and allow yourself space to heal without guilt.",
+                source = "Mindful Rest",
+                explanation = "When the body and spirit feel drained, pushing harder yields diminished returns. Step back, breathe deeply, and give yourself permission to simply exist and recharge.",
+                sourceAr = "سكينة واسترجاع طاقة",
+                explanationAr = "الاستراحة الحقيقية ليست كسلًا، بل هي شحن لطاقتك العاطفية والروحية لتستأنف مسيرك بتوازن وصحة."
             )
         ),
         "Overwhelmed" to Pair(
             DailyMoodWisdom(
                 mood = "Overwhelmed",
                 isIslamic = true,
-                arabicText = "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا",
-                translation = "Allah does not burden a soul beyond that it can bear.",
-                source = "Surah Al-Baqarah (2:286)",
-                explanation = "A sacred guarantee that your soul possesses the exact resilience, capacity, and divine grace required for this trial.",
-                sourceAr = "سورة البقرة: ٢٨٦",
-                explanationAr = "وعد رباني بأن كل ابتداء في قدرتك وتيسيرك، وأن مع العسر يسراً ولطفاً خفياً."
+                arabicText = "اللَّهُمَّ لَا سَهْلَ إِلَّا ما جَعَلْتَهُ سَهْلاً، وَأَنْتَ تَجْعَلُ الحَزْنَ إِذَا شِئْتَ سَهْلاً",
+                translation = "O Allah, there is no ease except what You make easy, and You, if You wish, can make the difficult easy.",
+                source = "Sahih Ibn Hibban 974",
+                explanation = "When tasks and thoughts pile up and overwhelm the heart, this concise prophetic dua aligns your spirit with the ultimate facilitator of all affairs.",
+                sourceAr = "صحيح ابن حبان: ٩٧٤",
+                explanationAr = "دعاء يزيل ثقل الضغوط ويُفوض الأمر لمن بيده تيسير كل عسير."
             ),
             DailyMoodWisdom(
                 mood = "Overwhelmed",
                 isIslamic = false,
-                arabicText = "خُطْوَةٌ وَاحِدَةٌ تَكْفِي لِبَدْءِ الْعَوْدَةِ",
-                translation = "You don't have to carry the whole mountain today. Simply focus on this single breath, this single step.",
+                arabicText = "خُطْوَةٌ وَاحِدَةٌ تَكْفِي لِبَدْءِ الْعَوْدَةِ • تَفْكِيكُ العَقَبَاتِ يَبْدَأُ بِاللَّحْظَةِ الحَاضِرَةِ",
+                translation = "You don't have to carry the whole mountain today. Simply focus on this single breath, this single step. Deconstruct daunting obstacles into single present-moment actions to restore cognitive equilibrium.",
                 source = "Mindful Living",
-                explanation = "Deconstruct daunting obstacles into single present-moment actions to restore cognitive equilibrium.",
+                explanation = "Overwhelm happens when the mind attempts to solve fifty future moments at once. Pull your attention back to what is directly in front of you right now, and address it with calm focus.",
                 sourceAr = "تيسير وتخفيف",
-                explanationAr = "لا تحمل هم الأيام دفعة واحدة، ركز في خطوة اليوم وسيرعاك الله في كل خطوة."
+                explanationAr = "لا تحمل هم الأيام دفعة واحدة، ركز في خطوة اليوم وسيرعاك الله في كل خطوة ومرحلة."
+            )
+        ),
+        "Hopeful" to Pair(
+            DailyMoodWisdom(
+                mood = "Hopeful",
+                isIslamic = true,
+                arabicText = "أَنَا عِنْدَ ظَنِّ عَبْدِي بي، وَأَنَا مَعَهُ إِذَا ذَكَرَنِي",
+                translation = "Allah says: 'I am as My servant thinks of Me, and I am with him when he remembers Me.'",
+                source = "Sahih Al-Bukhari 7405",
+                explanation = "Hope in Allah (Husn al-Dhann) is the bedrock of faith. Anticipate goodness, for divine mercy is infinitely vast and meets your positive expectation.",
+                sourceAr = "صحيح البخاري: ٧٤٠٥",
+                explanationAr = "حسن الظن بالله مفتاح الفرج والقبول، وكلما أملت الخير في ربك وجدته أقرب مما تتصور."
+            ),
+            DailyMoodWisdom(
+                mood = "Hopeful",
+                isIslamic = false,
+                arabicText = "الأَمَلُ نُورٌ يَنْبُثُقُ مِنْ أَعْمَاقِ الظُّلْمَةِ",
+                translation = "Hope is the quiet conviction that light will always overcome shadow. Hold fast to your optimism, for the seeds of today's hopeful patience bloom into tomorrow's strength.",
+                source = "Universal Hope",
+                explanation = "A hopeful spirit transforms energy into positive action. Trust the timing of your journey and continue moving forward with open arms.",
+                sourceAr = "تأمل ورجاء",
+                explanationAr = "الأمل ليس أمنية مجردة، بل هو طاقة إيجابية تدفعك للعمل وتستشرف الغد بيقين وتفاؤل."
+            )
+        ),
+        "Lost" to Pair(
+            DailyMoodWisdom(
+                mood = "Lost",
+                isIslamic = true,
+                arabicText = "اللَّهُمَّ اهْدِنِي وَسَدِّدْنِي",
+                translation = "O Allah, guide me and direct me to the right path.",
+                source = "Sahih Muslim 2725",
+                explanation = "When direction is unclear and disorientation sets in, asking Al-Hadi for direct guidance and steadfastness brings immediate inner clarity.",
+                sourceAr = "صحيح مسلم: ٢٧٢٥",
+                explanationAr = "دعاء جامع يطلب الهداية والتسديد في الأقوال والأفعال والخطوات."
+            ),
+            DailyMoodWisdom(
+                mood = "Lost",
+                isIslamic = false,
+                arabicText = "الصَّمْتُ يَفْتَحُ أَبْوَابَ الْبَصِيرَةِ • الْوُضُوحُ يَأْتِي بَعْدَ السُّكُونِ",
+                translation = "Clarity does not arrive from turbulent striving, but from quiet listening to your deepest moral compass. Allow your mind to settle like clear water; the path forward becomes evident when inner noise subsides.",
+                source = "Philosophical Insight",
+                explanation = "When you feel lost, stop running. Sit quietly, align with your inner core, and trust that the next right step will reveal itself in due time.",
+                sourceAr = "بصيرة وهداية",
+                explanationAr = "الوضوح ينبع من سكون القلب والتأمل الصادق حين تهدأ ضوضاء التردد والصخب."
             )
         ),
         "Peaceful" to Pair(
             DailyMoodWisdom(
                 mood = "Peaceful",
                 isIslamic = true,
-                arabicText = "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
-                translation = "Unquestionably, by the remembrance of Allah hearts are assured.",
-                source = "Surah Ar-Ra'd (13:28)",
-                explanation = "The highest state of inner tranquility (Sakinah) is experienced when the soul re-aligns with its eternal Creator.",
-                sourceAr = "سورة الرعد: ٢٨",
-                explanationAr = "أعظم طمأنينة وراحة ينالها القلب حين يتصل بربه ذكراً وشكراً وتسليماً."
+                arabicText = "اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الجَلَالِ وَالإِكْرَامِ",
+                translation = "O Allah, You are Peace, and from You comes peace. Blessed are You, O Owner of Majesty and Honor.",
+                source = "Sahih Muslim 592",
+                explanation = "True peace (As-Sakinah) is a divine gift from As-Salam. Savor this state of serenity by expressing gratitude and radiating calm to those around you.",
+                sourceAr = "صحيح مسلم: ٥٩٢",
+                explanationAr = "التحميد والتسبيح بأسماء السلام يثبت طمأنينة القلب ويديم السكينة."
             ),
             DailyMoodWisdom(
                 mood = "Peaceful",
                 isIslamic = false,
-                arabicText = "السَّكِينَةُ هِيَ التَّنَاغُمُ مَعَ الْحَيَاةِ",
-                translation = "Peace is an inside state that reflects harmony with reality as it unfolds.",
+                arabicText = "السَّكِينَةُ هِيَ التَّنَاغُمُ مَعَ الْحَيَاةِ • الرِّضَا مِفْتَاحُ الهُدُوءِ",
+                translation = "Peace is an inside state that reflects harmony with reality as it unfolds. Cherish serenity by savoring stillness and radiating kindness to those around you.",
                 source = "Inner Harmony",
-                explanation = "Cherish serenity by savoring stillness and radiating kindness to those around you.",
+                explanation = "When peace fills your heart, protect it like a precious sanctuary. Share this serene warmth with everyone you encounter today.",
                 sourceAr = "سكينة وسلام",
-                explanationAr = "السلام الداخلي ينبع من الرضا والتصالح مع أقدار الحياة."
-            )
-        ),
-        "Seeking Forgiveness" to Pair(
-            DailyMoodWisdom(
-                mood = "Seeking Forgiveness",
-                isIslamic = true,
-                arabicText = "رَبَّنَا ظَلَمْنَا أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",
-                translation = "Our Lord, we have wronged ourselves, and if You do not forgive us and have mercy upon us, we will surely be among the losers.",
-                source = "Surah Al-A'raf (7:23)",
-                explanation = "The eternal prayer of Adam and Hawwa (peace be upon them) demonstrating that sincere humility and repentance instantly restore divine mercy.",
-                sourceAr = "سورة الأعراف: ٢٣",
-                explanationAr = "دعاء آدم وحواء عليهما السلام، يفيض بالانكسار والتوبة الصادقة المستوجبة للرحمة والمغفرة."
-            ),
-            DailyMoodWisdom(
-                mood = "Seeking Forgiveness",
-                isIslamic = false,
-                arabicText = "التَّسَامُحُ مَعَ النَّفْسِ هُوَ بِدَايَةُ النُّمُوِّ",
-                translation = "Forgiveness is freeing yourself from the weight of past missteps to step forward with renewed grace.",
-                source = "Humanistic Reflection",
-                explanation = "Mistakes are invitations to grow wiser. Release self-condemnation and commit to righteous action.",
-                sourceAr = "توبة واستغفار",
-                explanationAr = "الاستغفار يمحو الذنوب ويجدد العهد مع الله لتبدأ كل يوم بروح طاهرة."
+                explanationAr = "السلام الداخلي ينبع من الرضا والتصالح مع أقدار الحياة والتناغم مع اللحظة الحاضرة."
             )
         )
     )
