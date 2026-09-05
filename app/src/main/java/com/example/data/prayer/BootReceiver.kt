@@ -50,6 +50,9 @@ class BootReceiver : BroadcastReceiver() {
                         timersMap = defaultTimers,
                         enabledMap = defaultEnabled
                     )
+
+                    // Also refresh Glance Home Screen Widget
+                    com.example.widget.PrayerWidgetUpdater.update(context)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {

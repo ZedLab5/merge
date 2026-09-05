@@ -988,6 +988,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _nextPrayerName.value = next.name
             _nextPrayerTimeStr.value = next.timeString
         }
+
+        // Keep Home Screen Glance Widget updated in real-time
+        com.example.widget.PrayerWidgetUpdater.updateAsync(getApplication())
     }
 
     private fun startRealtimeCountdown() {

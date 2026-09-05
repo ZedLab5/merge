@@ -604,4 +604,16 @@
     <string name="settings_copy_link">Copy Link</string>
     <string name="settings_social_title">Follow Us</string>
     <string name="settings_social_sub">Official social channels &amp; updates</string>
+
+    <!-- Home Screen Widget -->
+    <string name="widget_prayer_title">Noor Prayer Times</string>
+    <string name="widget_prayer_description">Compact Salat times widget highlighting the next upcoming prayer on your home screen.</string>
+    <string name="settings_section_widget">Home Screen Widget</string>
+    <string name="settings_widget_sub">Prayer times at a glance on your home screen</string>
+    <string name="settings_widget_desc">Add Noor\'s compact prayer widget to your device home screen to view today\'s Salat times (Fajr, Dhuhr, Asr, Maghrib, Isha) and the next upcoming prayer at a glance.</string>
+    <string name="settings_widget_pin_button">Add Widget to Home Screen</string>
+    <string name="settings_widget_manual_title">How to add manually:</string>
+    <string name="settings_widget_step_1">1. Long-press any empty space on your Home Screen</string>
+    <string name="settings_widget_step_2">2. Tap \"Widgets\" in the menu that appears</string>
+    <string name="settings_widget_step_3">3. Search for \"Noor\" and drag \"Prayer Times\" to your screen</string>
 </resources>

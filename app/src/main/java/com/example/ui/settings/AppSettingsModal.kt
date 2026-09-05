@@ -47,7 +47,13 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.os.Build
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.Widgets
+import com.example.widget.PrayerWidgetReceiver
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -126,6 +132,7 @@ fun AppSettingsModal(
     var isLanguageExpanded by remember { mutableStateOf(false) }
     var isNotifExpanded by remember { mutableStateOf(false) }
     var isCalcExpanded by remember { mutableStateOf(false) }
+    var isWidgetExpanded by remember { mutableStateOf(false) }
     var isContactExpanded by remember { mutableStateOf(false) }
     var isPrivacyExpanded by remember { mutableStateOf(false) }
     var isAboutExpanded by remember { mutableStateOf(false) }
@@ -554,7 +561,142 @@ fun AppSettingsModal(
                     }
                 }
 
-                // 5. INDEPENDENT ACCORDION: CONTACT US & SUPPORT
+                // 5. HOME SCREEN WIDGET ACCORDION
+                item(key = "section_widget") {
+                    SettingsAccordionCard(
+                        icon = Icons.Default.Widgets,
+                        title = stringResource(R.string.settings_section_widget),
+                        subtitle = stringResource(R.string.settings_widget_sub),
+                        isExpanded = isWidgetExpanded,
+                        onToggleExpand = { isWidgetExpanded = !isWidgetExpanded },
+                        themeColors = themeColors
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_widget_desc),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = themeColors.translationText,
+                                fontSize = 12.sp,
+                                lineHeight = 17.sp
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        val appWidgetManager = remember { AppWidgetManager.getInstance(context) }
+                        val isPinSupported = remember {
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                                    appWidgetManager != null &&
+                                    appWidgetManager.isRequestPinAppWidgetSupported
+                        }
+
+                        if (isPinSupported) {
+                            Button(
+                                onClick = {
+                                    val provider = ComponentName(context, PrayerWidgetReceiver::class.java)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        try {
+                                            val callbackIntent = Intent(context, PrayerWidgetReceiver::class.java).apply {
+                                                action = "com.example.ACTION_WIDGET_PINNED"
+                                            }
+                                            val successPendingIntent = PendingIntent.getBroadcast(
+                                                context,
+                                                0,
+                                                callbackIntent,
+                                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                                            )
+                                            val isRequested = appWidgetManager.requestPinAppWidget(provider, null, successPendingIntent)
+                                            if (isRequested) {
+                                                viewModel.showToast(
+                                                    if (viewModel.isArabicLanguage()) "تم إرسال طلب إضافة الودجت للشاشة الرئيسية"
+                                                    else "Add widget request sent to home screen!"
+                                                )
+                                            } else {
+                                                viewModel.showToast(
+                                                    if (viewModel.isArabicLanguage()) "اضغط مطولاً على الشاشة الرئيسية > الودجت > نور لإضافته"
+                                                    else "To add: Long press Home Screen -> Widgets -> Noor"
+                                                )
+                                            }
+                                        } catch (e: Exception) {
+                                            viewModel.showToast(
+                                                if (viewModel.isArabicLanguage()) "اضغط مطولاً على الشاشة الرئيسية > الودجت > نور"
+                                                else "Long press Home Screen -> Widgets -> Noor"
+                                            )
+                                        }
+                                    }
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = themeColors.accent),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Widgets,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.settings_widget_pin_button),
+                                    color = Color.White,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+                        }
+
+                        // Manual Step-by-step guidance card
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (themeColors.isDark) themeColors.surface else NoorSurfaceSoft,
+                            border = BorderStroke(1.dp, themeColors.border)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = stringResource(R.string.settings_widget_manual_title),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = themeColors.arabicText,
+                                        fontSize = 12.sp
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = stringResource(R.string.settings_widget_step_1),
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = themeColors.translationText,
+                                        fontSize = 11.5.sp,
+                                        lineHeight = 16.sp
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = stringResource(R.string.settings_widget_step_2),
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = themeColors.translationText,
+                                        fontSize = 11.5.sp,
+                                        lineHeight = 16.sp
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = stringResource(R.string.settings_widget_step_3),
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = themeColors.translationText,
+                                        fontSize = 11.5.sp,
+                                        lineHeight = 16.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 6. INDEPENDENT ACCORDION: CONTACT US & SUPPORT
                 item(key = "section_contact_us") {
                     SettingsAccordionCard(
                         icon = Icons.Default.Email,

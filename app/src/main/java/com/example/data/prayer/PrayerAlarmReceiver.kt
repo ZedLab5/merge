@@ -4,9 +4,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.example.data.local.NoorNotificationHelper
+import com.example.widget.PrayerWidgetUpdater
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Handles triggered prayer notification alarms and shows gentle notifications.
+ * Also triggers a home-screen widget update so the active and next prayers stay in sync.
  */
 class PrayerAlarmReceiver : BroadcastReceiver() {
 
@@ -22,5 +27,15 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
             timeFormatted = timeFormatted,
             isPreAlert = isPreAlert
         )
+
+        // Asynchronously update the home screen Glance widget
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                PrayerWidgetUpdater.update(context)
+            } finally {
+                pendingResult.finish()
+            }
+        }
     }
 }

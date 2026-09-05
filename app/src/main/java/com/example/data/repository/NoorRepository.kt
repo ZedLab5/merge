@@ -120,6 +120,34 @@ class NoorRepository(
             }
             return rawArabic
         }
+
+        val prayerZones: List<PrayerZone> = listOf(
+            PrayerZone("ma_tangier", "Tangier & Tetouan", "طنجة وتطوان", "Morocco", "Zone 1 (North)", 35.7595, -5.8340, "Africa/Casablanca"),
+            PrayerZone("ma_casablanca", "Casablanca & Rabat", "الدار البيضاء والرباط", "Morocco", "Zone 2 (Central Coast)", 33.5731, -7.5898, "Africa/Casablanca"),
+            PrayerZone("ma_fes", "Fes & Meknes", "فاس ومكناس", "Morocco", "Zone 3 (Saïss / Central)", 34.0181, -5.0078, "Africa/Casablanca"),
+            PrayerZone("ma_marrakech", "Marrakech & Safi", "مراكش وآسفي", "Morocco", "Zone 4 (Haouz / South)", 31.6295, -7.9811, "Africa/Casablanca"),
+            PrayerZone("ma_oujda", "Oujda & Nador", "وجدة والناظور", "Morocco", "Zone 5 (Oriental / East)", 34.6814, -1.9086, "Africa/Casablanca"),
+            PrayerZone("ma_agadir", "Agadir & Souss", "أكادير وسوس", "Morocco", "Zone 6 (Souss-Massa)", 30.4278, -9.5981, "Africa/Casablanca"),
+            PrayerZone("ma_laayoune", "Laayoune & Dakhla", "العيون والداخلة", "Morocco", "Zone 7 (Sahara)", 27.1536, -13.2033, "Africa/Casablanca"),
+            PrayerZone("sa_makkah", "Makkah Al-Mukarramah", "مكة المكرمة", "Saudi Arabia", "Hijaz Sanctuary Zone", 21.3891, 39.8579, "Asia/Riyadh"),
+            PrayerZone("sa_madinah", "Madinah Al-Munawwarah", "المدينة المنورة", "Saudi Arabia", "Prophetic City Zone", 24.5247, 39.5692, "Asia/Riyadh"),
+            PrayerZone("eg_cairo", "Cairo Al-Qahira", "القاهرة", "Egypt", "Nile Valley Zone", 30.0444, 31.2357, "Africa/Cairo"),
+            PrayerZone("tr_istanbul", "Istanbul", "إسطنبول", "Turkey", "Bosphorus / Marmara Zone", 41.0082, 28.9784, "Europe/Istanbul"),
+            PrayerZone("ae_dubai", "Dubai & Abu Dhabi", "دبي وأبوظبي", "United Arab Emirates", "Gulf Arabian Zone", 25.2048, 55.2708, "Asia/Dubai"),
+            PrayerZone("gb_london", "London", "لندن", "United Kingdom", "Western Europe / UK Zone", 51.5074, -0.1278, "Europe/London"),
+            PrayerZone("fr_paris", "Paris", "باريس", "France", "Central Europe Zone", 48.8566, 2.3522, "Europe/Paris"),
+            PrayerZone("us_newyork", "New York", "نيويورك", "United States", "North America Eastern", 40.7128, -74.0060, "America/New_York")
+        )
+
+        val calculationAuthorities: List<CalculationAuthority> = listOf(
+            CalculationAuthority("habous", "Moroccan Ministry of Habous & Islamic Affairs", "Official Kingdom of Morocco timing standard", 19.0, 17.0),
+            CalculationAuthority("mwl", "Muslim World League (MWL)", "Standard international calculation method", 18.0, 17.0),
+            CalculationAuthority("umm_al_qura", "Umm Al-Qura University, Makkah", "Official Saudi Arabia timing standard", 18.5, 0.0, ishaIntervalMinutes = 90),
+            CalculationAuthority("egypt", "Egyptian General Authority of Survey", "Egypt, Africa and parts of Arab world", 19.5, 17.5),
+            CalculationAuthority("isna", "Islamic Society of North America (ISNA)", "United States & Canada standard", 15.0, 15.0),
+            CalculationAuthority("diyanet", "Diyanet İşleri Başkanlığı (Turkey)", "Republic of Turkey standard", 18.0, 17.0),
+            CalculationAuthority("karachi", "University of Islamic Sciences, Karachi", "Pakistan, Bangladesh, India & Afghanistan", 18.0, 18.0)
+        )
     }
 
     fun getVersesForSurahFlow(surahNumber: Int): Flow<List<Verse>> {
@@ -529,33 +557,11 @@ class NoorRepository(
         recordSalatActivity(hasAnyCompleted, date)
     }
 
-    val prayerZones: List<PrayerZone> = listOf(
-        PrayerZone("ma_tangier", "Tangier & Tetouan", "طنجة وتطوان", "Morocco", "Zone 1 (North)", 35.7595, -5.8340, "Africa/Casablanca"),
-        PrayerZone("ma_casablanca", "Casablanca & Rabat", "الدار البيضاء والرباط", "Morocco", "Zone 2 (Central Coast)", 33.5731, -7.5898, "Africa/Casablanca"),
-        PrayerZone("ma_fes", "Fes & Meknes", "فاس ومكناس", "Morocco", "Zone 3 (Saïss / Central)", 34.0181, -5.0078, "Africa/Casablanca"),
-        PrayerZone("ma_marrakech", "Marrakech & Safi", "مراكش وآسفي", "Morocco", "Zone 4 (Haouz / South)", 31.6295, -7.9811, "Africa/Casablanca"),
-        PrayerZone("ma_oujda", "Oujda & Nador", "وجدة والناظور", "Morocco", "Zone 5 (Oriental / East)", 34.6814, -1.9086, "Africa/Casablanca"),
-        PrayerZone("ma_agadir", "Agadir & Souss", "أكادير وسوس", "Morocco", "Zone 6 (Souss-Massa)", 30.4278, -9.5981, "Africa/Casablanca"),
-        PrayerZone("ma_laayoune", "Laayoune & Dakhla", "العيون والداخلة", "Morocco", "Zone 7 (Sahara)", 27.1536, -13.2033, "Africa/Casablanca"),
-        PrayerZone("sa_makkah", "Makkah Al-Mukarramah", "مكة المكرمة", "Saudi Arabia", "Hijaz Sanctuary Zone", 21.3891, 39.8579, "Asia/Riyadh"),
-        PrayerZone("sa_madinah", "Madinah Al-Munawwarah", "المدينة المنورة", "Saudi Arabia", "Prophetic City Zone", 24.5247, 39.5692, "Asia/Riyadh"),
-        PrayerZone("eg_cairo", "Cairo Al-Qahira", "القاهرة", "Egypt", "Nile Valley Zone", 30.0444, 31.2357, "Africa/Cairo"),
-        PrayerZone("tr_istanbul", "Istanbul", "إسطنبول", "Turkey", "Bosphorus / Marmara Zone", 41.0082, 28.9784, "Europe/Istanbul"),
-        PrayerZone("ae_dubai", "Dubai & Abu Dhabi", "دبي وأبوظبي", "United Arab Emirates", "Gulf Arabian Zone", 25.2048, 55.2708, "Asia/Dubai"),
-        PrayerZone("gb_london", "London", "لندن", "United Kingdom", "Western Europe / UK Zone", 51.5074, -0.1278, "Europe/London"),
-        PrayerZone("fr_paris", "Paris", "باريس", "France", "Central Europe Zone", 48.8566, 2.3522, "Europe/Paris"),
-        PrayerZone("us_newyork", "New York", "نيويورك", "United States", "North America Eastern", 40.7128, -74.0060, "America/New_York")
-    )
+    val prayerZones: List<PrayerZone>
+        get() = Companion.prayerZones
 
-    val calculationAuthorities: List<CalculationAuthority> = listOf(
-        CalculationAuthority("habous", "Moroccan Ministry of Habous & Islamic Affairs", "Official Kingdom of Morocco timing standard", 19.0, 17.0),
-        CalculationAuthority("mwl", "Muslim World League (MWL)", "Standard international calculation method", 18.0, 17.0),
-        CalculationAuthority("umm_al_qura", "Umm Al-Qura University, Makkah", "Official Saudi Arabia timing standard", 18.5, 0.0, ishaIntervalMinutes = 90),
-        CalculationAuthority("egypt", "Egyptian General Authority of Survey", "Egypt, Africa and parts of Arab world", 19.5, 17.5),
-        CalculationAuthority("isna", "Islamic Society of North America (ISNA)", "United States & Canada standard", 15.0, 15.0),
-        CalculationAuthority("diyanet", "Diyanet İşleri Başkanlığı (Turkey)", "Republic of Turkey standard", 18.0, 17.0),
-        CalculationAuthority("karachi", "University of Islamic Sciences, Karachi", "Pakistan, Bangladesh, India & Afghanistan", 18.0, 18.0)
-    )
+    val calculationAuthorities: List<CalculationAuthority>
+        get() = Companion.calculationAuthorities
 
     fun calculatePrayerTimes(
         zone: PrayerZone = prayerZones.first(),
