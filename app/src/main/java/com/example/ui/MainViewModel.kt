@@ -18,6 +18,7 @@ import com.example.data.local.KhatmaHistoryEntity
 import com.example.data.local.KhatmaPlanEntity
 import com.example.data.local.NoorNotificationHelper
 import com.example.data.local.QadaRecordEntity
+import com.example.data.local.QuranNoteEntity
 import com.example.data.local.ReadingProgressEntity
 import com.example.data.local.StreakDailyLogEntity
 import com.example.data.local.StreakSummaryEntity
@@ -794,6 +795,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val showTranslation = MutableStateFlow(true)
     val isMushafFlowMode = MutableStateFlow(false) // Distraction-Free Pure Reading Flow
     val isQuranReaderFullscreen = MutableStateFlow(false) // Immersive Fullscreen Mode (resets per session)
+    val isFullscreenEnabled = MutableStateFlow(false) // Preference toggle for Fullscreen Reading Mode feature
     val isTajweedHighlightsEnabled = MutableStateFlow(false) // Interactive Tajweed Color Highlights
     val isQuranSepiaMode = MutableStateFlow(false) // Independent Sepia Parchment Canvas exclusive to Quran Reader
     val sharedReadingTheme = MutableStateFlow("Madani Crisp") // App-wide theme: "Madani Crisp" (Light) or "Obsidian Night" (Dark)
@@ -801,6 +803,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isDarkMode: StateFlow<Boolean> = sharedReadingTheme
         .map { it == "Obsidian Night" }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val quranNotes: StateFlow<List<QuranNoteEntity>> = repository.allQuranNotes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val quranSearchQuery = MutableStateFlow("")
     val quranFilterCategory = MutableStateFlow("All") // "All", "Meccan", "Medinan", "Popular", "Juz 'Amma"
     val hasSeenQuranOnboarding = MutableStateFlow(false)
@@ -891,6 +895,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         showAzkarTransliteration.value = sharedPrefs.getBoolean("azkar_transliteration", true)
         showAzkarBenefits.value = sharedPrefs.getBoolean("azkar_benefits", true)
         isMushafFlowMode.value = sharedPrefs.getBoolean("is_mushaf_flow_mode", false)
+        isFullscreenEnabled.value = sharedPrefs.getBoolean("is_fullscreen_enabled", false)
         val savedFontId = sharedPrefs.getString("quran_arabic_font", QuranArabicFont.AMIRI.id)
         selectedArabicFont.value = QuranArabicFont.fromId(savedFontId)
         isTajweedHighlightsEnabled.value = sharedPrefs.getBoolean("is_tajweed_highlights", false)
@@ -1916,16 +1921,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setQuranReaderFullscreen(enabled: Boolean) {
-        if (isQuranReaderFullscreen.value != enabled) {
-            isQuranReaderFullscreen.value = enabled
-            triggerHaptic()
-        }
+        isFullscreenEnabled.value = enabled
+        sharedPrefs.edit().putBoolean("is_fullscreen_enabled", enabled).apply()
+        isQuranReaderFullscreen.value = enabled
+        triggerHaptic()
     }
 
     fun toggleQuranReaderFullscreen() {
+        if (!isFullscreenEnabled.value) return
         val newState = !isQuranReaderFullscreen.value
         isQuranReaderFullscreen.value = newState
         triggerHaptic()
+    }
+
+    fun saveQuranNote(surahNumber: Int, verseNumber: Int, text: String) {
+        viewModelScope.launch {
+            repository.saveQuranNote(surahNumber, verseNumber, text)
+            triggerHaptic()
+            if (text.isBlank()) {
+                showToast("Note removed")
+            } else {
+                showToast("Note saved successfully")
+            }
+        }
+    }
+
+    fun deleteQuranNote(surahNumber: Int, verseNumber: Int) {
+        viewModelScope.launch {
+            repository.deleteQuranNote(surahNumber, verseNumber)
+            triggerHaptic()
+            showToast("Note removed")
+        }
     }
 
     fun toggleTajweedHighlights(enabled: Boolean? = null) {

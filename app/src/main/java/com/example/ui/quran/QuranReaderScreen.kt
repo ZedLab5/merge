@@ -32,12 +32,15 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import com.example.data.local.QuranNoteEntity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -56,6 +59,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Fullscreen
@@ -66,6 +71,7 @@ import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.Button
@@ -77,6 +83,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -172,6 +180,9 @@ fun QuranReaderScreen(
     val isMushafFlowMode by viewModel.isMushafFlowMode.collectAsStateWithLifecycle()
     val selectedArabicFont by viewModel.selectedArabicFont.collectAsStateWithLifecycle()
     val isFullscreenMode by viewModel.isQuranReaderFullscreen.collectAsStateWithLifecycle()
+    val isFullscreenEnabled by viewModel.isFullscreenEnabled.collectAsStateWithLifecycle()
+    val quranNotes by viewModel.quranNotes.collectAsStateWithLifecycle()
+    var noteTargetVerse by remember { mutableStateOf<Verse?>(null) }
 
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -186,9 +197,11 @@ fun QuranReaderScreen(
     var isAutoScrollPaused by remember { mutableStateOf(false) }
     var autoScrollSpeed by remember { mutableStateOf(AutoScrollSpeed.MEDIUM) }
 
-    // Tap-to-toggle fullscreen handler
+    // Tap-to-toggle fullscreen handler (Gated behind "Fullscreen Reading Mode" setting)
     val onContentTap = {
-        viewModel.toggleQuranReaderFullscreen()
+        if (isFullscreenEnabled) {
+            viewModel.toggleQuranReaderFullscreen()
+        }
     }
 
     // Automatically clean up on leaving the Quran reader screen
@@ -405,6 +418,10 @@ fun QuranReaderScreen(
         ) { paddingValues ->
             if (isMushafFlowMode) {
                 // Distraction-Free Continuous Reading Mode (Pure Uthmani text)
+                val currentNotesMap = remember(quranNotes, currentSurah.number) {
+                    quranNotes.filter { it.surahNumber == currentSurah.number }
+                        .associate { it.verseNumber to it.noteText }
+                }
                 MushafFlowView(
                     surah = currentSurah,
                     fontSizeSp = fontSizeSp,
@@ -414,6 +431,10 @@ fun QuranReaderScreen(
                     currentPlayingVerse = currentPlayingVerse,
                     isAudioDisabled = isMp3PlayerRunning,
                     viewModel = viewModel,
+                    notesMap = currentNotesMap,
+                    onOpenNoteForVerse = { verse -> noteTargetVerse = verse },
+                    onToggleBookmarkForVerse = { verse -> viewModel.saveExactReadingBookmark(currentSurah, verse.verseNumber) },
+                    onPlayVerse = { verse -> viewModel.playAyah(currentSurah, verse.verseNumber) },
                     modifier = Modifier.padding(paddingValues),
                     scrollState = mushafFlowScrollState,
                     isFullscreenMode = isFullscreenMode,
@@ -496,6 +517,10 @@ fun QuranReaderScreen(
                             val isKhatmaRead = isKhatmaActive && verseAbsIndex <= currentReadCount
                             val isKhatmaCurrentPointer = isKhatmaActive && verseAbsIndex == currentReadCount
 
+                            val verseNoteText = quranNotes.firstOrNull {
+                                it.surahNumber == currentSurah.number && it.verseNumber == verse.verseNumber
+                            }?.noteText
+
                             VerseCardItem(
                                 verse = verse,
                                 surah = currentSurah,
@@ -511,6 +536,7 @@ fun QuranReaderScreen(
                                 isKhatmaCurrentPointer = isKhatmaCurrentPointer,
                                 isAudioDisabled = isMp3PlayerRunning,
                                 themeColors = themeColors,
+                                existingNoteText = verseNoteText,
                                 onPlayVerse = {
                                     if (isMp3PlayerRunning) {
                                         viewModel.showToast("MP3 player is currently active. Pause it to recite individual verses.")
@@ -522,6 +548,9 @@ fun QuranReaderScreen(
                                 },
                                 onToggleBookmark = {
                                     viewModel.saveExactReadingBookmark(currentSurah, verse.verseNumber)
+                                },
+                                onOpenNote = {
+                                    noteTargetVerse = verse
                                 },
                                 onMarkKhatma = {
                                     viewModel.markKhatmaProgressToVerse(currentSurah, verse.verseNumber)
@@ -1238,6 +1267,28 @@ fun QuranReaderScreen(
                 }
             }
         }
+
+        // Quran Note Entry Sheet
+        if (noteTargetVerse != null) {
+            val target = noteTargetVerse!!
+            val existingNote = quranNotes.firstOrNull {
+                it.surahNumber == currentSurah.number && it.verseNumber == target.verseNumber
+            }?.noteText
+
+            QuranNoteEntrySheet(
+                surah = currentSurah,
+                verse = target,
+                existingNoteText = existingNote,
+                themeColors = themeColors,
+                onSaveNote = { text ->
+                    viewModel.saveQuranNote(currentSurah.number, target.verseNumber, text)
+                },
+                onDeleteNote = {
+                    viewModel.deleteQuranNote(currentSurah.number, target.verseNumber)
+                },
+                onDismiss = { noteTargetVerse = null }
+            )
+        }
     }
 }
 
@@ -1645,8 +1696,10 @@ fun VerseCardItem(
     isKhatmaCurrentPointer: Boolean = false,
     isAudioDisabled: Boolean = false,
     themeColors: QuranReadingThemeColors,
+    existingNoteText: String? = null,
     onPlayVerse: () -> Unit,
     onToggleBookmark: () -> Unit,
+    onOpenNote: () -> Unit = {},
     onMarkKhatma: () -> Unit = {},
     onCopyVerse: () -> Unit,
     modifier: Modifier = Modifier
@@ -1778,6 +1831,39 @@ fun VerseCardItem(
                             }
                         }
                     }
+
+                    // Note Pill (Added directly to the right of the Bookmark pill)
+                    val hasNote = !existingNoteText.isNullOrBlank()
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (hasNote) themeColors.accent.copy(alpha = 0.15f) else Color.Transparent,
+                        border = BorderStroke(
+                            0.8.dp,
+                            if (hasNote) themeColors.accent else themeColors.border.copy(alpha = 0.7f)
+                        ),
+                        modifier = Modifier.clickable { onOpenNote() }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EditNote,
+                                contentDescription = "Note",
+                                tint = if (hasNote) themeColors.accent else themeColors.translationText.copy(alpha = 0.7f),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = "Note",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (hasNote) themeColors.accent else themeColors.translationText.copy(alpha = 0.8f)
+                                )
+                            )
+                        }
+                    }
                 }
 
                 // Right Side: Action Icons (Audio, Copy) - Flag/Bookmark icon removed to avoid repetition
@@ -1888,6 +1974,51 @@ fun VerseCardItem(
                     }
                 }
             }
+
+            // Display Saved Note Preview Card
+            if (!existingNoteText.isNullOrBlank()) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = themeColors.accent.copy(alpha = 0.08f),
+                    border = BorderStroke(0.8.dp, themeColors.accent.copy(alpha = 0.4f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenNote() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EditNote,
+                            contentDescription = "Saved Note",
+                            tint = themeColors.accent,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .offset(y = 2.dp)
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Your Note",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = themeColors.accent
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = existingNoteText,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = themeColors.arabicText,
+                                    fontSize = 12.5.sp,
+                                    lineHeight = 17.sp
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -1977,6 +2108,214 @@ fun SurahNavigationFooter(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "Next Surah",
                         modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuranNoteEntrySheet(
+    surah: Surah,
+    verse: Verse,
+    existingNoteText: String?,
+    themeColors: QuranReadingThemeColors,
+    onSaveNote: (String) -> Unit,
+    onDeleteNote: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var noteInput by remember(existingNoteText) { mutableStateOf(existingNoteText ?: "") }
+    val scope = rememberCoroutineScope()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = themeColors.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = themeColors.accent.copy(alpha = 0.15f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EditNote,
+                            contentDescription = null,
+                            tint = themeColors.accent,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .size(22.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Ayah Reflection & Notes",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = themeColors.arabicText
+                            )
+                        )
+                        Text(
+                            text = "${surah.nameEnglish} • Verse ${verse.verseNumber}",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = themeColors.translationText
+                            )
+                        )
+                    }
+                }
+
+                IconButton(
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = themeColors.translationText
+                    )
+                }
+            }
+
+            // Arabic Preview Card
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = themeColors.background,
+                border = BorderStroke(1.dp, themeColors.border),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = verse.arabicText,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontFamily = QuranArabicFont.AMIRI.fontFamily,
+                            fontWeight = FontWeight.Bold,
+                            color = themeColors.arabicText,
+                            fontSize = 20.sp,
+                            lineHeight = 32.sp
+                        ),
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (verse.translation.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = verse.translation,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = themeColors.translationText,
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp
+                            )
+                        )
+                    }
+                }
+            }
+
+            // Note Text Area
+            OutlinedTextField(
+                value = noteInput,
+                onValueChange = { noteInput = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 120.dp, max = 220.dp),
+                placeholder = {
+                    Text(
+                        text = "Write your reflections, study notes, or personal reminders for this verse...",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = themeColors.translationText.copy(alpha = 0.5f)
+                        )
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = themeColors.arabicText,
+                    fontSize = 14.sp
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = themeColors.accent,
+                    unfocusedBorderColor = themeColors.border,
+                    focusedContainerColor = themeColors.background,
+                    unfocusedContainerColor = themeColors.background
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            // Action Buttons (Delete, Save)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!existingNoteText.isNullOrBlank()) {
+                    OutlinedButton(
+                        onClick = {
+                            onDeleteNote()
+                            scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Note",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(text = "Delete", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        if (noteInput.isNotBlank()) {
+                            onSaveNote(noteInput)
+                        } else if (!existingNoteText.isNullOrBlank()) {
+                            onDeleteNote()
+                        }
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = themeColors.accent,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Save,
+                        contentDescription = "Save Note",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (!existingNoteText.isNullOrBlank()) "Update Note" else "Save Note",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }

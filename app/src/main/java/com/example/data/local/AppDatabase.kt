@@ -19,9 +19,10 @@ import androidx.room.RoomDatabase
         StreakDailyLogEntity::class,
         StreakSummaryEntity::class,
         SurahEntity::class,
-        VerseEntity::class
+        VerseEntity::class,
+        QuranNoteEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

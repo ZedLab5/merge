@@ -8,6 +8,7 @@ import com.example.data.local.KhatmaPlanEntity
 import com.example.data.local.NoorDao
 import com.example.data.local.PrayerRecordEntity
 import com.example.data.local.QadaRecordEntity
+import com.example.data.local.QuranNoteEntity
 import com.example.data.local.ReadingProgressEntity
 import com.example.data.local.StreakDailyLogEntity
 import com.example.data.local.StreakSummaryEntity
@@ -53,6 +54,19 @@ class NoorRepository(
     val fastLogs: Flow<List<FastLogEntity>> = dao.getAllFastLogs()
     val streakDailyLogs: Flow<List<StreakDailyLogEntity>> = dao.getAllStreakDailyLogs()
     val streakSummary: Flow<StreakSummaryEntity?> = dao.getStreakSummary()
+    val allQuranNotes: Flow<List<QuranNoteEntity>> = dao.getAllQuranNotes()
+
+    suspend fun saveQuranNote(surahNumber: Int, verseNumber: Int, text: String) {
+        if (text.isBlank()) {
+            dao.deleteNote(surahNumber, verseNumber)
+        } else {
+            dao.saveNote(QuranNoteEntity(surahNumber = surahNumber, verseNumber = verseNumber, noteText = text.trim()))
+        }
+    }
+
+    suspend fun deleteQuranNote(surahNumber: Int, verseNumber: Int) {
+        dao.deleteNote(surahNumber, verseNumber)
+    }
 
     // Quran Data Access
     val allSurahsFlow: Flow<List<SurahMeta>> = dao.getAllSurahsFlow().map { entities ->

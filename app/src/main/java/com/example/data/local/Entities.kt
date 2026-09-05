@@ -165,4 +165,15 @@ data class VerseEntity(
     val tafsirShort: String = ""
 )
 
+@Entity(
+    tableName = "quran_notes",
+    primaryKeys = ["surahNumber", "verseNumber"]
+)
+data class QuranNoteEntity(
+    val surahNumber: Int,
+    val verseNumber: Int,
+    val noteText: String,
+    val updatedAt: Long = System.currentTimeMillis()
+)
+
 

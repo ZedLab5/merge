@@ -181,4 +181,17 @@ interface NoorDao {
 
     @Query("DELETE FROM verses")
     suspend fun deleteAllVerses()
+
+    // Quran Notes
+    @Query("SELECT * FROM quran_notes ORDER BY updatedAt DESC")
+    fun getAllQuranNotes(): Flow<List<QuranNoteEntity>>
+
+    @Query("SELECT * FROM quran_notes WHERE surahNumber = :surahNumber AND verseNumber = :verseNumber LIMIT 1")
+    suspend fun getNoteForVerse(surahNumber: Int, verseNumber: Int): QuranNoteEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveNote(note: QuranNoteEntity)
+
+    @Query("DELETE FROM quran_notes WHERE surahNumber = :surahNumber AND verseNumber = :verseNumber")
+    suspend fun deleteNote(surahNumber: Int, verseNumber: Int)
 }
